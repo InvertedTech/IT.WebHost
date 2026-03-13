@@ -1,0 +1,52 @@
+@inherits LayoutComponentBase
+
+<div class="relative min-h-screen flex flex-col">
+    <header class="sticky top-0 z-50 w-full border-b bg-background">
+        <div class="container flex h-14 items-center">
+            <div class="mr-4 flex">
+                <a href="/" class="mr-6 flex items-center space-x-2">
+                    <LucideIcon Name="box" Size="24" class="text-primary" />
+                    <span class="font-bold">IT.WebHost.App</span>
+                </a>
+            </div>
+            <nav class="flex items-center space-x-6 text-sm font-medium">
+                <NavLink href="/" Match="NavLinkMatch.All" class="transition-colors hover:text-foreground/80 text-foreground/60" ActiveClass="text-foreground">
+                    Home
+                </NavLink>
+                <NavLink href="/subscribe" class="transition-colors hover:text-foreground/80 text-foreground/60" ActiveClass="text-foreground">
+                    Subscribe
+                </NavLink>
+            </nav>
+            <div class="flex flex-1 items-center justify-end space-x-2">
+                <a href="/login"><BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small">Login</BbButton></a>
+                <a href="/signup"><BbButton Size="ButtonSize.Small">Sign Up</BbButton></a>
+                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="ToggleDarkMode">
+                    @if (isDarkMode)
+                    {
+                        <LucideIcon Name="sun" Size="20" />
+                    }
+                    else
+                    {
+                        <LucideIcon Name="moon" Size="20" />
+                    }
+                </BbButton>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col">
+        @Body
+    </main>
+
+    <footer class="border-t py-6 md:py-0">
+        <div class="container flex flex-col items-center justify-between gap-4 md:h-14 md:flex-row">
+            <p class="text-sm text-muted-foreground flex items-center gap-1">
+                Made with <LucideIcon Name="heart" Size="14" class="text-red-500" /> by Inverted Tech
+            </p>
+        </div>
+    </footer>
+</div>
+
+<BbToastProvider Position="ToastPosition.BottomRight" />
+<BbDialogProvider />
+<BbPortalHost />

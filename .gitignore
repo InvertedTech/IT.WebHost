@@ -312,7 +312,7 @@ node_modules/
 # Visual Studio 6 technical files
 *.ncb
 *.aps
-
+.claude
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts

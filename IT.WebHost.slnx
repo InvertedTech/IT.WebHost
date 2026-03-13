@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="IT.WebHost.Api/IT.WebHost.Api.csproj" />
+  <Project Path="IT.WebHost.App/IT.WebHost.App.csproj" />
+  <Project Path="IT.WebHost.Components/IT.WebHost.Components.csproj" />
 </Solution>
