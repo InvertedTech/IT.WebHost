@@ -18,4 +18,8 @@
     <PackageReference Include="BlazorBlueprint.Icons.Lucide" Version="2.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\IT.WebServices\Fragments\IT.WebServices.Fragments.csproj" />
+  </ItemGroup>
+
 </Project>

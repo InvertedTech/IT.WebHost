@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../IT.WebServices/Fragments/IT.WebServices.Fragments.csproj" />
   <Project Path="IT.WebHost.App/IT.WebHost.App.csproj" />
   <Project Path="IT.WebHost.Components/IT.WebHost.Components.csproj" />
 </Solution>
