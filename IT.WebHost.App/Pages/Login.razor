@@ -1,5 +1,6 @@
 @page "/login"
 @using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Authentication
 
 <PageTitle>Login - IT.WebHost.App</PageTitle>
 
@@ -10,7 +11,7 @@
         <BbCardDescription>Enter your email below to login to your account</BbCardDescription>
     </BbCardHeader>
     <BbCardContent>
-       <LoginForm />
+       <LoginForm onsubmit="HandleLogin"/>
     </BbCardContent>
     <BbCardFooter>
         <div class="w-full text-center text-sm text-muted-foreground">
@@ -20,3 +21,9 @@
     </BbCardFooter>
 </BbCard>
 </div>
+
+@code {
+    private async Task HandleLogin(AuthenticateUserRequest req) {
+        // Call Auth Handlers Here
+    }
+}

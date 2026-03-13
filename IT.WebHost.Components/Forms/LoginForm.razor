@@ -1,7 +1,8 @@
+@using IT.WebServices.Fragments.Authentication
 <div class="space-y-4">
     <div class="space-y-2">
-        <BbLabel For="email">Email</BbLabel>
-        <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" />
+        <BbLabel For="username">Email / Username</BbLabel>
+        <BbInput Id="username" Type="InputType.Text" Placeholder="m@example.com" @bind-Value="userName" />
     </div>
     <div class="space-y-2">
         <div class="flex items-center justify-between">
@@ -10,9 +11,11 @@
                 Forgot your password?
             </a>
         </div>
-        <BbInput Id="password" Type="InputType.Password" />
+        <BbInput Id="password" Type="InputType.Password" @bind-Value="password" />
     </div>
-    <BbButton Class="w-full">Login</BbButton>
+    <BbButton Class="w-full" @onclick="HandleSubmit">
+        Login
+    </BbButton>
     <div class="relative">
         <div class="absolute inset-0 flex items-center">
             <BbSeparator />
@@ -25,3 +28,22 @@
         Login with Google
     </BbButton>
 </div>
+
+@code {
+    [Parameter] public EventCallback<AuthenticateUserRequest> OnSubmit { get; set; }
+
+    private string userName = string.Empty;
+    private string password = string.Empty;
+
+    private async Task HandleSubmit()
+    {
+        var request = new AuthenticateUserRequest
+        {
+            UserName = userName,
+            Password = password,
+            MFACode = string.Empty
+        };
+        Console.WriteLine($"[LoginForm] {request}");
+        await OnSubmit.InvokeAsync(request);
+    }
+}

@@ -1,21 +1,29 @@
 @page "/signup"
-@using System.Reflection
 @using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Authentication
 
 <div class="flex flex-1 items-center justify-center">
-<BbCard class="w-full max-w-sm">
-    <BbCardHeader>
-        <BbCardTitle class="text-2xl">Create an account</BbCardTitle>
-        <BbCardDescription>Enter your information below to create your account</BbCardDescription>
-    </BbCardHeader>
-    <BbCardContent>
-        <SignupForm />
-    </BbCardContent>
-    <BbCardFooter>
-        <div class="w-full text-center text-sm text-muted-foreground">
-            Already have an account?
-            <a href="#" class="text-primary underline-offset-4 hover:underline">Sign in</a>
-        </div>
-    </BbCardFooter>
-</BbCard>
+    <BbCard class="w-full max-w-sm">
+        <BbCardHeader>
+            <BbCardTitle class="text-2xl">Create an account</BbCardTitle>
+            <BbCardDescription>Enter your information below to create your account</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <SignupForm OnSubmit="HandleSignup" />
+        </BbCardContent>
+        <BbCardFooter>
+            <div class="w-full text-center text-sm text-muted-foreground">
+                Already have an account?
+                <a href="/login" class="text-primary underline-offset-4 hover:underline">Sign in</a>
+            </div>
+        </BbCardFooter>
+    </BbCard>
 </div>
+
+@code {
+    private async Task HandleSignup(CreateUserRequest request)
+    {
+        // call your AuthService here
+        // e.g. await AuthService.CreateUserAsync(request);
+    }
+}
