@@ -1,0 +1,27 @@
+<div class="space-y-4">
+    <div class="space-y-2">
+        <BbLabel For="name">Full Name</BbLabel>
+        <BbInput Id="name" Placeholder="John Doe" />
+    </div>
+    <div class="space-y-2">
+        <BbLabel For="email">Email</BbLabel>
+        <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" />
+        <p class="text-xs text-muted-foreground">
+            We'll use this to contact you. We will not share your email with anyone else.
+        </p>
+    </div>
+    <div class="space-y-2">
+        <BbLabel For="password">Password</BbLabel>
+        <BbInput Id="password" Type="InputType.Password" />
+        <p class="text-xs text-muted-foreground">Must be at least 8 characters long.</p>
+    </div>
+    <div class="space-y-2">
+        <BbLabel For="confirm-password">Confirm Password</BbLabel>
+        <BbInput Id="confirm-password" Type="InputType.Password" />
+        <p class="text-xs text-muted-foreground">Please confirm your password.</p>
+    </div>
+    <BbButton Class="w-full">Create Account</BbButton>
+    <BbButton Variant="ButtonVariant.Outline" Class="w-full">
+        Sign up with Google
+    </BbButton>
+</div>
