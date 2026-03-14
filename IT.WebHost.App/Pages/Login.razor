@@ -1,8 +1,12 @@
 @page "/login"
 @using IT.WebHost.Components.Forms
+@using IT.WebHost.Core.Clients
 @using IT.WebServices.Fragments.Authentication
+@inject AuthClient AuthClient
+@inject NavigationManager NavigationManager
+@inject IT.WebHost.App.Services.SiteSettingsService SiteSettings
 
-<PageTitle>Login - IT.WebHost.App</PageTitle>
+<PageTitle>Login - @SiteSettings.SiteTitle</PageTitle>
 
 <div class="flex flex-1 items-center justify-center">
 <BbCard class="w-full max-w-sm">
@@ -11,19 +15,23 @@
         <BbCardDescription>Enter your email below to login to your account</BbCardDescription>
     </BbCardHeader>
     <BbCardContent>
-       <LoginForm onsubmit="HandleLogin"/>
+       <LoginForm OnSubmit="HandleLogin"/>
     </BbCardContent>
     <BbCardFooter>
         <div class="w-full text-center text-sm text-muted-foreground">
             Don't have an account?
-            <a href="#" class="text-primary underline-offset-4 hover:underline">Sign up</a>
+            <a href="/signup" class="text-primary underline-offset-4 hover:underline">Sign up</a>
         </div>
     </BbCardFooter>
 </BbCard>
 </div>
 
 @code {
-    private async Task HandleLogin(AuthenticateUserRequest req) {
-        // Call Auth Handlers Here
+    private async Task HandleLogin(AuthenticateUserRequest req)
+    {
+        var res = await AuthClient.LoginAsync(req);
+        Console.WriteLine(res.Error.Reason.ToString());
+        if (res.Ok)
+            NavigationManager.NavigateTo("/");
     }
 }

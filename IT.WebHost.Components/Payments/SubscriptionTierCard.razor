@@ -1,0 +1,27 @@
+﻿@using IT.WebServices.Fragments.Authorization
+
+<BbCard class="w-[480px]">
+    <BbCardHeader>
+        <BbCardTitle>@tier.Name</BbCardTitle>
+        <BbCardDescription>@tier.Description</BbCardDescription>
+    </BbCardHeader>
+    <BbCardContent>
+        <div class="text-2xl font-bold">
+            @if (tier.AmountCents == 0)
+            {
+                <span>Free</span>
+            }
+            else
+            {
+                <span>$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/month</span></span>
+            }
+        </div>
+    </BbCardContent>
+    <BbCardFooter>
+        <BbButton Class="w-full" Disabled="@true">Select</BbButton>
+    </BbCardFooter>
+</BbCard>
+
+@code {
+    [Parameter] public SubscriptionTier tier { get; set; }
+}

@@ -1,6 +1,9 @@
 @page "/signup"
 @using IT.WebHost.Components.Forms
+@using IT.WebHost.Core.Clients
 @using IT.WebServices.Fragments.Authentication
+@inject AuthClient AuthClient
+@inject NavigationManager NavigationManager
 
 <div class="flex flex-1 items-center justify-center">
     <BbCard class="w-full max-w-sm">
@@ -23,7 +26,8 @@
 @code {
     private async Task HandleSignup(CreateUserRequest request)
     {
-        // call your AuthService here
-        // e.g. await AuthService.CreateUserAsync(request);
+        var res = await AuthClient.SignUpAsync(request);
+        if (!string.IsNullOrEmpty(res.BearerToken))
+            NavigationManager.NavigateTo("/");
     }
 }

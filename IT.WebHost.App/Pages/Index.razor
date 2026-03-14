@@ -3,8 +3,9 @@
 @using IT.WebHost.Core.Clients
 @using IT.WebServices.Fragments.Content
 @inject ContentClient ContentClient
+@inject IT.WebHost.App.Services.SiteSettingsService SiteSettings
 
-<PageTitle>Home - IT.WebHost.App</PageTitle>
+<PageTitle>Home - @SiteSettings.SiteTitle</PageTitle>
 
 <div class="container py-10">
     <div class="mx-auto max-w-3xl space-y-8">

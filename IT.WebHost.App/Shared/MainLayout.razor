@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@inject IT.WebHost.App.Services.SiteSettingsService SiteSettings
 
 <div class="relative min-h-screen flex flex-col">
     <header class="sticky top-0 z-50 w-full border-b bg-background">
@@ -6,7 +7,7 @@
             <div class="mr-4 flex">
                 <a href="/" class="mr-6 flex items-center space-x-2">
                     <LucideIcon Name="box" Size="24" class="text-primary" />
-                    <span class="font-bold">IT.WebHost.App</span>
+                    <span class="font-bold">@SiteSettings.SiteTitle</span>
                 </a>
             </div>
             <nav class="flex items-center space-x-6 text-sm font-medium">
