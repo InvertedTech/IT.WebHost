@@ -35,17 +35,26 @@
     <BbCardContent>
         <div class="flex items-center gap-4 text-sm text-muted-foreground">
             <div class="flex items-center gap-1">
-                <LucideIcon Name="map-pin" class="h-3.5 w-3.5" />
-                <span>Swiss Alps</span>
-            </div>
-            <div class="flex items-center gap-1">
-                <LucideIcon Name="star" class="h-3.5 w-3.5" />
-                <span>4.9</span>
+                <LucideIcon Name="calendar" class="h-3.5 w-3.5" />
+                <span>@Content.PublishOnUTC?.ToDateTime().ToLocalTime().ToString("MMM d, yyyy")</span>
             </div>
         </div>
     </BbCardContent>
-    <BbCardFooter class="flex justify-between">
-        <span class="text-lg font-bold">$299<span class="text-sm font-normal text-muted-foreground">/night</span></span>
+    <BbCardFooter class="flex justify-between items-center">
+        @if (Content.SubscriptionLevel > 0)
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-amber-600">
+                <LucideIcon Name="lock" class="h-3.5 w-3.5" />
+                <span>Members Only</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-green-600">
+                <LucideIcon Name="lock-open" class="h-3.5 w-3.5" />
+                <span>Free</span>
+            </div>
+        }
         <BbButton href="@Url">View</BbButton>
     </BbCardFooter>
 </BbCard>

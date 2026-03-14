@@ -1,6 +1,8 @@
 @page "/signup"
+@using IT.WebHost.Components.Errors
 @using IT.WebHost.Components.Forms
 @using IT.WebHost.Core.Clients
+@using IT.WebServices.Fragments
 @using IT.WebServices.Fragments.Authentication
 @inject AuthClient AuthClient
 @inject NavigationManager NavigationManager
@@ -10,6 +12,10 @@
         <BbCardHeader>
             <BbCardTitle class="text-2xl">Create an account</BbCardTitle>
             <BbCardDescription>Enter your information below to create your account</BbCardDescription>
+            @if(Error is not null)
+            {
+                <SubmissionError SubmitError="@Error" />
+            }
         </BbCardHeader>
         <BbCardContent>
             <SignupForm OnSubmit="HandleSignup" />
@@ -24,10 +30,18 @@
 </div>
 
 @code {
+    public APIError? Error { get; private set; }
+
     private async Task HandleSignup(CreateUserRequest request)
     {
         var res = await AuthClient.SignUpAsync(request);
-        if (!string.IsNullOrEmpty(res.BearerToken))
-            NavigationManager.NavigateTo("/");
+        if (res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+        {
+            NavigationManager.NavigateTo($"/auth/set-cookie?token={Uri.EscapeDataString(res.BearerToken)}", forceLoad: true);
+        }
+        else
+        {
+            Error = res.Error;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace IT.WebHost.App.Services
+namespace IT.WebHost.Core.Services
 {
     public class TemplateService
     {

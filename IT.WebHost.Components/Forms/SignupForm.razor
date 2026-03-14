@@ -7,6 +7,10 @@
         <BbInput Id="username" Placeholder="johndoe" @bind-Value="userName" />
     </div>
     <div class="space-y-2">
+        <BbLabel For="displayname">Display Name</BbLabel>
+        <BbInput Id="displayname" Placeholder="johndoe" @bind-Value="displayName" />
+    </div>
+    <div class="space-y-2">
         <BbLabel For="email">Email</BbLabel>
         <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" @bind-Value="email" />
         <p class="text-xs text-muted-foreground">
@@ -23,29 +27,46 @@
         <BbInput Id="confirm-password" Type="InputType.Password" @bind-Value="confirmPassword" />
         <p class="text-xs text-muted-foreground">Please confirm your password.</p>
     </div>
+    <div class="space-y-2">
+        <BbLabel For="first-name">First Name</BbLabel>
+        <BbInput Id="first-name" Type="InputType.Text" @bind-Value="firstName" />
+    </div>
+    <div class="space-y-2">
+        <BbLabel For="last-name">Last Name</BbLabel>
+        <BbInput Id="last-name" Type="InputType.Text" @bind-Value="lastName" />
+    </div>
+    <div class="space-y-2">
+        <BbLabel For="postal-code">Postal/Zip Code</BbLabel>
+        <BbInput Id="postal-code" Type="InputType.Text" @bind-Value="postalCode" />
+    </div>
     <BbButton Class="w-full" @onclick="HandleSubmit">Create Account</BbButton>
-    <BbButton Variant="ButtonVariant.Outline" Class="w-full">
-        Sign up with Google
-    </BbButton>
 </div>
 
 @code {
     [Parameter] public EventCallback<CreateUserRequest> OnSubmit { get; set; }
 
     private string userName = string.Empty;
+    private string displayName = string.Empty;
     private string email = string.Empty;
     private string password = string.Empty;
     private string confirmPassword = string.Empty;
+    private string firstName = string.Empty;
+    private string lastName = string.Empty;
+    private string postalCode = string.Empty;
 
     private async Task HandleSubmit()
     {
-        var request = new CreateUserRequest
+        CreateUserRequest request = new CreateUserRequest
         {
             UserName = userName,
+            DisplayName = displayName,
             Email = email,
-            Password = password
+            Password = password,
+            FirstName = firstName,
+            LastName = lastName,
+            PostalCode = postalCode,
+            Bio = ""
         };
-        Console.WriteLine($"[SignupForm] {request}");
         await OnSubmit.InvokeAsync(request);
     }
 }

@@ -1,5 +1,6 @@
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
-@inject IT.WebHost.App.Services.SiteSettingsService SiteSettings
+@inject IT.WebHost.Core.Services.SiteSettingsService SiteSettings
 
 <div class="relative min-h-screen flex flex-col">
     <header class="sticky top-0 z-50 w-full border-b bg-background">
@@ -19,8 +20,28 @@
                 </NavLink>
             </nav>
             <div class="flex flex-1 items-center justify-end space-x-2">
-                <a href="/login"><BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small">Login</BbButton></a>
-                <a href="/signup"><BbButton Size="ButtonSize.Small">Sign Up</BbButton></a>
+               <AuthorizeView>
+                    <Authorized>
+                        <BbDropdownMenu>
+                            <BbDropdownMenuTrigger>
+                                <BbButton Variant="ButtonVariant.Outline">
+                                    <LucideIcon Name="menu" class="h-4 w-4" /> Account
+                                </BbButton>
+                            </BbDropdownMenuTrigger>
+                            <BbDropdownMenuContent>
+                                <BbDropdownMenuLabel>My Account</BbDropdownMenuLabel>
+                                <BbDropdownMenuSeparator />
+                                <BbDropdownMenuItem>Profile</BbDropdownMenuItem>
+                                <BbDropdownMenuSeparator />
+                                <BbDropdownMenuItem><a href="/auth/logout">Log out</a></BbDropdownMenuItem>
+                            </BbDropdownMenuContent>
+                        </BbDropdownMenu>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login"><BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small">Login</BbButton></a>
+                        <a href="/signup"><BbButton Size="ButtonSize.Small">Sign Up</BbButton></a>
+                    </NotAuthorized>
+                </AuthorizeView>
                 <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="ToggleDarkMode">
                     @if (isDarkMode)
                     {

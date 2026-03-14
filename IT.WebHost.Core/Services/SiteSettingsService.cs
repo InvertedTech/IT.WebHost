@@ -1,26 +1,19 @@
 using IT.WebHost.Core.Clients;
 using IT.WebServices.Fragments.Settings;
 
-namespace IT.WebHost.App.Services
+namespace IT.WebHost.Core.Services
 {
-    public class SiteSettingsService
+    public class SiteSettingsService(SettingsClient settingsClient)
     {
-        private readonly SettingsClient _settingsClient;
-
         public SettingsPublicData? Settings { get; private set; }
 
         public string SiteTitle => Settings?.Personalization?.Title ?? "IT.WebHost";
-
-        public SiteSettingsService(SettingsClient settingsClient)
-        {
-            _settingsClient = settingsClient;
-        }
 
         public async Task LoadAsync()
         {
             try
             {
-                Settings = await _settingsClient.GetPublicDataAsync();
+                Settings = await settingsClient.GetPublicDataAsync();
             }
             catch
             {

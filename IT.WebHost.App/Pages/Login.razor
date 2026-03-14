@@ -1,37 +1,50 @@
 @page "/login"
+@using IT.WebHost.Components.Errors
 @using IT.WebHost.Components.Forms
 @using IT.WebHost.Core.Clients
 @using IT.WebServices.Fragments.Authentication
+@using IT.WebServices.Fragments
 @inject AuthClient AuthClient
 @inject NavigationManager NavigationManager
-@inject IT.WebHost.App.Services.SiteSettingsService SiteSettings
+@inject IT.WebHost.Core.Services.SiteSettingsService SiteSettings
 
 <PageTitle>Login - @SiteSettings.SiteTitle</PageTitle>
 
 <div class="flex flex-1 items-center justify-center">
-<BbCard class="w-full max-w-sm">
-    <BbCardHeader>
-        <BbCardTitle class="text-2xl">Login to your account</BbCardTitle>
-        <BbCardDescription>Enter your email below to login to your account</BbCardDescription>
-    </BbCardHeader>
-    <BbCardContent>
-       <LoginForm OnSubmit="HandleLogin"/>
-    </BbCardContent>
-    <BbCardFooter>
-        <div class="w-full text-center text-sm text-muted-foreground">
-            Don't have an account?
-            <a href="/signup" class="text-primary underline-offset-4 hover:underline">Sign up</a>
-        </div>
-    </BbCardFooter>
-</BbCard>
+    <BbCard class="w-full max-w-sm">
+        <BbCardHeader>
+            <BbCardTitle class="text-2xl">Login to your account</BbCardTitle>
+            <BbCardDescription>Enter your email below to login to your account</BbCardDescription>
+            @if (Error is not null)
+            {
+                <SubmissionError SubmitError="@Error" />
+            }
+        </BbCardHeader>
+        <BbCardContent>
+           <LoginForm OnSubmit="HandleLogin"/>
+        </BbCardContent>
+        <BbCardFooter>
+            <div class="w-full text-center text-sm text-muted-foreground">
+                Don't have an account?
+                <a href="/signup" class="text-primary underline-offset-4 hover:underline">Sign up</a>
+            </div>
+        </BbCardFooter>
+    </BbCard>
 </div>
 
 @code {
+    public APIError? Error { get; private set; }
+
     private async Task HandleLogin(AuthenticateUserRequest req)
     {
         var res = await AuthClient.LoginAsync(req);
-        Console.WriteLine(res.Error.Reason.ToString());
-        if (res.Ok)
-            NavigationManager.NavigateTo("/");
+        if (res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+        {
+            NavigationManager.NavigateTo($"/auth/set-cookie?token={Uri.EscapeDataString(res.BearerToken)}", forceLoad: true);
+        }
+        else
+        {
+            Error = res.Error;
+        }
     }
 }

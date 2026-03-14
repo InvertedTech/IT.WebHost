@@ -1,0 +1,22 @@
+﻿@using IT.WebServices.Fragments;
+
+<BbAlert Variant="AlertVariant.Danger" AccentBorder="true">
+    <Icon>
+        <LucideIcon Name="circle-alert" class="h-4 w-4" />
+    </Icon>
+    <ChildContent>
+        <BbAlertTitle>@SubmitError.Message</BbAlertTitle>
+        <BbAlertDescription>
+            <ul class="mt-2 list-disc list-inside space-y-1">
+                @foreach(var issue in SubmitError.Validation.ToList())
+                {
+                    <li>@issue.Message</li>
+                }
+            </ul>
+        </BbAlertDescription>
+    </ChildContent>
+</BbAlert>
+
+@code {
+    [Parameter] public APIError SubmitError { get; set; }
+}
