@@ -8,16 +8,22 @@
 <PageTitle>Home - @SiteSettings.SiteTitle</PageTitle>
 
 <div class="container py-10">
-    <div class="mx-auto max-w-3xl space-y-8">
-        @foreach (var record in contentListRecords)
-        {
-            <ContentCard Content="@record" Url="@($"/post/{record.ContentID}")" />
-        }
-    </div>
+    @switch (SiteSettings.Settings?.CMS?.DefaultLayout)
+    {
+        case LayoutEnum.Grid:
+            <ContentGridView Content="@contentListRecords" />
+            break;
+        case LayoutEnum.Masonry:
+            <ContentMasonryView Content="@contentListRecords" />
+            break;
+        default:
+            <ContentListView Content="@contentListRecords" />
+            break;
+    }
+
 </div>
 
 @code {
-    // TODO: Handle DefaultLayout from cms public settings
     private readonly List<ContentListRecord> contentListRecords = new List<ContentListRecord>();
 
     protected override async Task OnInitializedAsync()

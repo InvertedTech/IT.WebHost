@@ -1,0 +1,69 @@
+@using IT.WebServices.Fragments.Content;
+@namespace IT.WebHost.Components.Content
+
+<div class="w-full rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+    @if (_imageError || string.IsNullOrEmpty(Content?.FeaturedImageAssetID))
+    {
+        <div class="aspect-video w-full bg-slate-100 flex flex-col items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                 stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 11 15" />
+                <polyline points="17 19 12 13 7 19" />
+                <line x1="3" y1="3" x2="21" y2="21" stroke="#e2e8f0" stroke-width="1" />
+            </svg>
+            <span style="font-size:0.75rem; color:#94a3b8; font-family:ui-sans-serif,system-ui,sans-serif">
+                No image available
+            </span>
+        </div>
+    }
+    else
+    {
+        <img src="@GetImageUrl()" @onerror="OnImageError"
+             alt="@Content.Title" class="w-full object-cover" />
+    }
+    <div class="flex flex-col space-y-1.5 p-6">
+        <h3 class="font-semibold leading-none tracking-tight">@Content.Title</h3>
+        <p class="text-sm text-muted-foreground">@Content.Description</p>
+    </div>
+    <div class="p-6 pt-0">
+        <div class="flex items-center gap-4 text-sm text-muted-foreground">
+            <div class="flex items-center gap-1">
+                <LucideIcon Name="calendar" class="h-3.5 w-3.5" />
+                <span>@Content.PublishOnUTC?.ToDateTime().ToLocalTime().ToString("MMM d, yyyy")</span>
+            </div>
+        </div>
+    </div>
+    <div class="flex items-center justify-between p-6 pt-0">
+        @if (Content.SubscriptionLevel > 0)
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-amber-600">
+                <LucideIcon Name="lock" class="h-3.5 w-3.5" />
+                <span>Members Only</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-green-600">
+                <LucideIcon Name="lock-open" class="h-3.5 w-3.5" />
+                <span>Free</span>
+            </div>
+        }
+        <BbButton href="@Url">View</BbButton>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ContentListRecord Content { get; set; }
+    [Parameter] public string Url { get; set; } = string.Empty;
+
+    private bool _imageError = false;
+
+    private void OnImageError() => _imageError = true;
+
+    private string GetImageUrl()
+    {
+        return $"http://localhost:8001/api/cms/asset/{Content.FeaturedImageAssetID}/data";
+    }
+}

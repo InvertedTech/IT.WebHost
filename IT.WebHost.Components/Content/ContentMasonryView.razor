@@ -1,0 +1,21 @@
+@using IT.WebServices.Fragments.Content;
+@namespace IT.WebHost.Components.Content
+
+<div class="flex gap-6" style="height: calc(100vh - 8.5rem);">
+    @for (int col = 0; col < 3; col++)
+    {
+        var colIndex = col;
+        <BbScrollArea FillContainer="true" class="flex-1">
+            <div class="flex flex-col gap-6 pr-2">
+                @foreach (var record in Content.Where((_, i) => i % 3 == colIndex))
+                {
+                    <ContentMasonryCard Content="@record" Url="@($"/post/{record.ContentID}")" />
+                }
+            </div>
+        </BbScrollArea>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = [];
+}
