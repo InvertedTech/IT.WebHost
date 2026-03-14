@@ -14,7 +14,8 @@ public partial class MainLayout : LayoutComponentBase
     {
         if (firstRender)
         {
-            isDarkMode = await JS.InvokeAsync<bool>("isDarkModeEnabled");
+            isDarkMode = SiteSettings.Settings?.Personalization?.DefaultToDarkMode ?? false;
+            await JS.InvokeVoidAsync("setDarkMode", isDarkMode);
             StateHasChanged();
         }
     }
