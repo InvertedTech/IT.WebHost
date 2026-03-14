@@ -1,5 +1,6 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Web
+@inject Services.TemplateService templateService;
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,8 +8,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <link href="css/main.css" rel="stylesheet" />
     <!-- Theme CSS variables - must load first -->
-    <link href="styles/themes/default.css" rel="stylesheet" />
+    <link href="styles/themes/@(templateService.TemplateFile).css" rel="stylesheet" />
     <!-- BlazorBlueprint component styles -->
     <link href="_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
     <!-- App styles (Tailwind utilities for template pages) -->
