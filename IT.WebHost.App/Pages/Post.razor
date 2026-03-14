@@ -1,0 +1,87 @@
+@page "/post/{ContentId}"
+@using IT.WebHost.Core.Clients
+@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+@inject ContentClient ContentClient
+
+<PageTitle>@(record?.Data?.Title ?? "Loading...")</PageTitle>
+
+<div class="container py-10">
+    <div class="mx-auto max-w-3xl space-y-6">
+
+        @if (record is null)
+        {
+            <p class="text-muted-foreground">Loading...</p>
+        }
+        else
+        {
+            <div class="space-y-2">
+                <h1 class="text-3xl font-bold">@record.Data.Title</h1>
+                <div class="flex items-center gap-3 text-sm text-muted-foreground">
+                    @if (!string.IsNullOrEmpty(record.Data.Author))
+                    {
+                        <span>@record.Data.Author</span>
+                        <span>·</span>
+                    }
+                    @if (record.PublishOnUTC is not null)
+                    {
+                        <span>@record.PublishOnUTC.ToDateTime().ToLocalTime().ToString("MMMM d, yyyy")</span>
+                    }
+                </div>
+            </div>
+
+            @if (record.Data.ContentDataOneofCase == ContentPublicData.ContentDataOneofOneofCase.Video
+                 && !string.IsNullOrEmpty(record.Data.Video?.YoutubeVideoId))
+            {
+                <YoutubePlayer VideoId="@record.Data.Video.YoutubeVideoId" />
+            }
+            else if (!string.IsNullOrEmpty(record.Data.FeaturedImageAssetID))
+            {
+                <img src="@GetFeaturedImageUrl()"
+                     alt="@record.Data.Title"
+                     @onerror="OnImageError"
+                     class="w-full rounded-lg aspect-video object-cover @(_imageError ? "hidden" : "")" />
+            }
+
+            @if (!string.IsNullOrEmpty(record.Data.Description))
+            {
+                <p class="text-lg text-muted-foreground">@record.Data.Description</p>
+            }
+
+            @if (GetHtmlBody() is string body && !string.IsNullOrEmpty(body))
+            {
+                <div class="prose max-w-none">
+                    @((MarkupString)body)
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+
+    private ContentPublicRecord? record;
+    private bool _imageError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await ContentClient.GetContentByIdAsync(ContentId);
+        record = res.Record;
+    }
+
+    private void OnImageError() => _imageError = true;
+
+    private string GetFeaturedImageUrl() =>
+        $"http://localhost:8001/api/cms/asset/{record!.Data.FeaturedImageAssetID}/data";
+
+    private string? GetHtmlBody() => record?.Data?.ContentDataOneofCase switch
+    {
+        ContentPublicData.ContentDataOneofOneofCase.Written => record.Data.Written?.HtmlBody,
+        ContentPublicData.ContentDataOneofOneofCase.Audio   => record.Data.Audio?.HtmlBody,
+        ContentPublicData.ContentDataOneofOneofCase.Video   => record.Data.Video?.HtmlBody,
+        ContentPublicData.ContentDataOneofOneofCase.Picture => record.Data.Picture?.HtmlBody,
+        _ => null
+    };
+}

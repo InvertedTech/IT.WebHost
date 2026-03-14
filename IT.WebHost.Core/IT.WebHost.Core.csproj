@@ -1,14 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>IT.WebHost.Core</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../IT.WebHost.Components/IT.WebHost.Components.csproj" />
-    <ProjectReference Include="../IT.WebHost.Core/IT.WebHost.Core.csproj" />
     <ProjectReference Include="..\..\IT.WebServices\Fragments\IT.WebServices.Fragments.csproj" />
   </ItemGroup>
 
