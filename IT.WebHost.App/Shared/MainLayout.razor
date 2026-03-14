@@ -21,6 +21,7 @@
             </nav>
             <div class="flex flex-1 items-center justify-end space-x-2">
                <AuthorizeView>
+                    <Authorizing></Authorizing>
                     <Authorized>
                         <BbDropdownMenu>
                             <BbDropdownMenuTrigger>
@@ -29,9 +30,8 @@
                                 </BbButton>
                             </BbDropdownMenuTrigger>
                             <BbDropdownMenuContent>
-                                <BbDropdownMenuLabel>My Account</BbDropdownMenuLabel>
                                 <BbDropdownMenuSeparator />
-                                <BbDropdownMenuItem>Profile</BbDropdownMenuItem>
+                                <BbDropdownMenuItem><a href="/profile">Profile</a></BbDropdownMenuItem>
                                 <BbDropdownMenuSeparator />
                                 <BbDropdownMenuItem><a href="/auth/logout">Log out</a></BbDropdownMenuItem>
                             </BbDropdownMenuContent>
@@ -72,3 +72,7 @@
 <BbToastProvider Position="ToastPosition.BottomRight" />
 <BbDialogProvider />
 <BbPortalHost />
+
+    @code {
+        // TODO: Figure out default to dark mode on cms public settings
+    }

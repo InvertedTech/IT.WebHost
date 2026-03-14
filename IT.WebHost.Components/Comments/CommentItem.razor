@@ -1,0 +1,40 @@
+﻿@using IT.WebServices.Fragments.Comment
+<BbItem>
+    <BbItemMedia>
+        <BbAvatar>
+            <BbAvatarFallback>AB</BbAvatarFallback>
+        </BbAvatar>
+    </BbItemMedia>
+    <BbItemContent>
+        <BbItemTitle>@Comment.UserID</BbItemTitle>
+        <BbItemDescription>@Comment.Data.CommentText</BbItemDescription>
+    </BbItemContent>
+    <BbItemActions>
+        <BbButton Variant="@(isLiked ? ButtonVariant.Default : ButtonVariant.Outline)" Size="ButtonSize.Small" @onclick="ToggleLike">
+            <LucideIcon Name="heart" Size="14" class="@(isLiked ? "fill-current" : "")" />
+            @likeCount
+        </BbButton>
+    </BbItemActions>
+</BbItem>
+
+@code {
+    [Parameter] public CommentPublicRecord Comment { get; set; }
+    [Parameter] public bool IsLiked { get; set; }
+    [Parameter] public EventCallback<bool> OnLikeToggled { get; set; }
+
+    private bool isLiked;
+    private uint likeCount;
+
+    protected override void OnParametersSet()
+    {
+        isLiked = IsLiked;
+        likeCount = Comment.Data.Likes;
+    }
+
+    private async Task ToggleLike()
+    {
+        isLiked = !isLiked;
+        likeCount = isLiked ? likeCount + 1 : likeCount - 1;
+        await OnLikeToggled.InvokeAsync(isLiked);
+    }
+}

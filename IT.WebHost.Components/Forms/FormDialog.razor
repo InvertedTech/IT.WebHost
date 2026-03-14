@@ -1,0 +1,80 @@
+@namespace IT.WebHost.Components.Forms
+
+<BbDialog @bind-Open="isOpen">
+    <BbDialogTrigger>
+        <BbButton Variant="ButtonVariant.Outline">@Label</BbButton>
+    </BbDialogTrigger>
+    <BbDialogContent CloseOnEscape="false" OnEscapeKeyDown="HandleEscapeKey">
+        <BbDialogHeader>
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <BbDialogTitle>@Title</BbDialogTitle>
+            }
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <BbDialogDescription>@Description</BbDialogDescription>
+            }
+        </BbDialogHeader>
+        @ChildContent(RegisterChildSubmit)
+        <BbDialogFooter>
+            <BbButton Variant="ButtonVariant.Outline" @onclick="HandleCancel">Cancel</BbButton>
+            <BbButton @onclick="HandleContinue">Continue</BbButton>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
+
+<BbDialog @bind-Open="isDiscardConfirmOpen">
+    <BbDialogContent>
+        <BbDialogHeader>
+            <BbDialogTitle>Discard changes?</BbDialogTitle>
+            <BbDialogDescription>Your unsaved changes will be lost.</BbDialogDescription>
+        </BbDialogHeader>
+        <BbDialogFooter>
+            <BbButton Variant="ButtonVariant.Outline" @onclick="HandleKeepEditing">Keep Editing</BbButton>
+            <BbButton Variant="ButtonVariant.Destructive" @onclick="HandleDiscardConfirm">Discard</BbButton>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Open Form";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public RenderFragment<Action<Func<Task>>> ChildContent { get; set; } = null!;
+
+    private bool isOpen = false;
+    private bool isDiscardConfirmOpen = false;
+    private Func<Task>? _childSubmit;
+
+    private void RegisterChildSubmit(Func<Task> submitFunc) => _childSubmit = submitFunc;
+
+    private void HandleEscapeKey()
+    {
+        isOpen = false;
+        isDiscardConfirmOpen = true;
+    }
+
+    private void HandleCancel()
+    {
+        isOpen = false;
+        isDiscardConfirmOpen = true;
+    }
+
+    private async Task HandleContinue()
+    {
+        if (_childSubmit is not null)
+            await _childSubmit();
+        isOpen = false;
+    }
+
+    private void HandleKeepEditing()
+    {
+        isDiscardConfirmOpen = false;
+        isOpen = true;
+    }
+
+    private void HandleDiscardConfirm()
+    {
+        isDiscardConfirmOpen = false;
+    }
+}

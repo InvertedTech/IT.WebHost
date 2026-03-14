@@ -1,71 +1,93 @@
 using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
 using IT.WebHost.Core.Clients;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace IT.WebHost.Core.Authentication
 {
-    public class CustomAuthStateProvider(IHttpContextAccessor httpContextAccessor) : AuthenticationStateProvider
+    public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
     {
-        private AuthenticationState _currentState = new(new ClaimsPrincipal());
+        private static readonly AuthenticationState Anonymous = new(new ClaimsPrincipal());
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        private readonly AuthClient _authClient;
+        private readonly string? _token;
+        private readonly PersistentComponentState _persistentState;
+        private readonly PersistingComponentStateSubscription _subscription;
+        private AuthenticationState? _cachedState;
+
+        public CustomAuthStateProvider(IHttpContextAccessor httpContextAccessor, AuthClient authClient, PersistentComponentState persistentState)
         {
-            var ctx = httpContextAccessor.HttpContext;
-            if (ctx is null)
-                return Task.FromResult(_currentState);
-
-            var token = ctx.Request.Cookies[AuthClient.CookieName];
-            if (string.IsNullOrEmpty(token))
-                return Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
-
-            var user = ParseJwt(token);
-            _currentState = new AuthenticationState(user);
-            return Task.FromResult(_currentState);
+            _authClient = authClient;
+            _persistentState = persistentState;
+            _token = httpContextAccessor.HttpContext?.Request.Cookies[AuthClient.CookieName];
+            _subscription = _persistentState.RegisterOnPersisting(PersistAuthStateAsync);
         }
 
-        public void NotifyUserChanged(ClaimsPrincipal user)
+        private async Task PersistAuthStateAsync()
         {
-            _currentState = new AuthenticationState(user);
-            NotifyAuthenticationStateChanged(Task.FromResult(_currentState));
-        }
+            // Only persist during SSR prerender (when we have the HTTP token).
+            // In the interactive circuit, _token is null and PersistAsJson would throw.
+            if (string.IsNullOrEmpty(_token)) return;
 
-        private static ClaimsPrincipal ParseJwt(string token)
-        {
-            var parts = token.Split('.');
-            if (parts.Length != 3) return new ClaimsPrincipal();
-
-            var payload = parts[1];
-            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
-            payload = payload.Replace('-', '+').Replace('_', '/');
-
-            string json;
-            try { json = Encoding.UTF8.GetString(Convert.FromBase64String(payload)); }
-            catch { return new ClaimsPrincipal(); }
-
-            var claims = new List<Claim>();
-            using var doc = JsonDocument.Parse(json);
-            foreach (var prop in doc.RootElement.EnumerateObject())
+            var state = await GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity?.IsAuthenticated == true)
             {
-                switch (prop.Value.ValueKind)
-                {
-                    case JsonValueKind.String:
-                        claims.Add(new Claim(prop.Name, prop.Value.GetString()!));
-                        break;
-                    case JsonValueKind.Number:
-                        claims.Add(new Claim(prop.Name, prop.Value.ToString()));
-                        break;
-                    case JsonValueKind.Array:
-                        foreach (var item in prop.Value.EnumerateArray())
-                            if (item.ValueKind == JsonValueKind.String)
-                                claims.Add(new Claim(prop.Name, item.GetString()!));
-                        break;
-                }
+                var claims = user.Claims.Select(c => new ClaimData(c.Type, c.Value)).ToList();
+                _persistentState.PersistAsJson("AuthClaims", claims);
+            }
+        }
+
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            if (_cachedState is not null)
+                return _cachedState;
+
+            // Restore from persisted state when running in interactive circuit (no HttpContext)
+            if (_persistentState.TryTakeFromJson<List<ClaimData>>("AuthClaims", out var persistedClaims) && persistedClaims is not null)
+            {
+                var claims = persistedClaims.Select(c => new Claim(c.Type, c.Value)).ToList();
+                return _cachedState = new AuthenticationState(
+                    new ClaimsPrincipal(new ClaimsIdentity(claims, "api")));
             }
 
-            return new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+            if (string.IsNullOrEmpty(_token))
+                return _cachedState = Anonymous;
+
+            try
+            {
+                var res = await _authClient.GetOwnUserAsync(_token);
+                var record = res?.Record?.Public;
+                if (record is null)
+                    return _cachedState = Anonymous;
+
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, record.UserID),
+                    new(ClaimTypes.Name, record.Data.UserName),
+                };
+
+                foreach (var role in res!.Record.Private?.Roles ?? [])
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+
+                return _cachedState = new AuthenticationState(
+                    new ClaimsPrincipal(new ClaimsIdentity(claims, "api")));
+            }
+            catch
+            {
+                return _cachedState = Anonymous;
+            }
         }
+
+        public void NotifyLoggedOut()
+        {
+            _cachedState = Anonymous;
+            NotifyAuthenticationStateChanged(Task.FromResult(_cachedState));
+        }
+
+        public void Dispose() => _subscription.Dispose();
+
+        private record ClaimData(string Type, string Value);
     }
 }
