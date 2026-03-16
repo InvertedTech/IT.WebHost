@@ -1,3 +1,4 @@
+using BlazorBlueprint.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -9,6 +10,12 @@ public partial class MainLayout : LayoutComponentBase
     private IJSRuntime JS { get; set; } = null!;
 
     private bool isDarkMode;
+
+    public readonly List<NavItemDefinition> navItems = new()
+    {
+        new() { Text = "Home", Href = "/" },
+        new() { Text = "Subscribe", Href = "/subscribe" },
+    };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

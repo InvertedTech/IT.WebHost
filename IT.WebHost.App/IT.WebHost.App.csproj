@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="BuildTailwindCSS" BeforeTargets="BeforeBuild">
+    <Message Text="Building Tailwind CSS..." Importance="high" />
+    <Exec Command="..\tailwindcss.exe -i wwwroot/css/app-input.css -o wwwroot/css/app.css" />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="../IT.WebHost.Components/IT.WebHost.Components.csproj" />
     <ProjectReference Include="../IT.WebHost.Core/IT.WebHost.Core.csproj" />
