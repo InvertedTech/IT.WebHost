@@ -1,0 +1,72 @@
+@using BlazorBlueprint.Primitives.Services
+@inject IT.WebHost.Core.Services.SiteSettingsService SiteSettings
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - IT.WebHost.App</title>
+    <script type="importmap"></script>
+    <link href="~/css/theme.css" rel="stylesheet" />
+    <link href="~/css/app.css" rel="stylesheet" />
+    <link href="~/_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
+    <base href="@Url.Content("~/")" />
+    <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)"
+               render-mode="ServerPrerendered" />
+</head>
+<body>
+    <div class="relative min-h-screen flex flex-col">
+        <header class="sticky top-0 z-50 w-full border-b bg-background">
+            <div class="container flex h-14 items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="/" class="flex items-center space-x-2">
+                        <svg class="text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5,4.27 12,6.11 16.5,4.27"></polyline>
+                            <polyline points="7.5,9.73 12,11.57 16.5,9.73"></polyline>
+                            <polyline points="7.5,15.19 12,16.03 16.5,15.19"></polyline>
+                        </svg>
+                        <span class="font-bold">@SiteSettings.SiteTitle</span>
+                    </a>
+                </div>
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a href="/" class="text-foreground/60 hover:text-foreground transition-colors">Home</a>
+                    <a href="/subscribe" class="text-foreground/60 hover:text-foreground transition-colors">Subscribe</a>
+                </nav>
+                <div class="hidden md:flex items-center gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/profile" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Profile</a>
+                        <a href="/auth/logout" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Log out</a>
+                    }
+                    else
+                    {
+                        <a href="/login" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Login</a>
+                        <a href="/signup" class="text-sm font-medium text-primary hover:text-primary/80 transition-colors">Sign Up</a>
+                    }
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 flex flex-col">
+            <div class="container mx-auto px-4 py-8">
+                @RenderBody()
+            </div>
+        </main>
+        <footer class="border-t py-6 md:py-0">
+            <div class="container flex flex-col items-center justify-between gap-4 md:h-14 md:flex-row">
+                <p class="text-sm text-muted-foreground flex items-center gap-1">
+                    Made with 
+                    <svg class="text-red-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    by Inverted Tech
+                </p>
+            </div>
+        </footer>
+    </div>
+    <component type="typeof(BbPortalHost)" render-mode="ServerPrerendered" />
+    <script src="_framework/blazor.server.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

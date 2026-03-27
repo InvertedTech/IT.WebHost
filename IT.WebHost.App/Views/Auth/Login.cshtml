@@ -1,0 +1,53 @@
+@model IT.WebHost.App.Models.LoginViewModel
+
+<div class="flex flex-1 items-center justify-center">
+    <div class="w-full max-w-sm bg-card text-card-foreground rounded-lg border shadow-sm">
+        <div class="flex flex-col space-y-1.5 p-6">
+            <h3 class="text-2xl font-semibold leading-none tracking-tight">Login to your account</h3>
+            <p class="text-sm text-muted-foreground">Enter your email below to login to your account</p>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="text-red-600 text-sm">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                </div>
+            }
+        </div>
+        <div class="p-6 pt-0">
+            <form asp-action="Login" method="post" class="space-y-4">
+                <div class="space-y-2">
+                    <label asp-for="UserName" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email / Username</label>
+                    <input asp-for="UserName" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" placeholder="m@example.com" />
+                    <span asp-validation-for="UserName" class="text-red-600 text-sm"></span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label asp-for="Password" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
+                        <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">Forgot your password?</a>
+                    </div>
+                    <input asp-for="Password" type="password" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
+                    <span asp-validation-for="Password" class="text-red-600 text-sm"></span>
+                </div>
+                <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                    Login
+                </button>
+            </form>
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <span class="w-full border-t"></span>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase">
+                    <span class="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col space-y-1.5 p-6 pt-0">
+            <div class="w-full text-center text-sm text-muted-foreground">
+                Don't have an account?
+                <a href="/auth/signup" class="text-primary underline-offset-4 hover:underline">Sign up</a>
+            </div>
+        </div>
+    </div>
+</div>

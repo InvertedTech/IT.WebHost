@@ -6,6 +6,7 @@ using IT.WebHost.Core.Clients;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddAuthenticationClasses();
@@ -22,14 +23,35 @@ await app.Services.GetRequiredService<SiteSettingsService>().LoadAsync();
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
+
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+app.MapControllerRoute(
+    name: "members-area",
+    pattern: "members-area",
+    defaults: new { controller = "Members", action = "Index" })
+    .WithStaticAssets();
+
+app.MapControllerRoute(
+    name: "content-by-id",
+    pattern: "{id:guid}",
+    defaults: new { controller = "Content", action = "ById" })
+    .WithStaticAssets();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+app.MapBlazorHub();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
