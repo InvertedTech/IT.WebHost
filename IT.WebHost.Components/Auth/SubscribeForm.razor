@@ -1,0 +1,39 @@
+@using IT.WebHost.Core.Models
+@using BlazorBlueprint.Components
+@using IT.WebServices.Fragments.Authorization
+
+@if (Model.Tiers.Count == 0)
+{
+    <div class="flex flex-1 items-center justify-center py-12">
+        <BbAlert Variant="AlertVariant.Warning">
+            <BbAlertTitle>No Subscription Tiers</BbAlertTitle>
+            <BbAlertDescription>No subscription tiers are currently available.</BbAlertDescription>
+        </BbAlert>
+    </div>
+}
+else
+{
+    <div class="container max-w-4xl py-12 mx-auto">
+        <div class="grid gap-6 md:grid-cols-@Model.Tiers.Count">
+            @foreach (var tier in Model.Tiers)
+            {
+                <BbCard>
+                    <BbCardHeader>
+                        <BbCardTitle>@tier.Name</BbCardTitle>
+                        <BbCardDescription>@tier.Description</BbCardDescription>
+                    </BbCardHeader>
+                    <BbCardContent>
+                        <p class="text-3xl font-bold">$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/mo</span></p>
+                    </BbCardContent>
+                    <BbCardFooter>
+                        <BbButton class="w-full">Subscribe</BbButton>
+                    </BbCardFooter>
+                </BbCard>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public SubscribeViewModel Model { get; set; } = new();
+}

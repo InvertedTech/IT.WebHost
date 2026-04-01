@@ -1,4 +1,3 @@
-using IT.WebHost.App;
 using BlazorBlueprint.Components;
 using IT.WebHost.Core.Services;
 using IT.WebHost.Core.Clients;
@@ -52,8 +51,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 app.MapBlazorHub();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
 
 app.MapGet("/auth/set-cookie", (string token, string? returnUrl, HttpContext ctx) =>
 {

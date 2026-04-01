@@ -1,0 +1,79 @@
+@using IT.WebHost.Core.Models
+@using BlazorBlueprint.Components
+@using IT.WebServices.Fragments.Authentication
+
+@if (Model.UserRecord == null)
+{
+    <div class="flex flex-1 items-center justify-center py-12">
+        <BbAlert Variant="AlertVariant.Warning">
+            <BbAlertTitle>Not Logged In</BbAlertTitle>
+            <BbAlertDescription>
+                You must be logged in to view this page. <a href="/auth/login" class="text-primary underline-offset-4 hover:underline">Sign in</a>
+            </BbAlertDescription>
+        </BbAlert>
+    </div>
+}
+else
+{
+    <div class="container max-w-2xl py-12 mx-auto">
+        <BbCard>
+            <BbCardHeader class="text-center">
+                <div class="w-24 h-24 bg-muted rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
+                    @if (Model.UserRecord.Public.Data.ProfileImagePNG.Length > 0)
+                    {
+                        <img src="@($"data:image/png;base64,{Convert.ToBase64String(Model.UserRecord.Public.Data.ProfileImagePNG.ToByteArray())}")"
+                             alt="@Model.UserRecord.Public.Data.DisplayName" class="w-full h-full rounded-full object-cover" />
+                    }
+                    else
+                    {
+                        @GetInitials(Model.UserRecord.Public.Data.DisplayName)
+                    }
+                </div>
+                <BbCardTitle>@Model.UserRecord.Public.Data.DisplayName</BbCardTitle>
+                <BbCardDescription>@@@Model.UserRecord.Public.Data.UserName</BbCardDescription>
+            </BbCardHeader>
+            <BbCardContent class="space-y-4">
+                @if (!string.IsNullOrWhiteSpace(Model.UserRecord.Public.Data.Bio))
+                {
+                    <div>
+                        <BbLabel>Bio</BbLabel>
+                        <p class="text-sm text-muted-foreground">@Model.UserRecord.Public.Data.Bio</p>
+                    </div>
+                }
+
+                @if (Model.UserRecord.Private?.Roles.Count > 0)
+                {
+                    <div>
+                        <BbLabel>Roles</BbLabel>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            @foreach (var role in Model.UserRecord.Private.Roles)
+                            {
+                                <BbBadge Variant="BadgeVariant.Secondary">@role</BbBadge>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div>
+                    <BbLabel>Member Since</BbLabel>
+                    <p class="text-sm text-muted-foreground">
+                        @Model.UserRecord.Public.CreatedOnUTC?.ToDateTime().ToLocalTime().ToString("MMMM yyyy")
+                    </p>
+                </div>
+
+                <BbButton Variant="ButtonVariant.Outline" class="w-full">Change Password</BbButton>
+            </BbCardContent>
+        </BbCard>
+    </div>
+}
+
+@code {
+    [Parameter] public ProfileViewModel Model { get; set; } = new();
+
+    private string GetInitials(string displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName)) return "?";
+        var parts = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 ? $"{parts[0][0]}{parts[1][0]}" : displayName.Substring(0, Math.Min(2, displayName.Length)).ToUpper();
+    }
+}

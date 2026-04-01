@@ -1,0 +1,69 @@
+@using IT.WebServices.Fragments.Content
+@using BlazorBlueprint.Components
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@namespace IT.WebHost.Components.Content
+@inject IT.WebHost.Core.Clients.ContentClient ContentClient
+@rendermode InteractiveServer
+
+@switch (Layout)
+{
+    case LayoutEnum.Grid:
+        <ContentGridView Content="@_items" />
+        break;
+    case LayoutEnum.Masonry:
+        <ContentMasonryView Content="@_items" />
+        break;
+    default:
+        <ContentListView Content="@_items" />
+        break;
+}
+
+@if (_hasMore)
+{
+    <div class="flex justify-center mt-10">
+        <BbButton Variant="ButtonVariant.Outline" Disabled="@_loading" OnClick="LoadMore">
+            @if (_loading)
+            {
+                <span>Loading...</span>
+            }
+            else
+            {
+                <span>Load More</span>
+            }
+        </BbButton>
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<ContentListRecord> InitialContent { get; set; } = [];
+    [Parameter] public LayoutEnum Layout { get; set; } = LayoutEnum.List;
+    [Parameter] public uint NextPageOffset { get; set; }
+    [Parameter] public uint PageSize { get; set; } = 10;
+    [Parameter] public uint TotalItems { get; set; }
+
+    private List<ContentListRecord> _items = [];
+    private bool _loading;
+    private bool _hasMore;
+
+    protected override void OnParametersSet()
+    {
+        _items = InitialContent.ToList();
+        _hasMore = NextPageOffset < TotalItems;
+    }
+
+    private async Task LoadMore()
+    {
+        _loading = true;
+
+        var response = await ContentClient.GetAllContentAsync(new GetAllContentRequest
+        {
+            PageOffset = NextPageOffset,
+            PageSize = PageSize
+        });
+
+        _items.AddRange(response.Records);
+        NextPageOffset = response.PageOffsetEnd;
+        _hasMore = NextPageOffset < TotalItems;
+        _loading = false;
+    }
+}

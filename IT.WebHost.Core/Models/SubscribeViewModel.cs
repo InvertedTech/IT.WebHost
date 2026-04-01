@@ -1,7 +1,7 @@
 using IT.WebServices.Fragments.Authorization;
 using Google.Protobuf.Collections;
 
-namespace IT.WebHost.App.Models
+namespace IT.WebHost.Core.Models
 {
     public class SubscribeViewModel
     {

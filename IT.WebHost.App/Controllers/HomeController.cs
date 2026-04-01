@@ -38,7 +38,10 @@ namespace IT.WebHost.App.Controllers
             var model = new HomeViewModel
             {
                 ContentListRecords = contentListRecords,
-                Layout = _siteSettings.Settings?.CMS?.DefaultLayout ?? LayoutEnum.List
+                Layout = _siteSettings.Settings?.CMS?.DefaultLayout ?? LayoutEnum.List,
+                NextPageOffset = res.PageOffsetEnd,
+                PageSize = req.PageSize,
+                TotalItems = res.PageTotalItems
             };
 
             ViewData["Title"] = $"Home - {_siteSettings.SiteTitle}";

@@ -6,5 +6,8 @@ namespace IT.WebHost.App.Models
     {
         public List<ContentListRecord> ContentListRecords { get; set; } = new List<ContentListRecord>();
         public LayoutEnum Layout { get; set; } = LayoutEnum.List;
+        public uint NextPageOffset { get; set; }
+        public uint PageSize { get; set; } = 10;
+        public uint TotalItems { get; set; }
     }
 }

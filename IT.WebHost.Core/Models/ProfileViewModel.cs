@@ -1,6 +1,6 @@
 using IT.WebServices.Fragments.Authentication;
 
-namespace IT.WebHost.App.Models
+namespace IT.WebHost.Core.Models
 {
     public class ProfileViewModel
     {

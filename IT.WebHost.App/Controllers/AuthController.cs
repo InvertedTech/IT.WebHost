@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using IT.WebHost.Core.Clients;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments;
-using IT.WebHost.App.Models;
+using IT.WebHost.Core.Models;
 using System.Diagnostics;
 
 namespace IT.WebHost.App.Controllers
@@ -18,14 +18,14 @@ namespace IT.WebHost.App.Controllers
             _siteSettings = siteSettings;
         }
 
-        [HttpGet]
+        [HttpGet("/login")]
         public IActionResult Login()
         {
             ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
             return View(new LoginViewModel());
         }
 
-        [HttpPost]
+        [HttpPost("/login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -54,14 +54,14 @@ namespace IT.WebHost.App.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("/signup")]
         public IActionResult Signup()
         {
             ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
             return View(new SignupViewModel());
         }
 
-        [HttpPost]
+        [HttpPost("/signup")]
         public async Task<IActionResult> Signup(SignupViewModel model)
         {
             if (!ModelState.IsValid)
@@ -101,7 +101,19 @@ namespace IT.WebHost.App.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("/profile")]
+        public async Task<IActionResult> Profile()
+        {
+            ViewData["Title"] = $"Profile - {_siteSettings.SiteTitle}";
+            var token = Request.Cookies[AuthClient.CookieName];
+            if (string.IsNullOrEmpty(token))
+                return View(new ProfileViewModel());
+
+            var response = await _authClient.GetOwnUserAsync(token);
+            return View(new ProfileViewModel { UserRecord = response.Record });
+        }
+
+        [HttpGet("/subscribe")]
         public IActionResult Subscribe()
         {
             ViewData["Title"] = $"Subscribe - {_siteSettings.SiteTitle}";

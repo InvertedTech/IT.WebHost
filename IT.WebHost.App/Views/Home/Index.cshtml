@@ -1,19 +1,10 @@
 @model IT.WebHost.App.Models.HomeViewModel
 
 <div class="container py-10">
-    @switch (Model.Layout)
-    {
-        case IT.WebServices.Fragments.Content.LayoutEnum.Grid:
-            <component type="typeof(IT.WebHost.Components.Content.ContentGridView)" render-mode="ServerPrerendered"
-                       param-Content="@Model.ContentListRecords" />
-            break;
-        case IT.WebServices.Fragments.Content.LayoutEnum.Masonry:
-            <component type="typeof(IT.WebHost.Components.Content.ContentMasonryView)" render-mode="ServerPrerendered"
-                       param-Content="@Model.ContentListRecords" />
-            break;
-        default:
-            <component type="typeof(IT.WebHost.Components.Content.ContentListView)" render-mode="ServerPrerendered"
-                       param-Content="@Model.ContentListRecords" />
-            break;
-    }
+    <component type="typeof(IT.WebHost.Components.Content.ContentFeed)" render-mode="ServerPrerendered"
+               param-InitialContent="@Model.ContentListRecords"
+               param-Layout="@Model.Layout"
+               param-NextPageOffset="@Model.NextPageOffset"
+               param-PageSize="@Model.PageSize"
+               param-TotalItems="@Model.TotalItems" />
 </div>
