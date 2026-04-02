@@ -37,8 +37,8 @@
                 </div>
                 @if (IsAuthenticated)
                 {
-                    <a href="/profile" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Profile</a>
-                    <a href="/auth/logout" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Log out</a>
+                    <a href="/profile"><BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small">Account</BbButton></a>
+                    <a href="/auth/logout"><BbButton Size="ButtonSize.Small">Logout</BbButton></a>
                 }
                 else
                 {

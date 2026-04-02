@@ -1,8 +1,11 @@
 ﻿using IT.WebHost.Core.Authentication;
 using IT.WebHost.Core.Clients;
 using IT.WebHost.Core.Services;
+using IT.WebServices.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -10,10 +13,46 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddAuthenticationClasses(this IServiceCollection services)
         {
-            services.AddAuthorization();
-            services.AddCascadingAuthenticationState();
-            services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
             services.AddHttpContextAccessor();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = JwtExtensions.GetPublicKey(),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Cookies[JwtExtensions.JWT_COOKIE_NAME];
+
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            services.AddAuthorization();
+
+            services.AddCascadingAuthenticationState();
+
             return services;
         }
 
@@ -47,6 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddSingleton<TemplateService>();
             services.AddSingleton<SiteSettingsService>();
+            services.AddScoped<UserTokenService>();
             return services;
         }
     }

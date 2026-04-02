@@ -1,7 +1,10 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using IT.WebHost.Core.Clients
+@using IT.WebHost.Core.Services
 @using Microsoft.AspNetCore.Components.Web
 @inject IT.WebHost.Core.Services.TemplateService     templateService;
 @inject IT.WebHost.Core.Services.SiteSettingsService SiteSettings
+@inject IHttpContextAccessor HttpContextAccessor
 
 <!DOCTYPE html>
 <html lang="en" class="@(SiteSettings.Settings?.Personalization?.DefaultToDarkMode == true ? "dark" : "")">

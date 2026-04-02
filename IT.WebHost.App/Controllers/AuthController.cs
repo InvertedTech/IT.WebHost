@@ -7,6 +7,7 @@ using IT.WebHost.Core.Models;
 using IT.WebHost.App.Extensions;
 using ProtoValidate;
 using System.Diagnostics;
+using IT.WebServices.Authentication;
 
 namespace IT.WebHost.App.Controllers
 {
@@ -62,7 +63,17 @@ namespace IT.WebHost.App.Controllers
 
             var response = await _authClient.LoginAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
-                return Redirect($"/auth/set-cookie?token={Uri.EscapeDataString(response.BearerToken)}");
+            {
+                HttpContext.Response.Cookies.Append(AuthClient.CookieName, response.BearerToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Path = "/"
+                });
+
+                return Redirect("/profile");
+            }
 
             ViewData["LoginError"] = response.Error.Message;
             return View(model);
@@ -130,7 +141,7 @@ namespace IT.WebHost.App.Controllers
                 return View(new ProfileViewModel());
 
             var response = await _authClient.GetOwnUserAsync(token);
-            return View(new ProfileViewModel { UserRecord = response.Record });
+            return View(new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null });
         }
 
         [HttpGet("/subscribe")]

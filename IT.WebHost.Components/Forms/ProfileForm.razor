@@ -1,6 +1,5 @@
 @using IT.WebHost.Core.Models
 @using BlazorBlueprint.Components
-@using IT.WebServices.Fragments.Authentication
 @namespace IT.WebHost.Components.Forms
 
 
@@ -21,34 +20,34 @@ else
         <BbCard>
             <BbCardHeader class="text-center">
                 <div class="w-24 h-24 bg-muted rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
-                    @if (Model.UserRecord.Public.Data.ProfileImagePNG.Length > 0)
+                    @if (Model.UserRecord.ProfileImagePNG.Length > 0)
                     {
-                        <img src="@($"data:image/png;base64,{Convert.ToBase64String(Model.UserRecord.Public.Data.ProfileImagePNG.ToByteArray())}")"
-                             alt="@Model.UserRecord.Public.Data.DisplayName" class="w-full h-full rounded-full object-cover" />
+                        <img src="@($"data:image/png;base64,{Convert.ToBase64String(Model.UserRecord.ProfileImagePNG)}")"
+                             alt="@Model.UserRecord.DisplayName" class="w-full h-full rounded-full object-cover" />
                     }
                     else
                     {
-                        @GetInitials(Model.UserRecord.Public.Data.DisplayName)
+                        @GetInitials(Model.UserRecord.DisplayName)
                     }
                 </div>
-                <BbCardTitle>@Model.UserRecord.Public.Data.DisplayName</BbCardTitle>
-                <BbCardDescription>@@@Model.UserRecord.Public.Data.UserName</BbCardDescription>
+                <BbCardTitle>@Model.UserRecord.DisplayName</BbCardTitle>
+                <BbCardDescription>@@@Model.UserRecord.UserName</BbCardDescription>
             </BbCardHeader>
             <BbCardContent class="space-y-4">
-                @if (!string.IsNullOrWhiteSpace(Model.UserRecord.Public.Data.Bio))
+                @if (!string.IsNullOrWhiteSpace(Model.UserRecord.Bio))
                 {
                     <div>
                         <BbLabel>Bio</BbLabel>
-                        <p class="text-sm text-muted-foreground">@Model.UserRecord.Public.Data.Bio</p>
+                        <p class="text-sm text-muted-foreground">@Model.UserRecord.Bio</p>
                     </div>
                 }
 
-                @if (Model.UserRecord.Private?.Roles.Count > 0)
+                @if (Model.UserRecord.Roles.Count > 0)
                 {
                     <div>
                         <BbLabel>Roles</BbLabel>
                         <div class="flex flex-wrap gap-2 mt-2">
-                            @foreach (var role in Model.UserRecord.Private.Roles)
+                            @foreach (var role in Model.UserRecord.Roles)
                             {
                                 <BbBadge Variant="BadgeVariant.Secondary">@role</BbBadge>
                             }
@@ -59,7 +58,7 @@ else
                 <div>
                     <BbLabel>Member Since</BbLabel>
                     <p class="text-sm text-muted-foreground">
-                        @Model.UserRecord.Public.CreatedOnUTC?.ToDateTime().ToLocalTime().ToString("MMMM yyyy")
+                        @Model.UserRecord.CreatedOnUTC?.ToLocalTime().ToString("MMMM yyyy")
                     </p>
                 </div>
 
