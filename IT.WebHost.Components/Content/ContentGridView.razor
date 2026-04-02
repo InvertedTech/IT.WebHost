@@ -1,12 +1,24 @@
 @using IT.WebServices.Fragments.Content;
 @namespace IT.WebHost.Components.Content
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    @foreach (var record in Content)
-    {
-        <ContentCard Content="@record" Url="@($"/post/{record.ContentID}")" />
-    }
-</div>
+@if (Content.Count() == 0)
+{
+    <div class="flex flex-1 items-center justify-center py-12">
+        <BbAlert Variant="AlertVariant.Warning">
+            <BbAlertTitle>No Content</BbAlertTitle>
+            <BbAlertDescription>No content items to display.</BbAlertDescription>
+        </BbAlert>
+    </div>
+}
+else
+{
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        @foreach (var item in Content)
+        {
+            <ContentCard Item="item" />
+        }
+    </div>
+}
 
 @code {
     [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = [];

@@ -29,9 +29,28 @@ namespace IT.WebHost.App.Controllers
         }
 
         [HttpGet("/search")]
-        public IActionResult Search(string? q)
+        public IActionResult Search(
+            string? q,
+            uint? pageSize,
+            uint? pageOffset,
+            IT.WebServices.Fragments.Content.ContentType? contentType,
+            string? categoryId,
+            string? channelId,
+            string? tag,
+            bool? onlyLive)
         {
-            return View(new SearchViewModel { Query = q ?? string.Empty });
+            return View(new SearchViewModel
+            {
+                Query = q ?? string.Empty,
+                PageSize = pageSize ?? 10,
+                PageOffset = pageOffset ?? 0,
+                ContentType = contentType ?? IT.WebServices.Fragments.Content.ContentType.ContentNone,
+                CategoryId = categoryId ?? string.Empty,
+                ChannelId = channelId ?? string.Empty,
+                Tag = tag ?? string.Empty,
+                OnlyLive = onlyLive ?? false,
+                Content = []
+            });
         }
 
         [HttpGet("/members-area")]

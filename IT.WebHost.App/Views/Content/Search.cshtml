@@ -1,2 +1,20 @@
 @model IT.WebHost.Core.Models.SearchViewModel
 
+<div class="flex items-center gap-2">
+    <component
+        type="typeof(IT.WebHost.Components.Forms.SearchContentForm)"
+        render-mode="ServerPrerendered"
+        param-query="@Model.Query"
+        param-pageSize="@(Model.PageSize ?? 10)"
+        param-pageOffset="@(Model.PageOffset ?? 0)"
+        param-contentType="@(Model.ContentType)"
+        param-categoryId="@Model.CategoryId"
+        param-channelId="@Model.ChannelId"
+        param-tag="@Model.Tag"
+        param-onlyLive="@(Model.OnlyLive ?? false)" />
+</div>
+<component
+    type="typeof(IT.WebHost.Components.Content.ContentGridView)"
+    render-mode="ServerPrerendered",
+    param-Content="@Model.Content"
+  />

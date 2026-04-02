@@ -1,0 +1,60 @@
+@using BlazorBlueprint.Components
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Forms
+
+<div class="flex items-end gap-2">
+    <BbInput placeholder="Search..."
+             class="w-40 pl-8 h-9"
+             @onkeydown="HandleSearchKey"
+             @bind-Value="query" />
+
+    <BbFormFieldSelect TValue="uint"
+                       Label="Page Size"
+                       Placeholder="Select page size"
+                       class="w-32"
+                       DisplayTextSelector="@(v => v.ToString())"
+                       @bind-Value="pageSize">
+
+        <BbSelectItem Value="@(10u)" Text="10" />
+        <BbSelectItem Value="@(25u)" Text="25" />
+        <BbSelectItem Value="@(50u)" Text="50" />
+        <BbSelectItem Value="@(100u)" Text="100" />
+    </BbFormFieldSelect>
+</div>
+
+@code {
+    [Parameter] public string query { get; set; } = string.Empty;
+    [Parameter] public uint pageSize { get; set; } = 10;
+    [Parameter] public uint pageOffset { get; set; } = 0;
+    [Parameter] public ContentType? contentType { get; set; } = ContentType.ContentNone;
+    [Parameter] public string? categoryId { get; set; }
+    [Parameter] public string? channelId { get; set; }
+    [Parameter] public string? tag { get; set; }
+    [Parameter] public bool onlyLive { get; set; } = false;
+
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+
+    private void HandleSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(query))
+            Nav.NavigateTo(BuildUrl());
+    }
+
+    private string BuildUrl()
+    {
+        var qs = $"q={Uri.EscapeDataString(query)}&pageSize={pageSize}&pageOffset={pageOffset}";
+
+        if (contentType.HasValue && contentType != ContentType.ContentNone)
+            qs += $"&contentType={contentType}";
+        if (!string.IsNullOrEmpty(categoryId))
+            qs += $"&categoryId={Uri.EscapeDataString(categoryId)}";
+        if (!string.IsNullOrEmpty(channelId))
+            qs += $"&channelId={Uri.EscapeDataString(channelId)}";
+        if (!string.IsNullOrEmpty(tag))
+            qs += $"&tag={Uri.EscapeDataString(tag)}";
+        if (onlyLive)
+            qs += "&onlyLive=true";
+
+        return $"/search?{qs}";
+    }
+}
