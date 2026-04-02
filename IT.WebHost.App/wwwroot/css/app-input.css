@@ -10,8 +10,9 @@
 @import 'tailwindcss';
 
 /* Scan template files for utility classes */
-@source "../../Pages";
+@source "../../Views";
 @source "../../Shared";
+@source "../../../IT.WebHost.Components";
 
 /* Safelist responsive utilities used by BbResponsiveNav components */
 @source inline("hidden md:flex md:hidden flex");

@@ -4,6 +4,7 @@ module.exports = {
   content: [
     './Pages/**/*.{razor,html,cs}',
     './Shared/**/*.{razor,html,cs}',
+    '../IT.WebHost.Components/**/*.{razor,html,cs}',
   ],
   theme: {
     extend: {
