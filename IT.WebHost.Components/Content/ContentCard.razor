@@ -55,7 +55,14 @@
                 <span>Free</span>
             </div>
         }
-        <BbButton href="@Url">View</BbButton>
+        @if (Content.SubscriptionLevel == 0)
+        {
+            <BbButton href="@($"/content/{Content.URL.TrimStart('/')}")">View</BbButton>
+        }
+        else
+        {
+            <BbButton href="@Url">View</BbButton>
+        }
     </BbCardFooter>
 </BbCard>
 

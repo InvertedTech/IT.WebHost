@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Antiforgery;
 using IT.WebHost.Core.Clients;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments;
@@ -11,28 +12,31 @@ namespace IT.WebHost.App.Controllers
     {
         private readonly AuthClient _authClient;
         private readonly IT.WebHost.Core.Services.SiteSettingsService _siteSettings;
+        private readonly IAntiforgery _antiforgery;
 
-        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings)
+        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, IAntiforgery antiforgery)
         {
             _authClient = authClient;
             _siteSettings = siteSettings;
+            _antiforgery = antiforgery;
         }
 
         [HttpGet("/login")]
         public IActionResult Login()
         {
             ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
+            ViewData["AntiforgeryToken"] = _antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
             return View(new LoginViewModel());
         }
 
         [HttpPost("/login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            ViewData["AntiforgeryToken"] = _antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+            ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
+
             if (!ModelState.IsValid)
-            {
-                ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
                 return View(model);
-            }
 
             var request = new AuthenticateUserRequest
             {
@@ -43,15 +47,10 @@ namespace IT.WebHost.App.Controllers
 
             var response = await _authClient.LoginAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
-            {
                 return Redirect($"/auth/set-cookie?token={Uri.EscapeDataString(response.BearerToken)}");
-            }
-            else
-            {
-                ModelState.AddModelError("", response.Error.Message);
-                ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
-                return View(model);
-            }
+
+            ViewData["LoginError"] = response.Error.Message;
+            return View(model);
         }
 
         [HttpGet("/signup")]

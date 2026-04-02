@@ -2,9 +2,24 @@
 @using IT.WebHost.Components.Extensions
 @namespace IT.WebHost.Components.Forms
 
-<BbDynamicForm Schema="@_schema"
-               SubmitText="Create Account"
-               OnValidSubmit="HandleSubmit" />
+<div class="flex justify-center py-12">
+    <BbCard class="w-full max-w-sm">
+        <BbCardHeader>
+            <BbCardTitle>Create an account</BbCardTitle>
+            <BbCardDescription>Enter your information below to get started</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <BbDynamicForm Schema="@_schema"
+                           SubmitText="Create Account"
+                           OnValidSubmit="HandleSubmit" />
+        </BbCardContent>
+        <BbCardFooter class="justify-center">
+            <p class="text-sm text-muted-foreground">
+                Already have an account? <a href="/login" class="text-primary underline-offset-4 hover:underline">Login</a>
+            </p>
+        </BbCardFooter>
+    </BbCard>
+</div>
 
 @code {
     [Parameter] public EventCallback<CreateUserRequest> OnSubmit { get; set; }

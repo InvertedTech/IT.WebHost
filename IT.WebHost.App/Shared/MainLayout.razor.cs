@@ -15,6 +15,9 @@ public partial class MainLayout : LayoutComponentBase
     {
         new() { Text = "Home", Href = "/" },
         new() { Text = "Subscribe", Href = "/subscribe" },
+        new() { Text = "Members Area", Href = "/members-area" },
+        new() { Text = "Search", Href = "/search" },
+        new() { Text = "Merch", Href = "/merch" },
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

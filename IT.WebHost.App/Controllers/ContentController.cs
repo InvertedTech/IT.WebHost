@@ -1,4 +1,5 @@
 ﻿using IT.WebHost.Core.Clients;
+using IT.WebHost.Core.Models;
 using IT.WebHost.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,11 +22,22 @@ namespace IT.WebHost.App.Controllers
             return View();
         }
 
-        [HttpGet("{id:guid}")]
-        public IActionResult ById(Guid id)
+        [HttpGet("/content/{**slug}")]
+        public IActionResult ViewContent(string slug)
         {
-            // Forward to the existing Blazor Post route
-            return Redirect($"/post/{id}");
+            return View(new ViewContentViewModel { Slug = slug });
+        }
+
+        [HttpGet("/search")]
+        public IActionResult Search(string? q)
+        {
+            return View(new SearchViewModel { Query = q ?? string.Empty });
+        }
+
+        [HttpGet("/members-area")]
+        public IActionResult MembersArea()
+        {
+            return View("~/Views/Content/MembersArea.cshtml");
         }
     }
 }

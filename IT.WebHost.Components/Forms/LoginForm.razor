@@ -1,44 +1,48 @@
-@using IT.WebServices.Fragments.Authentication
-@using IT.WebHost.Components.Extensions
+@using BlazorBlueprint.Components
 @namespace IT.WebHost.Components.Forms
 
-<div class="space-y-4">
-    <div class="flex items-center justify-between">
-        <span></span>
-        <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
-            Forgot your password?
-        </a>
-    </div>
-
-    <BbDynamicForm Schema="@_schema"
-                   @bind-Values="values"
-                   SubmitText="Login"
-                   OnValidSubmit="HandleSubmit">
-        <div class="relative mt-4">
-            <div class="absolute inset-0 flex items-center">
-                <BbSeparator />
-            </div>
-            <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-card px-2 text-muted-foreground">Or continue with</span>
-            </div>
-        </div>
-    </BbDynamicForm>
+<div class="flex justify-center py-12">
+    <BbCard class="w-full max-w-sm">
+        <BbCardHeader>
+            <BbCardTitle>Login to your account</BbCardTitle>
+            <BbCardDescription>Enter your credentials below to sign in</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <form method="post" action="/login">
+                <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
+                <div class="space-y-4">
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <BbAlert Variant="AlertVariant.Warning">
+                            <BbAlertDescription>@Error</BbAlertDescription>
+                        </BbAlert>
+                    }
+                    <div class="flex items-center justify-end">
+                        <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
+                            Forgot your password?
+                        </a>
+                    </div>
+                    <div class="space-y-2">
+                        <BbLabel For="UserName">Email / Username</BbLabel>
+                        <BbInput id="UserName" name="UserName" placeholder="Enter your email or username" class="w-full" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbLabel For="Password">Password</BbLabel>
+                        <BbInput id="Password" name="Password" Type="InputType.Password" placeholder="Enter your password" class="w-full" />
+                    </div>
+                    <BbButton Type="ButtonType.Submit" class="w-full">Login</BbButton>
+                </div>
+            </form>
+        </BbCardContent>
+        <BbCardFooter class="justify-center">
+            <p class="text-sm text-muted-foreground">
+                Don't have an account? <a href="/signup" class="text-primary underline-offset-4 hover:underline">Sign up</a>
+            </p>
+        </BbCardFooter>
+    </BbCard>
 </div>
 
 @code {
-    private Dictionary<string, object?> values = new();
-    [Parameter] public EventCallback<AuthenticateUserRequest> OnSubmit { get; set; }
-
-    private readonly FormSchema _schema = FormSchemaExtensions.MapProtoToFormSchema(new AuthenticateUserRequest());
-
-    private async Task HandleSubmit(Dictionary<string, object?> values)
-    {
-        var request = new AuthenticateUserRequest
-        {
-            UserName = values.TryGetValue("UserName", out var u) ? u?.ToString() ?? string.Empty : string.Empty,
-            Password = values.TryGetValue("Password", out var p) ? p?.ToString() ?? string.Empty : string.Empty,
-            MFACode  = values.TryGetValue("MFACode",  out var m) ? m?.ToString() ?? string.Empty : string.Empty,
-        };
-        await OnSubmit.InvokeAsync(request);
-    }
+    [Parameter] public string AntiforgeryToken { get; set; } = string.Empty;
+    [Parameter] public string Error { get; set; } = string.Empty;
 }

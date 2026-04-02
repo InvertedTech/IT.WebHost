@@ -1,3 +1,5 @@
 @model IT.WebHost.Core.Models.LoginViewModel
 
-<component type="typeof(IT.WebHost.Components.Forms.LoginForm)" render-mode="ServerPrerendered" />
+<component type="typeof(IT.WebHost.Components.Forms.LoginForm)" render-mode="ServerPrerendered"
+           param-AntiforgeryToken="@(ViewData["AntiforgeryToken"]?.ToString() ?? string.Empty)"
+           param-Error="@(ViewData["LoginError"]?.ToString() ?? string.Empty)" />

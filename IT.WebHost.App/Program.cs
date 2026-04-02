@@ -40,11 +40,6 @@ app.MapControllerRoute(
     defaults: new { controller = "Members", action = "Index" })
     .WithStaticAssets();
 
-app.MapControllerRoute(
-    name: "content-by-id",
-    pattern: "{id:guid}",
-    defaults: new { controller = "Content", action = "ById" })
-    .WithStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
