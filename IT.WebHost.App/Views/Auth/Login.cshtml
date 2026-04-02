@@ -2,4 +2,6 @@
 
 <component type="typeof(IT.WebHost.Components.Forms.LoginForm)" render-mode="ServerPrerendered"
            param-AntiforgeryToken="@(ViewData["AntiforgeryToken"]?.ToString() ?? string.Empty)"
-           param-Error="@(ViewData["LoginError"]?.ToString() ?? string.Empty)" />
+           param-Error="@(ViewData["LoginError"]?.ToString() ?? string.Empty)"
+           param-UserNameErrorText="@(ViewData["UserNameErrorText"]?.ToString() ?? string.Empty)"
+           param-PasswordErrorText="@(ViewData["PasswordErrorText"]?.ToString() ?? string.Empty)" />

@@ -14,6 +14,7 @@ builder.Services.AddCoreServices();
 
 // Add BlazorBlueprint services
 builder.Services.AddBlazorBlueprintComponents();
+builder.Services.AddSingleton<ProtoValidate.IValidator, ProtoValidate.Validator>();
 
 var app = builder.Build();
 

@@ -23,12 +23,12 @@
                         </a>
                     </div>
                     <div class="space-y-2">
-                        <BbLabel For="UserName">Email / Username</BbLabel>
-                        <BbInput id="UserName" name="UserName" placeholder="Enter your email or username" class="w-full" />
+                        <BbFormFieldInput TValue="string"  Name="UserName" Label="User Name"  
+                            Placeholder="Enter username" ErrorText="@UserNameErrorText" />
                     </div>
                     <div class="space-y-2">
-                        <BbLabel For="Password">Password</BbLabel>
-                        <BbInput id="Password" name="Password" Type="InputType.Password" placeholder="Enter your password" class="w-full" />
+                        <BbFormFieldInput TValue="string" Name="Password" Label="Password"
+                                          Placeholder="Enter Password" ErrorText="@PasswordErrorText" />
                     </div>
                     <BbButton Type="ButtonType.Submit" class="w-full">Login</BbButton>
                 </div>
@@ -45,4 +45,6 @@
 @code {
     [Parameter] public string AntiforgeryToken { get; set; } = string.Empty;
     [Parameter] public string Error { get; set; } = string.Empty;
+    [Parameter] public string UserNameErrorText { get; set; } = string.Empty;
+    [Parameter] public string PasswordErrorText { get; set; } = string.Empty;
 }

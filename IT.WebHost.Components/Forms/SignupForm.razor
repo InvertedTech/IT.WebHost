@@ -1,5 +1,4 @@
-@using IT.WebServices.Fragments.Authentication
-@using IT.WebHost.Components.Extensions
+@using BlazorBlueprint.Components
 @namespace IT.WebHost.Components.Forms
 
 <div class="flex justify-center py-12">
@@ -9,9 +8,50 @@
             <BbCardDescription>Enter your information below to get started</BbCardDescription>
         </BbCardHeader>
         <BbCardContent>
-            <BbDynamicForm Schema="@_schema"
-                           SubmitText="Create Account"
-                           OnValidSubmit="HandleSubmit" />
+            <form method="post" action="/signup">
+                <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
+                <div class="space-y-4">
+                    @if (!string.IsNullOrEmpty(Error))
+                    {
+                        <BbAlert Variant="AlertVariant.Warning">
+                            <BbAlertDescription>@Error</BbAlertDescription>
+                        </BbAlert>
+                    }
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="UserName" Label="Username"
+                                          Placeholder="Enter username" ErrorText="@UserNameErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="DisplayName" Label="Display Name"
+                                          Placeholder="Enter display name" ErrorText="@DisplayNameErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="Email" Label="Email"
+                                          Placeholder="Enter email address" ErrorText="@EmailErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="FirstName" Label="First Name"
+                                          Placeholder="Enter first name" ErrorText="@FirstNameErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="LastName" Label="Last Name"
+                                          Placeholder="Enter last name" ErrorText="@LastNameErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="PostalCode" Label="Postal / Zip Code"
+                                          Placeholder="Enter postal code" ErrorText="@PostalCodeErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="Password" Label="Password"
+                                          Placeholder="Enter password" ErrorText="@PasswordErrorText" />
+                    </div>
+                    <div class="space-y-2">
+                        <BbFormFieldInput TValue="string" Name="ConfirmPassword" Label="Confirm Password"
+                                          Placeholder="Confirm your password" ErrorText="@ConfirmPasswordErrorText" />
+                    </div>
+                    <BbButton Type="ButtonType.Submit" class="w-full">Create Account</BbButton>
+                </div>
+            </form>
         </BbCardContent>
         <BbCardFooter class="justify-center">
             <p class="text-sm text-muted-foreground">
@@ -22,38 +62,14 @@
 </div>
 
 @code {
-    [Parameter] public EventCallback<CreateUserRequest> OnSubmit { get; set; }
-
-    private readonly FormSchema _schema = BuildSchema();
-
-    private static FormSchema BuildSchema()
-    {
-        var schema = FormSchemaExtensions.MapProtoToFormSchema(new CreateUserRequest());
-        schema.Fields.RemoveAll(f => f.Name == "Bio");
-        schema.Fields.Add(new FormFieldDefinition
-        {
-            Name = "ConfirmPassword",
-            Label = "Confirm Password",
-            Type = FieldType.Password,
-            Required = true,
-            Order = 99
-        });
-        return schema;
-    }
-
-    private async Task HandleSubmit(Dictionary<string, object?> values)
-    {
-        var request = new CreateUserRequest
-        {
-            UserName    = values.GetString("UserName"),
-            DisplayName = values.GetString("DisplayName"),
-            Email       = values.GetString("Email"),
-            Password    = values.GetString("Password"),
-            FirstName   = values.GetString("FirstName"),
-            LastName    = values.GetString("LastName"),
-            PostalCode  = values.GetString("PostalCode"),
-            Bio         = string.Empty
-        };
-        await OnSubmit.InvokeAsync(request);
-    }
+    [Parameter] public string AntiforgeryToken { get; set; } = string.Empty;
+    [Parameter] public string Error { get; set; } = string.Empty;
+    [Parameter] public string UserNameErrorText { get; set; } = string.Empty;
+    [Parameter] public string DisplayNameErrorText { get; set; } = string.Empty;
+    [Parameter] public string EmailErrorText { get; set; } = string.Empty;
+    [Parameter] public string PasswordErrorText { get; set; } = string.Empty;
+    [Parameter] public string ConfirmPasswordErrorText { get; set; } = string.Empty;
+    [Parameter] public string FirstNameErrorText { get; set; } = string.Empty;
+    [Parameter] public string LastNameErrorText { get; set; } = string.Empty;
+    [Parameter] public string PostalCodeErrorText { get; set; } = string.Empty;
 }

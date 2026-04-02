@@ -4,6 +4,8 @@ using IT.WebHost.Core.Clients;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments;
 using IT.WebHost.Core.Models;
+using IT.WebHost.App.Extensions;
+using ProtoValidate;
 using System.Diagnostics;
 
 namespace IT.WebHost.App.Controllers
@@ -13,12 +15,14 @@ namespace IT.WebHost.App.Controllers
         private readonly AuthClient _authClient;
         private readonly IT.WebHost.Core.Services.SiteSettingsService _siteSettings;
         private readonly IAntiforgery _antiforgery;
+        private readonly IValidator _validator;
 
-        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, IAntiforgery antiforgery)
+        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, IAntiforgery antiforgery, IValidator validator)
         {
             _authClient = authClient;
             _siteSettings = siteSettings;
             _antiforgery = antiforgery;
+            _validator = validator;
         }
 
         [HttpGet("/login")]
@@ -35,15 +39,26 @@ namespace IT.WebHost.App.Controllers
             ViewData["AntiforgeryToken"] = _antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
             ViewData["Title"] = $"Login - {_siteSettings.SiteTitle}";
 
-            if (!ModelState.IsValid)
-                return View(model);
-
             var request = new AuthenticateUserRequest
             {
-                UserName = model.UserName,
-                Password = model.Password,
+                UserName = model.UserName ?? string.Empty,
+                Password = model.Password ?? string.Empty,
                 MFACode = string.Empty
             };
+
+            var validated = _validator.Validate(request, false);
+            if (!validated.IsSuccess)
+            {
+                ModelState.AddProtoViolations(validated);
+                ViewData["UserNameErrorText"] = ModelState["UserName"]?.Errors.FirstOrDefault()?.ErrorMessage ?? string.Empty;
+                ViewData["PasswordErrorText"] = ModelState["Password"]?.Errors.FirstOrDefault()?.ErrorMessage ?? string.Empty;
+                return View(model);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
             var response = await _authClient.LoginAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
@@ -57,47 +72,53 @@ namespace IT.WebHost.App.Controllers
         public IActionResult Signup()
         {
             ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
+            ViewData["AntiforgeryToken"] = _antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
             return View(new SignupViewModel());
         }
 
         [HttpPost("/signup")]
         public async Task<IActionResult> Signup(SignupViewModel model)
         {
-            if (!ModelState.IsValid)
+            ViewData["AntiforgeryToken"] = _antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+            ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
+
+            var request = new CreateUserRequest
             {
-                ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
+                UserName    = model.UserName    ?? string.Empty,
+                DisplayName = model.DisplayName ?? string.Empty,
+                Email       = model.Email       ?? string.Empty,
+                Password    = model.Password    ?? string.Empty,
+                FirstName   = model.FirstName   ?? string.Empty,
+                LastName    = model.LastName    ?? string.Empty,
+                PostalCode  = model.PostalCode  ?? string.Empty
+            };
+
+            var validated = _validator.Validate(request, false);
+            if (!validated.IsSuccess)
+            {
+                ModelState.AddProtoViolations(validated);
+                ViewData["UserNameErrorText"]    = ModelState["UserName"]?.Errors.FirstOrDefault()?.ErrorMessage    ?? string.Empty;
+                ViewData["DisplayNameErrorText"] = ModelState["DisplayName"]?.Errors.FirstOrDefault()?.ErrorMessage ?? string.Empty;
+                ViewData["EmailErrorText"]       = ModelState["Email"]?.Errors.FirstOrDefault()?.ErrorMessage       ?? string.Empty;
+                ViewData["PasswordErrorText"]    = ModelState["Password"]?.Errors.FirstOrDefault()?.ErrorMessage    ?? string.Empty;
+                ViewData["FirstNameErrorText"]   = ModelState["FirstName"]?.Errors.FirstOrDefault()?.ErrorMessage   ?? string.Empty;
+                ViewData["LastNameErrorText"]    = ModelState["LastName"]?.Errors.FirstOrDefault()?.ErrorMessage    ?? string.Empty;
+                ViewData["PostalCodeErrorText"]  = ModelState["PostalCode"]?.Errors.FirstOrDefault()?.ErrorMessage  ?? string.Empty;
                 return View(model);
             }
 
             if (model.Password != model.ConfirmPassword)
             {
-                ModelState.AddModelError("ConfirmPassword", "Passwords do not match");
-                ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
+                ViewData["ConfirmPasswordErrorText"] = "Passwords do not match";
                 return View(model);
             }
-
-            var request = new CreateUserRequest
-            {
-                UserName = model.UserName,
-                DisplayName = model.DisplayName,
-                Email = model.Email,
-                Password = model.Password,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                PostalCode = model.PostalCode
-            };
 
             var response = await _authClient.SignUpAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
-            {
                 return Redirect($"/auth/set-cookie?token={Uri.EscapeDataString(response.BearerToken)}");
-            }
-            else
-            {
-                ModelState.AddModelError("", response.Error.Message);
-                ViewData["Title"] = $"Signup - {_siteSettings.SiteTitle}";
-                return View(model);
-            }
+
+            ViewData["SignupError"] = response.Error.Message;
+            return View(model);
         }
 
         [HttpGet("/profile")]

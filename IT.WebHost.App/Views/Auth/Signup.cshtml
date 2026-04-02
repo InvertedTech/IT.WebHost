@@ -1,3 +1,13 @@
 @model IT.WebHost.Core.Models.SignupViewModel
 
-<component type="typeof(IT.WebHost.Components.Forms.SignupForm)" render-mode="ServerPrerendered" />
+<component type="typeof(IT.WebHost.Components.Forms.SignupForm)" render-mode="ServerPrerendered"
+           param-AntiforgeryToken="@(ViewData["AntiforgeryToken"]?.ToString() ?? string.Empty)"
+           param-Error="@(ViewData["SignupError"]?.ToString() ?? string.Empty)"
+           param-UserNameErrorText="@(ViewData["UserNameErrorText"]?.ToString() ?? string.Empty)"
+           param-DisplayNameErrorText="@(ViewData["DisplayNameErrorText"]?.ToString() ?? string.Empty)"
+           param-EmailErrorText="@(ViewData["EmailErrorText"]?.ToString() ?? string.Empty)"
+           param-PasswordErrorText="@(ViewData["PasswordErrorText"]?.ToString() ?? string.Empty)"
+           param-ConfirmPasswordErrorText="@(ViewData["ConfirmPasswordErrorText"]?.ToString() ?? string.Empty)"
+           param-FirstNameErrorText="@(ViewData["FirstNameErrorText"]?.ToString() ?? string.Empty)"
+           param-LastNameErrorText="@(ViewData["LastNameErrorText"]?.ToString() ?? string.Empty)"
+           param-PostalCodeErrorText="@(ViewData["PostalCodeErrorText"]?.ToString() ?? string.Empty)" />
