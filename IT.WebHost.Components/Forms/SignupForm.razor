@@ -1,71 +1,43 @@
 @using IT.WebServices.Fragments.Authentication
+@using IT.WebHost.Components.Extensions
 @namespace IT.WebHost.Components.Forms
 
-<div class="space-y-4">
-    <div class="space-y-2">
-        <BbLabel For="username">Username</BbLabel>
-        <BbInput Id="username" Placeholder="johndoe" @bind-Value="userName" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="displayname">Display Name</BbLabel>
-        <BbInput Id="displayname" Placeholder="johndoe" @bind-Value="displayName" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="email">Email</BbLabel>
-        <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" @bind-Value="email" />
-        <p class="text-xs text-muted-foreground">
-            We'll use this to contact you. We will not share your email with anyone else.
-        </p>
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="password">Password</BbLabel>
-        <BbInput Id="password" Type="InputType.Password" @bind-Value="password" />
-        <p class="text-xs text-muted-foreground">Must be at least 8 characters long.</p>
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="confirm-password">Confirm Password</BbLabel>
-        <BbInput Id="confirm-password" Type="InputType.Password" @bind-Value="confirmPassword" />
-        <p class="text-xs text-muted-foreground">Please confirm your password.</p>
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="first-name">First Name</BbLabel>
-        <BbInput Id="first-name" Type="InputType.Text" @bind-Value="firstName" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="last-name">Last Name</BbLabel>
-        <BbInput Id="last-name" Type="InputType.Text" @bind-Value="lastName" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="postal-code">Postal/Zip Code</BbLabel>
-        <BbInput Id="postal-code" Type="InputType.Text" @bind-Value="postalCode" />
-    </div>
-    <BbButton Class="w-full" @onclick="HandleSubmit">Create Account</BbButton>
-</div>
+<BbDynamicForm Schema="@_schema"
+               SubmitText="Create Account"
+               OnValidSubmit="HandleSubmit" />
 
 @code {
     [Parameter] public EventCallback<CreateUserRequest> OnSubmit { get; set; }
 
-    private string userName = string.Empty;
-    private string displayName = string.Empty;
-    private string email = string.Empty;
-    private string password = string.Empty;
-    private string confirmPassword = string.Empty;
-    private string firstName = string.Empty;
-    private string lastName = string.Empty;
-    private string postalCode = string.Empty;
+    private readonly FormSchema _schema = BuildSchema();
 
-    private async Task HandleSubmit()
+    private static FormSchema BuildSchema()
     {
-        CreateUserRequest request = new CreateUserRequest
+        var schema = FormSchemaExtensions.MapProtoToFormSchema(new CreateUserRequest());
+        schema.Fields.RemoveAll(f => f.Name == "Bio");
+        schema.Fields.Add(new FormFieldDefinition
         {
-            UserName = userName,
-            DisplayName = displayName,
-            Email = email,
-            Password = password,
-            FirstName = firstName,
-            LastName = lastName,
-            PostalCode = postalCode,
-            Bio = ""
+            Name = "ConfirmPassword",
+            Label = "Confirm Password",
+            Type = FieldType.Password,
+            Required = true,
+            Order = 99
+        });
+        return schema;
+    }
+
+    private async Task HandleSubmit(Dictionary<string, object?> values)
+    {
+        var request = new CreateUserRequest
+        {
+            UserName    = values.GetString("UserName"),
+            DisplayName = values.GetString("DisplayName"),
+            Email       = values.GetString("Email"),
+            Password    = values.GetString("Password"),
+            FirstName   = values.GetString("FirstName"),
+            LastName    = values.GetString("LastName"),
+            PostalCode  = values.GetString("PostalCode"),
+            Bio         = string.Empty
         };
         await OnSubmit.InvokeAsync(request);
     }

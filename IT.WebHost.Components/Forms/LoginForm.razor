@@ -1,45 +1,43 @@
 @using IT.WebServices.Fragments.Authentication
+@using IT.WebHost.Components.Extensions
 @namespace IT.WebHost.Components.Forms
+
 <div class="space-y-4">
-    <div class="space-y-2">
-        <BbLabel For="username">Email / Username</BbLabel>
-        <BbInput Id="username" Type="InputType.Text" Placeholder="m@example.com" @bind-Value="userName" />
+    <div class="flex items-center justify-between">
+        <span></span>
+        <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
+            Forgot your password?
+        </a>
     </div>
-    <div class="space-y-2">
-        <div class="flex items-center justify-between">
-            <BbLabel For="password">Password</BbLabel>
-            <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
-                Forgot your password?
-            </a>
+
+    <BbDynamicForm Schema="@_schema"
+                   @bind-Values="values"
+                   SubmitText="Login"
+                   OnValidSubmit="HandleSubmit">
+        <div class="relative mt-4">
+            <div class="absolute inset-0 flex items-center">
+                <BbSeparator />
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
         </div>
-        <BbInput Id="password" Type="InputType.Password" @bind-Value="password" />
-    </div>
-    <BbButton Class="w-full" @onclick="HandleSubmit">
-        Login
-    </BbButton>
-    <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-            <BbSeparator />
-        </div>
-        <div class="relative flex justify-center text-xs uppercase">
-            <span class="bg-card px-2 text-muted-foreground">Or continue with</span>
-        </div>
-    </div>
+    </BbDynamicForm>
 </div>
 
 @code {
+    private Dictionary<string, object?> values = new();
     [Parameter] public EventCallback<AuthenticateUserRequest> OnSubmit { get; set; }
 
-    private string userName = string.Empty;
-    private string password = string.Empty;
+    private readonly FormSchema _schema = FormSchemaExtensions.MapProtoToFormSchema(new AuthenticateUserRequest());
 
-    private async Task HandleSubmit()
+    private async Task HandleSubmit(Dictionary<string, object?> values)
     {
-        AuthenticateUserRequest request = new AuthenticateUserRequest
+        var request = new AuthenticateUserRequest
         {
-            UserName = userName,
-            Password = password,
-            MFACode = string.Empty
+            UserName = values.TryGetValue("UserName", out var u) ? u?.ToString() ?? string.Empty : string.Empty,
+            Password = values.TryGetValue("Password", out var p) ? p?.ToString() ?? string.Empty : string.Empty,
+            MFACode  = values.TryGetValue("MFACode",  out var m) ? m?.ToString() ?? string.Empty : string.Empty,
         };
         await OnSubmit.InvokeAsync(request);
     }

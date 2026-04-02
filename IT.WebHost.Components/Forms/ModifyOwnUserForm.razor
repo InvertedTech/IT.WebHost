@@ -1,43 +1,21 @@
-﻿@using IT.WebServices.Fragments.Authentication
+@using IT.WebServices.Fragments.Authentication
+@using IT.WebHost.Components.Extensions
 @namespace IT.WebHost.Components.Forms
 
-<div class="space-y-4">
-    <div class="space-y-2">
-        <BbLabel For="displayname">Display Name</BbLabel>
-        <BbInput Id="displayname" Placeholder="johndoe" @bind-Value="_displayName" Disabled="!EditModeEnabled"/>
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="email">Email</BbLabel>
-        <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" @bind-Value="_email" Disabled="!EditModeEnabled" />
-        <p class="text-xs text-muted-foreground">
-            We'll use this to contact you. We will not share your email with anyone else.
-        </p>
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="bio">Bio</BbLabel>
-        <BbTextarea Id="bio" @bind-Value="_bio" Disabled="!EditModeEnabled" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="first-name">First Name</BbLabel>
-        <BbInput Id="first-name" Type="InputType.Text" @bind-Value="_firstName" Disabled="!EditModeEnabled" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="last-name">Last Name</BbLabel>
-        <BbInput Id="last-name" Type="InputType.Text" @bind-Value="_lastName" Disabled="!EditModeEnabled" />
-    </div>
-    <div class="space-y-2">
-        <BbLabel For="postal-code">Postal/Zip Code</BbLabel>
-        <BbInput Id="postal-code" Type="InputType.Text" @bind-Value="_postalCode" Disabled="!EditModeEnabled" />
-    </div>
-    @if (EditModeEnabled)
-    {
-        <BbButton Class="w-full" @onclick="HandleSubmit">Save Changes</BbButton>
-        <BbButton Class="w-full" @onclick="ToggleEditMode">Discard Changes</BbButton>
-    } else
-    {
-        <BbButton Class="w-full" @onclick="ToggleEditMode">Edit</BbButton>
-    }
-</div>
+<BbDynamicForm Schema="@_schema"
+               @bind-Values="_values"
+               ReadOnly="!EditModeEnabled"
+               ShowSubmitButton="false" />
+
+@if (EditModeEnabled)
+{
+    <BbButton Class="w-full" @onclick="HandleSubmit">Save Changes</BbButton>
+    <BbButton Class="w-full" Variant="ButtonVariant.Outline" @onclick="ToggleEditMode">Discard Changes</BbButton>
+}
+else
+{
+    <BbButton Class="w-full" Variant="ButtonVariant.Outline" @onclick="ToggleEditMode">Edit</BbButton>
+}
 
 @code {
     [Parameter] public EventCallback<ModifyOwnUserRequest> OnSubmit { get; set; }
@@ -49,44 +27,49 @@
     [Parameter] public string lastName { get; set; } = string.Empty;
     [Parameter] public string postalCode { get; set; } = string.Empty;
 
-    private string _bio = string.Empty;
-    private string _displayName = string.Empty;
-    private string _email = string.Empty;
-    private string _firstName = string.Empty;
-    private string _lastName = string.Empty;
-    private string _postalCode = string.Empty;
-
     private bool EditModeEnabled { get; set; } = false;
+
+    private static readonly FormSchema _schema = BuildSchema();
+    private Dictionary<string, object?> _values = new();
+
+    private static FormSchema BuildSchema()
+    {
+        var schema = FormSchemaExtensions.MapProtoToFormSchema(new ModifyOwnUserRequest());
+        schema.Fields.RemoveAll(f => f.Name == "UserID");
+        return schema;
+    }
 
     protected override void OnParametersSet()
     {
         if (!EditModeEnabled)
-            ResetFields();
+            ResetValues();
     }
 
-    private void ResetFields()
+    private void ResetValues()
     {
-        _bio = bio;
-        _displayName = displayName;
-        _email = email;
-        _firstName = firstName;
-        _lastName = lastName;
-        _postalCode = postalCode;
+        _values = new Dictionary<string, object?>
+        {
+            ["DisplayName"] = displayName,
+            ["Email"]       = email,
+            ["Bio"]         = bio,
+            ["FirstName"]   = firstName,
+            ["LastName"]    = lastName,
+            ["PostalCode"]  = postalCode,
+        };
     }
 
     private async Task HandleSubmit()
     {
-        ModifyOwnUserRequest request = new ModifyOwnUserRequest
-            {
-                UserID = userId,
-                DisplayName = _displayName,
-                Bio = _bio,
-                Email = _email,
-                FirstName = _firstName,
-                LastName = _lastName,
-                PostalCode = _postalCode
-            };
-
+        var request = new ModifyOwnUserRequest
+        {
+            UserID      = userId,
+            DisplayName = _values.GetString("DisplayName"),
+            Bio         = _values.GetString("Bio"),
+            Email       = _values.GetString("Email"),
+            FirstName   = _values.GetString("FirstName"),
+            LastName    = _values.GetString("LastName"),
+            PostalCode  = _values.GetString("PostalCode"),
+        };
         await OnSubmit.InvokeAsync(request);
     }
 
@@ -94,7 +77,7 @@
     {
         EditModeEnabled = !EditModeEnabled;
         if (!EditModeEnabled)
-            ResetFields();
+            ResetValues();
         StateHasChanged();
     }
 }
