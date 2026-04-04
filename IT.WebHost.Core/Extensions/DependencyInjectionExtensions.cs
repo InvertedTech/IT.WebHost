@@ -49,6 +49,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 };
             });
 
+            services.AddScoped<ONUserHelper>();
+
             services.AddAuthorization();
 
             services.AddCascadingAuthenticationState();
@@ -58,26 +60,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddCoreClients(this IServiceCollection services)
         {
-            services.AddHttpClient("content");
-            services.AddSingleton<ContentClient>(sp =>
-            {
-                var baseUrl = sp.GetRequiredService<IConfiguration>()["ApiUrl"] ?? "http://localhost:8001/api";
-                return new ContentClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("content"), baseUrl);
-            });
+            services.AddScoped<AuthClient>();
+            services.AddScoped<ContentClient>();
 
-            services.AddHttpClient("auth");
-            services.AddSingleton<AuthClient>(sp =>
-            {
-                var baseUrl = sp.GetRequiredService<IConfiguration>()["ApiUrl"] ?? "http://localhost:8001/api";
-                return new AuthClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("auth"), baseUrl);
-            });
-
-            services.AddHttpClient("settings");
-            services.AddSingleton<SettingsClient>(sp =>
-            {
-                var baseUrl = sp.GetRequiredService<IConfiguration>()["ApiUrl"] ?? "http://localhost:8001/api";
-                return new SettingsClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("settings"), baseUrl);
-            });
+            services.AddGrpcClientClasses();
 
             return services;
         }

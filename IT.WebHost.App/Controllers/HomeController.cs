@@ -23,7 +23,7 @@ namespace IT.WebHost.App.Controllers
             var req = new GetAllContentRequest
             {
                 // TODO: Remove offset
-                PageOffset = 50,
+                PageOffset = 0,
                 PageSize = 10,
             };
 

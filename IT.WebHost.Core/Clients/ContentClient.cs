@@ -1,68 +1,31 @@
+using Google.Protobuf;
+using IT.WebServices.Authentication;
+using IT.WebServices.Fragments.Content;
 using System.Reflection;
 using System.Text;
-using Google.Protobuf;
-using IT.WebServices.Fragments.Content;
+using static Google.Rpc.Context.AttributeContext.Types;
 
 namespace IT.WebHost.Core.Clients
 {
     public class ContentClient
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
+        private readonly ContentInterface.ContentInterfaceClient client;
+        private readonly ONUserHelper userHelper;
 
-        public ContentClient(HttpClient httpClient, string baseUrl)
+        public ContentClient(ContentInterface.ContentInterfaceClient client, ONUserHelper userHelper)
         {
-            _httpClient = httpClient;
-            _baseUrl = baseUrl.TrimEnd('/');
+            this.client = client;
+            this.userHelper = userHelper;
         }
 
         public async Task<GetAllContentResponse> GetAllContentAsync(GetAllContentRequest request)
         {
-            var qs = BuildQueryString(request);
-            var url = string.IsNullOrEmpty(qs)
-                ? $"{_baseUrl}/cms/content"
-                : $"{_baseUrl}/cms/content?{qs}";
-
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonParser.Default.Parse<GetAllContentResponse>(json);
+            return await client.GetAllContentAsync(request, userHelper.GetGrpcCallOptions());
         }
 
         public async Task<GetContentResponse> GetContentByIdAsync(string contentId)
         {
-            var url = $"{_baseUrl}/cms/content/{Uri.EscapeDataString(contentId)}";
-
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonParser.Default.Parse<GetContentResponse>(json);
-        }
-
-        private static string BuildQueryString(object obj)
-        {
-            var sb = new StringBuilder();
-            foreach (var prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (!prop.CanRead) continue;
-
-                var type = prop.PropertyType;
-                if (!type.IsPrimitive && type != typeof(string) && !type.IsEnum) continue;
-
-                var value = prop.GetValue(obj);
-                if (value == null) continue;
-
-                var defaultVal = type.IsValueType ? Activator.CreateInstance(type) : null;
-                if (value.Equals(defaultVal)) continue;
-
-                if (sb.Length > 0) sb.Append('&');
-                sb.Append(Uri.EscapeDataString(prop.Name));
-                sb.Append('=');
-                sb.Append(Uri.EscapeDataString(value.ToString()!));
-            }
-            return sb.ToString();
+            return await client.GetContentAsync(new() { ContentID = contentId }, userHelper.GetGrpcCallOptions());
         }
     }
 }

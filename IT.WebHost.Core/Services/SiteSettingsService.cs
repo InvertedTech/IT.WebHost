@@ -1,9 +1,10 @@
 using IT.WebHost.Core.Clients;
+using IT.WebServices.Clients.Settings;
 using IT.WebServices.Fragments.Settings;
 
 namespace IT.WebHost.Core.Services
 {
-    public class SiteSettingsService(SettingsClient settingsClient)
+    public class SiteSettingsService(PublicSettingsClient settingsClient)
     {
         public SettingsPublicData? Settings { get; private set; }
 
@@ -13,7 +14,7 @@ namespace IT.WebHost.Core.Services
         {
             try
             {
-                Settings = await settingsClient.GetPublicDataAsync();
+                Settings = await settingsClient.PublicData;
             }
             catch
             {

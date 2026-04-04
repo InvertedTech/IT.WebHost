@@ -15,13 +15,15 @@ namespace IT.WebHost.App.Controllers
     {
         private readonly AuthClient _authClient;
         private readonly IT.WebHost.Core.Services.SiteSettingsService _siteSettings;
+        private readonly ONUserHelper userHelper;
         private readonly IAntiforgery _antiforgery;
         private readonly IValidator _validator;
 
-        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, IAntiforgery antiforgery, IValidator validator)
+        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, ONUserHelper userHelper, IAntiforgery antiforgery, IValidator validator)
         {
             _authClient = authClient;
             _siteSettings = siteSettings;
+            this.userHelper = userHelper;
             _antiforgery = antiforgery;
             _validator = validator;
         }
@@ -64,7 +66,7 @@ namespace IT.WebHost.App.Controllers
             var response = await _authClient.LoginAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
             {
-                HttpContext.Response.Cookies.Append(AuthClient.CookieName, response.BearerToken, new CookieOptions
+                HttpContext.Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, response.BearerToken, new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,
@@ -136,11 +138,8 @@ namespace IT.WebHost.App.Controllers
         public async Task<IActionResult> Profile()
         {
             ViewData["Title"] = $"Profile - {_siteSettings.SiteTitle}";
-            var token = Request.Cookies[AuthClient.CookieName];
-            if (string.IsNullOrEmpty(token))
-                return View(new ProfileViewModel());
 
-            var response = await _authClient.GetOwnUserAsync(token);
+            var response = await _authClient.GetOwnUserAsync();
             return View(new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null });
         }
 
