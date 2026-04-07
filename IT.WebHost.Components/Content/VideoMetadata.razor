@@ -1,0 +1,119 @@
+@using IT.WebServices.Fragments.Content
+@using IT.WebServices.Authentication
+@namespace IT.WebHost.Components.Content
+@inject ONUserHelper UserHelper
+
+<div class="bg-card rounded-lg border p-4 sm:p-6">
+    <article class="w-full space-y-4 lg:space-y-6" role="complementary" aria-label="Video information">
+
+        <div class="flex flex-wrap gap-2" role="group" aria-label="Video status indicators">
+            @if (_isLive)
+            {
+                <BbBadge Variant="BadgeVariant.Destructive" class="animate-pulse">
+                    🔴 LIVE
+                </BbBadge>
+            }
+            @if (_isLiveStream && !_isLive)
+            {
+                <BbBadge Variant="BadgeVariant.Secondary">
+                    📺 Live Stream
+                </BbBadge>
+            }
+            @if (ShowSubscriptionInfo)
+            {
+                <BbBadge Variant="@(Content?.Data?.SubscriptionLevel == 0 ? BadgeVariant.Secondary : BadgeVariant.Default)"
+                       >
+                    @GetSubscriptionLevelText(Content?.Data?.SubscriptionLevel)
+                </BbBadge>
+            }
+        </div>
+
+        <div class="flex items-start justify-between gap-4">
+            <h1 class="text-xl font-bold leading-tight text-foreground sm:text-2xl lg:text-3xl">
+                @(Content?.Data?.Title ?? "Untitled Video")
+            </h1>
+            <div class="flex items-center gap-2 shrink-0">
+                <LikeUnlikeToggle ContentId="@(Content?.ContentID ?? string.Empty)"
+                                  InitialOn="@LikedByUser"
+                                  Disabled="@(!UserHelper.IsLoggedIn)" />
+                <SaveUnsaveToggle ContentId="@(Content?.ContentID ?? string.Empty)"
+                                  InitialOn="@SavedByUser"
+                                  Disabled="@(!UserHelper.IsLoggedIn)" />
+                <ShareVideoDialog />
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+            @if (!string.IsNullOrEmpty(Content?.Data?.Author))
+            {
+                <div class="flex items-center gap-1">
+                    <span class="font-medium" aria-label="Video author">By:</span>
+                    <span>@Content!.Data.Author</span>
+                </div>
+            }
+            @if (_publishDate.HasValue)
+            {
+                <div class="flex items-center gap-1">
+                    <span class="font-medium" aria-label="Publication date">Published:</span>
+                    <time datetime="@_publishDate.Value.ToString("o")">@_publishDate.Value.ToString("MMMM d, yyyy")</time>
+                </div>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Content?.Data?.Description))
+        {
+            <section aria-labelledby="video-description">
+                <h2 id="video-description" class="sr-only">Video Description</h2>
+                <div class="prose prose-sm sm:prose-base max-w-none">
+                    <p class="text-muted-foreground leading-relaxed break-words">
+                        @Content!.Data.Description
+                    </p>
+                </div>
+            </section>
+        }
+
+        @if (Content?.Data?.Tags is { Count: > 0 } tags)
+        {
+            <section aria-labelledby="video-tags">
+                <h3 id="video-tags" class="text-sm font-medium text-foreground mb-2">Tags:</h3>
+                <div class="flex flex-wrap gap-2" role="list" aria-label="Video tags">
+                    @foreach (var tag in tags)
+                    {
+                        <BbBadge Variant="BadgeVariant.Outline" class="text-xs" role="listitem">
+                            @tag
+                        </BbBadge>
+                    }
+                </div>
+            </section>
+        }
+
+    </article>
+ </div>
+@code {
+    [Parameter] public ContentPublicRecord? Content { get; set; }
+    [Parameter] public bool ShowSubscriptionInfo { get; set; } = true;
+    [Parameter] public bool LikedByUser { get; set; }
+    [Parameter] public bool SavedByUser { get; set; }
+
+    private bool _isLive;
+    private bool _isLiveStream;
+    private DateTime? _publishDate;
+
+    protected override void OnParametersSet()
+    {
+        var videoData = Content?.Data?.ContentDataOneofCase ==
+            IT.WebServices.Fragments.Content.ContentPublicData.ContentDataOneofOneofCase.Video
+                ? Content.Data.Video
+                : null;
+
+        _isLive = videoData?.IsLive ?? false;
+        _isLiveStream = videoData?.IsLiveStream ?? false;
+
+        _publishDate = Content?.PublishOnUTC?.ToDateTime() is { } dt && dt != default
+            ? dt.ToLocalTime()
+            : null;
+    }
+
+    private static string GetSubscriptionLevelText(uint? level) =>
+        level is null or 0 ? "Free" : "Members Only";
+}

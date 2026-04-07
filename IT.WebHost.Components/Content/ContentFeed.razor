@@ -40,6 +40,7 @@
     [Parameter] public uint NextPageOffset { get; set; }
     [Parameter] public uint PageSize { get; set; } = 10;
     [Parameter] public uint TotalItems { get; set; }
+    [Parameter] public SubscriptionLevelSearch? SubscriptionSearch { get; set; }
 
     private List<ContentListRecord> _items = [];
     private bool _loading;
@@ -55,11 +56,16 @@
     {
         _loading = true;
 
-        var response = await ContentClient.GetAllContentAsync(new GetAllContentRequest
+        var req = new GetAllContentRequest
         {
             PageOffset = NextPageOffset,
-            PageSize = PageSize
-        });
+            PageSize = PageSize,
+        };
+
+        if (SubscriptionSearch is not null)
+            req.SubscriptionSearch = SubscriptionSearch;
+
+        var response = await ContentClient.GetAllContentAsync(req);
 
         _items.AddRange(response.Records);
         NextPageOffset = response.PageOffsetEnd;

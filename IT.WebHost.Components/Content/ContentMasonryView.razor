@@ -9,7 +9,7 @@
             <div class="flex flex-col gap-6 pr-2">
                 @foreach (var record in Content.Where((_, i) => i % 3 == colIndex))
                 {
-                    <ContentMasonryCard Content="@record" Url="@($"/post/{record.ContentID}")" />
+                    <ContentMasonryCard Content="@record" Url="@($"/content/{record.URL.TrimStart('/')}")" />
                 }
             </div>
         </BbScrollArea>

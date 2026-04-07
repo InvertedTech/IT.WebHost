@@ -1,2 +1,32 @@
 @model IT.WebHost.Core.Models.ViewContentViewModel
+@using IT.WebServices.Fragments.Content
 
+<div class="max-w-5xl mx-auto flex flex-col gap-4">
+    @switch (Model.Record?.Data?.ContentDataOneofCase)
+    {
+        case ContentPublicData.ContentDataOneofOneofCase.Video:
+            <component type="typeof(IT.WebHost.Components.Content.VideoPlayer)"
+                       render-mode="Server"
+                       param-Video="@Model.Record.Data.Video"
+                       param-Title="@(Model.Record.Data.Title ?? "Video")" />
+            <component type="typeof(IT.WebHost.Components.Content.VideoMetadata)"
+                       render-mode="ServerPrerendered"
+                       param-Content="@Model.Record" />
+            break;
+
+        case ContentPublicData.ContentDataOneofOneofCase.Written:
+            @* TODO: Written content layout *@
+            break;
+
+        case ContentPublicData.ContentDataOneofOneofCase.Audio:
+            @* TODO: Audio content layout *@
+            break;
+
+        case ContentPublicData.ContentDataOneofOneofCase.Picture:
+            @* TODO: Picture content layout *@
+            break;
+    }
+
+    <component type="typeof(IT.WebHost.Components.Forms.NewCommentForm)"
+               render-mode="Server" />
+</div>

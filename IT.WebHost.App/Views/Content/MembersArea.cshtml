@@ -1,5 +1,14 @@
+@model IT.WebHost.App.Models.HomeViewModel
 @{
     ViewData["Title"] = "Members Area";
 }
 
-<component type="typeof(IT.WebHost.Components.MembersArea)" render-mode="ServerPrerendered" />
+<div class="container py-10">
+    <component type="typeof(IT.WebHost.Components.Content.ContentFeed)" render-mode="ServerPrerendered"
+               param-InitialContent="@Model.ContentListRecords"
+               param-Layout="@Model.Layout"
+               param-NextPageOffset="@Model.NextPageOffset"
+               param-PageSize="@Model.PageSize"
+               param-TotalItems="@Model.TotalItems"
+               param-SubscriptionSearch="@(new IT.WebServices.Fragments.Content.SubscriptionLevelSearch { MinimumLevel = 10, MaximumLevel = 9999 })" />
+</div>

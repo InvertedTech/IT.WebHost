@@ -1,0 +1,30 @@
+@namespace IT.WebHost.Components.Content
+
+<BbButton Variant="@(_on ? ButtonVariant.Default : ButtonVariant.Outline)"
+          Size="ButtonSize.Small"
+          Disabled="@Disabled"
+          @onclick="Toggle">
+    <LucideIcon Name="heart" Size="14" class="@(_on ? "fill-current" : "")" />
+    Like
+</BbButton>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+    [Parameter] public bool InitialOn { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<bool> OnToggled { get; set; }
+
+    private bool _on;
+
+    protected override void OnParametersSet()
+    {
+        _on = InitialOn;
+    }
+
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        _on = !_on;
+        await OnToggled.InvokeAsync(_on);
+    }
+}

@@ -1,0 +1,17 @@
+@namespace IT.WebHost.Components.Content
+
+<div class="relative w-full aspect-video rounded-lg overflow-hidden">
+    <iframe class="absolute inset-0 w-full h-full"
+            src="@EmbedUrl"
+            title="Rumble video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+    </iframe>
+</div>
+
+@code {
+    [Parameter] public string VideoId { get; set; } = string.Empty;
+
+    private string EmbedUrl => $"https://rumble.com/embed/{VideoId}";
+}

@@ -1,0 +1,56 @@
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Content
+@rendermode Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer
+
+@if (_rumbleId is not null)
+{
+    <div class="relative w-full aspect-video rounded-lg overflow-hidden">
+        <iframe class="absolute inset-0 w-full h-full"
+                src="@($"https://rumble.com/embed/{_rumbleId}/")"
+                title="@Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                @onload="OnLoaded">
+        </iframe>
+        @if (_loading)
+        {
+            <BbProgress class="absolute bottom-0 left-0 right-0 h-1 rounded-none" />
+        }
+    </div>
+}
+else if (_youtubeId is not null)
+{
+    <div class="relative w-full aspect-video rounded-lg overflow-hidden">
+        <iframe class="absolute inset-0 w-full h-full"
+                src="@($"https://www.youtube.com/embed/{_youtubeId}")"
+                title="@Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                @onload="OnLoaded">
+        </iframe>
+        @if (_loading)
+        {
+            <BbProgress class="absolute bottom-0 left-0 right-0 h-1 rounded-none" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public VideoContentPublicData? Video { get; set; }
+    [Parameter] public string Title { get; set; } = "Video player";
+
+    private string? _rumbleId;
+    private string? _youtubeId;
+    private bool _loading = true;
+
+    protected override void OnParametersSet()
+    {
+        _rumbleId = string.IsNullOrWhiteSpace(Video?.RumbleVideoId) ? null : Video.RumbleVideoId.Trim();
+        _youtubeId = string.IsNullOrWhiteSpace(Video?.YoutubeVideoId) ? null : Video.YoutubeVideoId.Trim();
+        _loading = true;
+    }
+
+    private void OnLoaded() => _loading = false;
+}

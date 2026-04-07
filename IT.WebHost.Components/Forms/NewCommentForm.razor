@@ -1,0 +1,12 @@
+@using IT.WebServices.Authentication
+@inject ONUserHelper UserHelper
+
+<div class="rounded-lg border p-4 sm:p-6">
+    <BbFormFieldTextarea Label="Comments"
+                         HelperText="Leave A Comment"
+                         Value=""
+                         Disabled="@(!UserHelper.IsLoggedIn)" />
+    <div class="flex justify-end mt-4">
+        <BbButton Disabled="@(!UserHelper.IsLoggedIn)">Create</BbButton>
+    </div>
+</div>

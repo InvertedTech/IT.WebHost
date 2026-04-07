@@ -1,5 +1,7 @@
-﻿using IT.WebHost.Core.Models;
+﻿using IT.WebHost.App.Models;
+using IT.WebHost.Core.Models;
 using IT.WebHost.Core.Services;
+using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +11,12 @@ namespace IT.WebHost.App.Controllers
     {
         private readonly ContentInterface.ContentInterfaceClient _contentClient;
         private readonly SiteSettingsService _siteSettingsService;
-
-        public ContentController(ContentInterface.ContentInterfaceClient contentClient, SiteSettingsService siteSettingsService)
+        private readonly ONUserHelper userHelper;
+        public ContentController(ContentInterface.ContentInterfaceClient contentClient, SiteSettingsService siteSettingsService, ONUserHelper userHelper)
         {
             _contentClient = contentClient;
             _siteSettingsService = siteSettingsService;
+            this.userHelper = userHelper;
         }
 
         [HttpGet]
@@ -23,9 +26,16 @@ namespace IT.WebHost.App.Controllers
         }
 
         [HttpGet("/content/{**slug}")]
-        public IActionResult ViewContent(string slug)
+        public async Task<IActionResult> ViewContent(string slug)
         {
-            return View(new ViewContentViewModel { Slug = slug });
+            // TODO: Figure out unauthenticated members slugs
+            var req = new GetContentByUrlRequest()
+            {
+                ContentUrl = "/" + slug
+            };
+
+            var res = await _contentClient.GetContentByUrlAsync(req, userHelper.GetGrpcCallOptions());
+            return View(new ViewContentViewModel { Slug = slug, Record = res.Record });
         }
 
         [HttpGet("/search")]
@@ -54,9 +64,35 @@ namespace IT.WebHost.App.Controllers
         }
 
         [HttpGet("/members-area")]
-        public IActionResult MembersArea()
+        public async Task<IActionResult> MembersArea()
         {
-            return View("~/Views/Content/MembersArea.cshtml");
+            var req = new GetAllContentRequest
+            {
+                PageOffset = 0,
+                PageSize = 10,
+                SubscriptionSearch = new SubscriptionLevelSearch
+                {
+                    MinimumLevel = 10,
+                    MaximumLevel = 9999,
+                }
+            };
+
+            var res = await _contentClient.GetAllContentAsync(req, userHelper.GetGrpcCallOptions());
+            var records = new List<ContentListRecord>();
+
+            if (res.PageTotalItems > 0)
+                records.AddRange(res.Records);
+
+            var model = new HomeViewModel
+            {
+                ContentListRecords = records,
+                Layout = _siteSettingsService.Settings?.CMS?.DefaultLayout ?? LayoutEnum.List,
+                NextPageOffset = res.PageOffsetEnd,
+                PageSize = req.PageSize,
+                TotalItems = res.PageTotalItems,
+            };
+
+            return View("~/Views/Content/MembersArea.cshtml", model);
         }
     }
 }

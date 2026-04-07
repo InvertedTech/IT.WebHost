@@ -1,0 +1,51 @@
+@namespace IT.WebHost.Components.Content
+@using Microsoft.JSInterop
+@inject NavigationManager Nav
+
+<BbDialog @bind-Open="_open">
+    <BbDialogTrigger>
+        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+            <LucideIcon Name="share" Size="14" />
+            Share
+        </BbButton>
+    </BbDialogTrigger>
+    <BbDialogContent>
+        <BbDialogHeader>
+            <BbDialogTitle>Share</BbDialogTitle>
+            <BbDialogDescription>Copy the link to share this video.</BbDialogDescription>
+        </BbDialogHeader>
+        <div class="flex items-center gap-2 mt-2">
+            <BbInput Value="@_url" ReadOnly="true" class="flex-1 text-sm" />
+            <BbButton Size="ButtonSize.Small" @onclick="CopyToClipboard">
+                <LucideIcon Name="@(_copied ? "check" : "copy")" Size="14" />
+                @(_copied ? "Copied" : "Copy")
+            </BbButton>
+        </div>
+        <BbDialogFooter>
+            <BbButton Variant="ButtonVariant.Outline" @onclick="Close">Close</BbButton>
+        </BbDialogFooter>
+    </BbDialogContent>
+</BbDialog>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = null!;
+
+    private bool _open;
+    private bool _copied;
+    private string _url = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _url = Nav.Uri;
+    }
+
+    private async Task CopyToClipboard()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", _url);
+        _copied = true;
+        await Task.Delay(2000);
+        _copied = false;
+    }
+
+    private void Close() => _open = false;
+}
