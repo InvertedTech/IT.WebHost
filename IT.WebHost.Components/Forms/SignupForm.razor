@@ -1,75 +1,128 @@
-@using BlazorBlueprint.Components
-@namespace IT.WebHost.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+@using IT.WebHost.Components.Validation
+@using IT.WebServices.Fragments.Authentication
 
-<div class="flex justify-center py-12">
-    <BbCard class="w-full max-w-sm">
-        <BbCardHeader>
-            <BbCardTitle>Create an account</BbCardTitle>
-            <BbCardDescription>Enter your information below to get started</BbCardDescription>
-        </BbCardHeader>
-        <BbCardContent>
-            <form method="post" action="/signup">
-                <input type="hidden" name="__RequestVerificationToken" value="@AntiforgeryToken" />
-                <div class="space-y-4">
-                    @if (!string.IsNullOrEmpty(Error))
-                    {
-                        <BbAlert Variant="AlertVariant.Warning">
-                            <BbAlertDescription>@Error</BbAlertDescription>
-                        </BbAlert>
-                    }
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="UserName" Label="Username"
-                                          Placeholder="Enter username" ErrorText="@UserNameErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="DisplayName" Label="Display Name"
-                                          Placeholder="Enter display name" ErrorText="@DisplayNameErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="Email" Label="Email"
-                                          Placeholder="Enter email address" ErrorText="@EmailErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="FirstName" Label="First Name"
-                                          Placeholder="Enter first name" ErrorText="@FirstNameErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="LastName" Label="Last Name"
-                                          Placeholder="Enter last name" ErrorText="@LastNameErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="PostalCode" Label="Postal / Zip Code"
-                                          Placeholder="Enter postal code" ErrorText="@PostalCodeErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="Password" Label="Password"
-                                          Placeholder="Enter password" ErrorText="@PasswordErrorText" />
-                    </div>
-                    <div class="space-y-2">
-                        <BbFormFieldInput TValue="string" Name="ConfirmPassword" Label="Confirm Password"
-                                          Placeholder="Confirm your password" ErrorText="@ConfirmPasswordErrorText" />
-                    </div>
-                    <BbButton Type="ButtonType.Submit" class="w-full">Create Account</BbButton>
-                </div>
-            </form>
-        </BbCardContent>
-        <BbCardFooter class="justify-center">
-            <p class="text-sm text-muted-foreground">
-                Already have an account? <a href="/login" class="text-primary underline-offset-4 hover:underline">Login</a>
-            </p>
-        </BbCardFooter>
-    </BbCard>
-</div>
+<EditForm EditContext="editContext">
+    <DataAnnotationsValidator />
+    <ProtoValidateValidator TMessage="CreateUserRequest" MessageFactory="@BuildRequest" />
+    <BbFormWizard OnComplete="HandleSubmit">
+        <BbWizardStep Title="Account" Icon="user"
+                      FieldNames="@(new[] { "UserName", "Email", "Password", "ConfirmPassword" })">
+            <div class="space-y-4 max-w-md">
+                <BbFormFieldInput TValue="string"
+                    Label="Username"
+                    @bind-Value="model.UserName"
+                    ErrorText="@GetError(() => model.UserName)"
+                    HelperText="At least 3 characters"
+                    Placeholder="johndoe" />
+                <BbFormFieldInput TValue="string"
+                    Label="Email"
+                    @bind-Value="model.Email"
+                    ErrorText="@GetError(() => model.Email)"
+                    Placeholder="you@example.com" />
+                <BbFormFieldInput TValue="string"
+                    Label="Password"
+                    Type="InputType.Password"
+                    @bind-Value="model.Password"
+                    ErrorText="@GetError(() => model.Password)"
+                    HelperText="At least 6 characters" />
+                <BbFormFieldInput TValue="string"
+                    Label="Confirm Password"
+                    Type="InputType.Password"
+                    @bind-Value="model.ConfirmPassword"
+                    ErrorText="@GetError(() => model.ConfirmPassword)" />
+            </div>
+        </BbWizardStep>
+        <BbWizardStep Title="Profile" Icon="id-card"
+                      FieldNames="@(new[] { "FirstName", "LastName", "DisplayName", "PostalCode" })">
+            <div class="space-y-4 max-w-md">
+                <BbFormFieldInput TValue="string"
+                    Label="First Name"
+                    @bind-Value="model.FirstName"
+                    ErrorText="@GetError(() => model.FirstName)"
+                    Placeholder="Jane" />
+                <BbFormFieldInput TValue="string"
+                    Label="Last Name"
+                    @bind-Value="model.LastName"
+                    ErrorText="@GetError(() => model.LastName)"
+                    Placeholder="Doe" />
+                <BbFormFieldInput TValue="string"
+                    Label="Display Name"
+                    @bind-Value="model.DisplayName"
+                    ErrorText="@GetError(() => model.DisplayName)"
+                    HelperText="Public-facing name (optional)"
+                    Placeholder="Jane Doe" />
+                <BbField Label="Bio">
+                    <BbTextarea @bind-Value="model.Bio"
+                                Placeholder="Tell us about yourself..." />
+                </BbField>
+                <BbFormFieldInput TValue="string"
+                    Label="Postal / Zip Code"
+                    @bind-Value="model.PostalCode"
+                    ErrorText="@GetError(() => model.PostalCode)"
+                    Placeholder="12345" />
+            </div>
+        </BbWizardStep>
+        <BbWizardStep Title="Review" Icon="circle-check">
+            <div class="rounded-lg border p-4 space-y-2 max-w-md">
+                <p class="text-sm"><strong>Username:</strong> @model.UserName</p>
+                <p class="text-sm"><strong>Email:</strong> @model.Email</p>
+                <p class="text-sm"><strong>Name:</strong> @model.FirstName @model.LastName</p>
+                @if (!string.IsNullOrEmpty(model.DisplayName))
+                {
+                    <p class="text-sm"><strong>Display Name:</strong> @model.DisplayName</p>
+                }
+                <p class="text-sm"><strong>Postal Code:</strong> @model.PostalCode</p>
+            </div>
+        </BbWizardStep>
+    </BbFormWizard>
+</EditForm>
 
 @code {
-    [Parameter] public string AntiforgeryToken { get; set; } = string.Empty;
-    [Parameter] public string Error { get; set; } = string.Empty;
-    [Parameter] public string UserNameErrorText { get; set; } = string.Empty;
-    [Parameter] public string DisplayNameErrorText { get; set; } = string.Empty;
-    [Parameter] public string EmailErrorText { get; set; } = string.Empty;
-    [Parameter] public string PasswordErrorText { get; set; } = string.Empty;
-    [Parameter] public string ConfirmPasswordErrorText { get; set; } = string.Empty;
-    [Parameter] public string FirstNameErrorText { get; set; } = string.Empty;
-    [Parameter] public string LastNameErrorText { get; set; } = string.Empty;
-    [Parameter] public string PostalCodeErrorText { get; set; } = string.Empty;
+    private RegistrationModel model = new();
+    private EditContext editContext = null!;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+    }
+
+    private string GetError<T>(Expression<Func<T>> accessor)
+    {
+        var fi = FieldIdentifier.Create(accessor);
+        return editContext.GetValidationMessages(fi).FirstOrDefault() ?? string.Empty;
+    }
+
+    private class RegistrationModel
+    {
+        public string UserName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Please confirm your password")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = "";
+
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string? DisplayName { get; set; }
+        public string? Bio { get; set; }
+        public string PostalCode { get; set; } = "";
+    }
+
+    private CreateUserRequest BuildRequest() => new()
+    {
+        UserName    = model.UserName    ?? "",
+        Email       = model.Email       ?? "",
+        Password    = model.Password    ?? "",
+        FirstName   = model.FirstName   ?? "",
+        LastName    = model.LastName    ?? "",
+        DisplayName = model.DisplayName ?? "",
+        Bio         = model.Bio         ?? "",
+        PostalCode  = model.PostalCode  ?? "",
+    };
+
+    private void HandleSubmit() { /* Save registration */ }
 }

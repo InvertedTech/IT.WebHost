@@ -7,6 +7,7 @@ using IT.WebHost.App.Extensions;
 using ProtoValidate;
 using System.Diagnostics;
 using IT.WebServices.Authentication;
+using IT.WebServices.Fragments.Authorization.Payment;
 
 namespace IT.WebHost.App.Controllers
 {
@@ -14,14 +15,16 @@ namespace IT.WebHost.App.Controllers
     {
         private readonly UserInterface.UserInterfaceClient _userClient;
         private readonly IT.WebHost.Core.Services.SiteSettingsService _siteSettings;
+        private readonly PaymentInterface.PaymentInterfaceClient _paymentClient;
         private readonly ONUserHelper userHelper;
         private readonly IAntiforgery _antiforgery;
         private readonly IValidator _validator;
 
-        public AuthController(UserInterface.UserInterfaceClient userClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, ONUserHelper userHelper, IAntiforgery antiforgery, IValidator validator)
+        public AuthController(UserInterface.UserInterfaceClient userClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, PaymentInterface.PaymentInterfaceClient paymentClient, ONUserHelper userHelper, IAntiforgery antiforgery, IValidator validator)
         {
             _userClient = userClient;
             _siteSettings = siteSettings;
+            _paymentClient = paymentClient;
             this.userHelper = userHelper;
             _antiforgery = antiforgery;
             _validator = validator;
@@ -138,11 +141,13 @@ namespace IT.WebHost.App.Controllers
         {
             ViewData["Title"] = $"Profile - {_siteSettings.SiteTitle}";
 
-            var response = await _userClient.GetOwnUserAsync(new()
-            {
-                
+            var response = await _userClient.GetOwnUserAsync(new() {
             }, userHelper.GetGrpcCallOptions());
-            return View(new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null });
+
+            var subs = await _paymentClient.GetOwnSubscriptionRecordsAsync(new() { }, userHelper.GetGrpcCallOptions());
+            var vm = new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null, };
+            vm.SubscriptionRecords = subs.Generic.Select(r => r.SubscriptionRecord).ToList();
+            return View(vm);
         }
 
         [HttpGet("/subscribe")]

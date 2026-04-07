@@ -1,10 +1,12 @@
 using IT.WebServices.Fragments.Authentication;
+using IT.WebServices.Fragments.Authorization.Payment;
 
 namespace IT.WebHost.Core.Models
 {
     public class ProfileViewModel
     {
         public ProfileData? UserRecord { get; set; }
+        public IEnumerable<GenericSubscriptionRecord> SubscriptionRecords { get; set; } = new List<GenericSubscriptionRecord>();
     }
 
     public class ProfileData
@@ -15,6 +17,7 @@ namespace IT.WebHost.Core.Models
         public byte[] ProfileImagePNG { get; set; } = [];
         public List<string> Roles { get; set; } = [];
         public DateTime? CreatedOnUTC { get; set; }
+        
 
         public static ProfileData FromRecord(UserNormalRecord record) => new()
         {
