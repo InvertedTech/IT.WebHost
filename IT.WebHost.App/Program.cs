@@ -1,5 +1,4 @@
 using BlazorBlueprint.Components;
-using IT.WebHost.Core.Clients;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
 
@@ -10,9 +9,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddAuthenticationClasses();
-builder.Services.AddCoreClients();
 builder.Services.AddCoreServices();
-
+builder.Services.AddGrpcClientClasses();
 // Add BlazorBlueprint services
 builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddSingleton<ProtoValidate.IValidator, ProtoValidate.Validator>();

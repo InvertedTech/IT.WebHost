@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using IT.WebHost.App.Models;
-using IT.WebHost.Core.Clients;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Fragments.Content;
 
@@ -9,10 +8,10 @@ namespace IT.WebHost.App.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ContentClient _contentClient;
+        private readonly ContentInterface.ContentInterfaceClient _contentClient;
         private readonly SiteSettingsService _siteSettings;
 
-        public HomeController(ContentClient contentClient, SiteSettingsService siteSettings)
+        public HomeController(ContentInterface.ContentInterfaceClient contentClient, SiteSettingsService siteSettings)
         {
             _contentClient = contentClient;
             _siteSettings = siteSettings;

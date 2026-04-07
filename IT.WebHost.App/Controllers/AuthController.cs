@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Antiforgery;
-using IT.WebHost.Core.Clients;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments;
 using IT.WebHost.Core.Models;
@@ -13,15 +12,15 @@ namespace IT.WebHost.App.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly AuthClient _authClient;
+        private readonly UserInterface.UserInterfaceClient _userClient;
         private readonly IT.WebHost.Core.Services.SiteSettingsService _siteSettings;
         private readonly ONUserHelper userHelper;
         private readonly IAntiforgery _antiforgery;
         private readonly IValidator _validator;
 
-        public AuthController(AuthClient authClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, ONUserHelper userHelper, IAntiforgery antiforgery, IValidator validator)
+        public AuthController(UserInterface.UserInterfaceClient userClient, IT.WebHost.Core.Services.SiteSettingsService siteSettings, ONUserHelper userHelper, IAntiforgery antiforgery, IValidator validator)
         {
-            _authClient = authClient;
+            _userClient = userClient;
             _siteSettings = siteSettings;
             this.userHelper = userHelper;
             _antiforgery = antiforgery;
@@ -63,7 +62,7 @@ namespace IT.WebHost.App.Controllers
                 return View(model);
             }
 
-            var response = await _authClient.LoginAsync(request);
+            var response = await _userClient.AuthenticateUserAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
             {
                 HttpContext.Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, response.BearerToken, new CookieOptions
@@ -126,7 +125,7 @@ namespace IT.WebHost.App.Controllers
                 return View(model);
             }
 
-            var response = await _authClient.SignUpAsync(request);
+            var response = await _userClient.CreateUserAsync(request);
             if (response.Error.Reason == APIErrorReason.ErrorReasonNoError)
                 return Redirect($"/auth/set-cookie?token={Uri.EscapeDataString(response.BearerToken)}");
 
@@ -139,7 +138,10 @@ namespace IT.WebHost.App.Controllers
         {
             ViewData["Title"] = $"Profile - {_siteSettings.SiteTitle}";
 
-            var response = await _authClient.GetOwnUserAsync();
+            var response = await _userClient.GetOwnUserAsync(new()
+            {
+                
+            }, userHelper.GetGrpcCallOptions());
             return View(new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null });
         }
 

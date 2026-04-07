@@ -1,5 +1,4 @@
 ﻿using IT.WebHost.Core.Authentication;
-using IT.WebHost.Core.Clients;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -54,16 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddAuthorization();
 
             services.AddCascadingAuthenticationState();
-
-            return services;
-        }
-
-        public static IServiceCollection AddCoreClients(this IServiceCollection services)
-        {
-            services.AddScoped<AuthClient>();
-            services.AddScoped<ContentClient>();
-
-            services.AddGrpcClientClasses();
 
             return services;
         }

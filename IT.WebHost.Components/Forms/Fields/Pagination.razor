@@ -1,0 +1,83 @@
+﻿@namespace IT.WebHost.Components.Forms.Fields
+@inject NavigationManager Navigation
+
+<BbPagination>
+    <BbPaginationContent>
+        @if (!_isFirstPage)
+        {
+            <BbPaginationItem>
+                <BbPaginationFirst OnClick="@(() => Nav(PageUrl(1)))" />
+            </BbPaginationItem>
+        }
+        @if (_hasPrevious)
+        {
+            <BbPaginationItem>
+                <BbPaginationPrevious Href="@PageUrl(_page - 1)" />
+            </BbPaginationItem>
+        }
+        @for (uint p = _windowStart; p <= _windowEnd; p++)
+        {
+            var pageNum = p;
+            <BbPaginationItem>
+                <BbPaginationLink Href="@PageUrl(pageNum)" IsActive="pageNum == _page">@pageNum</BbPaginationLink>
+            </BbPaginationItem>
+        }
+        @if (_hasNext)
+        {
+            <BbPaginationItem>
+                <BbPaginationNext Href="@PageUrl(_page + 1)" />
+            </BbPaginationItem>
+        }
+        @if (!_isLastPage)
+        {
+            <BbPaginationItem>
+                <BbPaginationLast OnClick="@(() => Nav(PageUrl(_totalPages)))" />
+            </BbPaginationItem>
+        }
+    </BbPaginationContent>
+</BbPagination>
+
+@code {
+    [Parameter] public uint PageOffset { get; set; } = 0;
+    [Parameter] public EventCallback<uint> PageOffsetChanged { get; set; }
+    [Parameter] public uint PageSize { get; set; } = 10;
+    [Parameter] public EventCallback<uint> PageSizeChanged { get; set; }
+    [Parameter] public uint PageTotalItems { get; set; } = 0;
+    [Parameter] public EventCallback<uint> PageTotalItemsChanged { get; set; }
+    [Parameter] public string BaseUrl { get; set; } = string.Empty;
+
+    private uint _page => (PageOffset > 0 && PageSize > 0)
+        ? (PageOffset / PageSize) + 1
+        : 1;
+
+    private uint _totalPages => (PageSize > 0)
+        ? (uint)Math.Ceiling((double)PageTotalItems / PageSize)
+        : 1;
+
+    private const uint WindowSize = 3;
+    private uint _windowStart
+    {
+        get
+        {
+            int ideal = (int)_page - (int)(WindowSize / 2);
+            int clamped = Math.Max(1, ideal);
+            int end = Math.Min((int)_totalPages, clamped + (int)WindowSize - 1);
+            return (uint)Math.Max(1, end - (int)WindowSize + 1);
+        }
+    }
+    private uint _windowEnd => (uint)Math.Min(_totalPages, _windowStart + WindowSize - 1);
+
+    private bool _hasPrevious => PageOffset > 0;
+    private bool _hasNext => PageOffset + PageSize < PageTotalItems;
+    private bool _isFirstPage => PageOffset == 0;
+    private bool _isLastPage => PageOffset + PageSize >= PageTotalItems;
+
+    private void Nav(string url) => Navigation.NavigateTo(url);
+
+    private string PageUrl(uint pageNum)
+    {
+        var offset = (pageNum - 1) * PageSize;
+        var separator = BaseUrl.Contains('?') ? "&" : "?";
+        return $"{BaseUrl}{separator}pageSize={PageSize}&pageOffset={offset}";
+    }
+}

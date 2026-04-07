@@ -1,0 +1,23 @@
+﻿@namespace IT.WebHost.Components.Merch
+@using IT.WebServices.Fragments.Merch
+@if (Merch.Count() == 0)
+{
+    <div class="flex flex-1 items-center justify-center py-12">
+        <BbAlert Variant="AlertVariant.Warning">
+            <BbAlertTitle>No Merch</BbAlertTitle>
+            <BbAlertDescription>No Merch items to display.</BbAlertDescription>
+        </BbAlert>
+    </div>
+} else
+{
+     <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+        @foreach (var item in Merch)
+        {
+            <MerchCard Data="item" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<GenericMerchRecord> Merch { get; set; } = [];
+}

@@ -1,16 +1,16 @@
-﻿using IT.WebHost.Core.Clients;
-using IT.WebHost.Core.Models;
+﻿using IT.WebHost.Core.Models;
 using IT.WebHost.Core.Services;
+using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IT.WebHost.App.Controllers
 {
     public class ContentController : Controller
     {
-        private readonly ContentClient _contentClient;
+        private readonly ContentInterface.ContentInterfaceClient _contentClient;
         private readonly SiteSettingsService _siteSettingsService;
 
-        public ContentController(ContentClient contentClient, SiteSettingsService siteSettingsService)
+        public ContentController(ContentInterface.ContentInterfaceClient contentClient, SiteSettingsService siteSettingsService)
         {
             _contentClient = contentClient;
             _siteSettingsService = siteSettingsService;
