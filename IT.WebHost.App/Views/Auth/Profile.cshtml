@@ -1,3 +1,11 @@
 @model IT.WebHost.Core.Models.ProfileViewModel
 
-<component type="typeof(IT.WebHost.Components.Profile.ProfileHeader)" render-mode="ServerPrerendered" param-Model="@Model" />
+<div class="container max-w-3xl py-12 mx-auto">
+    <component 
+        type="typeof(IT.WebHost.Components.Profile.ProfileHeader)"
+        render-mode="ServerPrerendered"
+        param-Model="@Model" />
+    <component type="typeof(IT.WebHost.Components.Profile.ProfileTabs)"
+        render-mode="ServerPrerendered"
+        param-Model="@Model" />
+</div>

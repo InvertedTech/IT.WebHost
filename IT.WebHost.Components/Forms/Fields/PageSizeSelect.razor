@@ -1,0 +1,20 @@
+﻿﻿
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbFormFieldSelect TValue="uint"
+                   Label="Page Size"
+                   Placeholder="Select page size"
+                   class="w-32"
+                   DisplayTextSelector="@(v => v.ToString())"
+                   @bind-Value="pageSize">
+
+    <BbSelectItem Value="@(10u)" Text="10" />
+    <BbSelectItem Value="@(25u)" Text="25" />
+    <BbSelectItem Value="@(50u)" Text="50" />
+    <BbSelectItem Value="@(100u)" Text="100" />
+</BbFormFieldSelect>
+
+@code {
+    [Parameter] public uint pageSize { get; set; } = 10;
+    [Parameter] public EventCallback<uint> pageSizeChanged { get; set; }
+}

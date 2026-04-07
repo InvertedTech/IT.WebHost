@@ -1,0 +1,39 @@
+﻿@using IT.WebHost.Core.Models
+
+<BbTabs DefaultValue="account" class="w-[400px]">
+    <BbTabsList>
+        <BbTabsTrigger Value="account">Account</BbTabsTrigger>
+        <BbTabsTrigger Value="password">Password</BbTabsTrigger>
+        <BbTabsTrigger Value="subscription">Subscription</BbTabsTrigger>
+    </BbTabsList>
+    <BbTabsContent Value="account" class="mx-auto">
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>Account</BbCardTitle>
+                <BbCardDescription>Make changes to your account.</BbCardDescription>
+            </BbCardHeader>
+            <BbCardContent class="space-y-2">
+                <div class="space-y-1">
+                    <BbLabel For="name">Name</BbLabel>
+                    <BbInput Id="name" Value="Nathan Clarke" />
+                </div>
+                <div class="space-y-1">
+                    <BbLabel For="username">Username</BbLabel>
+                    <BbInput Id="username" Value="@Model.UserRecord.UserName" />
+                </div>
+            </BbCardContent>
+            <BbCardFooter>
+                <BbButton>Save changes</BbButton>
+            </BbCardFooter>
+        </BbCard>
+    </BbTabsContent>
+    <BbTabsContent Value="password">
+        <!-- Password form -->
+    </BbTabsContent>
+    <BbTabsContent Value="subscription">
+        <!-- Password form -->
+    </BbTabsContent>
+</BbTabs>
+@code {
+    [Parameter] public ProfileViewModel Model { get; set; } = new();
+}

@@ -1,0 +1,18 @@
+﻿@using IT.WebServices.Fragments.Settings
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbFormFieldSelect TValue="string" Label="Category" Placeholder="Select a Category"
+                   DisplayTextSelector="@(v => Categories.FirstOrDefault(c => c.CategoryId == v)?.DisplayName ?? v ?? "")"
+                   @bind-Value="SelectedCategory">
+    @foreach (var category in Categories)
+    {
+        <BbSelectItem Value="@(category.CategoryId)" Text="@(category.DisplayName)" />
+    }
+</BbFormFieldSelect>
+
+@code {
+    [Parameter] public string SelectedCategory { get; set; } = string.Empty;
+    [Parameter] public IEnumerable<CategoryRecord> Categories { get; set; } = new List<CategoryRecord>();
+    [Parameter] public EventCallback<string> SelectedCategoryChanged { get; set; }
+    [Parameter] public EventCallback<IEnumerable<CategoryRecord>> CategoriesChanged { get; set; }
+}

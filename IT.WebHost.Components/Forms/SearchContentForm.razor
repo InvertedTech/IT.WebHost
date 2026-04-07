@@ -1,25 +1,19 @@
 @using BlazorBlueprint.Components
+@using IT.WebHost.Components.Forms.Fields
 @using IT.WebServices.Fragments.Content
+@using IT.WebServices.Fragments.Authorization
+@using IT.WebServices.Fragments.Settings
 @namespace IT.WebHost.Components.Forms
 
 <div class="flex items-end gap-2">
-    <BbInput placeholder="Search..."
-             class="w-40 pl-8 h-9"
-             @onkeydown="HandleSearchKey"
-             @bind-Value="query" />
-
-    <BbFormFieldSelect TValue="uint"
-                       Label="Page Size"
-                       Placeholder="Select page size"
-                       class="w-32"
-                       DisplayTextSelector="@(v => v.ToString())"
-                       @bind-Value="pageSize">
-
-        <BbSelectItem Value="@(10u)" Text="10" />
-        <BbSelectItem Value="@(25u)" Text="25" />
-        <BbSelectItem Value="@(50u)" Text="50" />
-        <BbSelectItem Value="@(100u)" Text="100" />
-    </BbFormFieldSelect>
+    <SearchInput @bind-query="query" OnSearch="HandleSearchKey" />
+    <PageSizeSelect @bind-pageSize="pageSize" />
+    <SubscriptionLevelSelect Label="Min Level" @bind-SelectedLevel="minSubscriptionLevel" Tiers="Tiers" />
+    <SubscriptionLevelSelect Label="Max Level" @bind-SelectedLevel="maxSubscriptionLevel" Tiers="Tiers" />
+    <ChannelSelect @bind-Channels="Channels" @bind-SelectedChannel="channelId" />
+    <CategorySelect @bind-Categories="Categories" @bind-SelectedCategory="categoryId" />
+    <BbFormFieldTagInput Label="Tags"
+                         @bind-Tags="tags" Placeholder="Add tag..." />
 </div>
 
 @code {
@@ -29,8 +23,13 @@
     [Parameter] public ContentType? contentType { get; set; } = ContentType.ContentNone;
     [Parameter] public string? categoryId { get; set; }
     [Parameter] public string? channelId { get; set; }
-    [Parameter] public string? tag { get; set; }
+    [Parameter] public IReadOnlyList<string> tags { get; set; } = new List<string>();
     [Parameter] public bool onlyLive { get; set; } = false;
+    [Parameter] public uint minSubscriptionLevel { get; set; } = 0;
+    [Parameter] public uint maxSubscriptionLevel { get; set; } = 0;
+    [Parameter] public IEnumerable<SubscriptionTier> Tiers { get; set; } = [];
+    [Parameter] public IEnumerable<ChannelRecord> Channels { get; set; } = [];
+    [Parameter] public IEnumerable<CategoryRecord> Categories { get; set; } = [];
 
     [Inject] private NavigationManager Nav { get; set; } = null!;
 
@@ -50,11 +49,34 @@
             qs += $"&categoryId={Uri.EscapeDataString(categoryId)}";
         if (!string.IsNullOrEmpty(channelId))
             qs += $"&channelId={Uri.EscapeDataString(channelId)}";
-        if (!string.IsNullOrEmpty(tag))
-            qs += $"&tag={Uri.EscapeDataString(tag)}";
+        // if (!string.IsNullOrEmpty(tag))
+        //     qs += $"&tag={Uri.EscapeDataString(tag)}";
+        if (tags.Count() > 0)
+        {
+            var tagsString = BuildTags(tags);
+            qs += tagsString;
+        }
         if (onlyLive)
             qs += "&onlyLive=true";
+        if (minSubscriptionLevel > 0)
+            qs += $"&minSubscriptionLevel={minSubscriptionLevel}";
+        if (maxSubscriptionLevel > 0)
+            qs += $"&maxSubscriptionLevel={maxSubscriptionLevel}";
 
         return $"/search?{qs}";
+    }
+
+    private string BuildTags(IReadOnlyList<string> _tags)
+    {
+        var tagsString = "";
+        foreach (var tag in _tags)
+        {
+            if (!string.IsNullOrWhiteSpace(tagsString))
+                tagsString += ",";
+            tagsString += Uri.EscapeDataString(tag);
+        }
+        ;
+
+        return $"&tags=[{tagsString}]";
     }
 }

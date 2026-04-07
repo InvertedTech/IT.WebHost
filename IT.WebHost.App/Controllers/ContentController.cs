@@ -47,7 +47,7 @@ namespace IT.WebHost.App.Controllers
                 ContentType = contentType ?? IT.WebServices.Fragments.Content.ContentType.ContentNone,
                 CategoryId = categoryId ?? string.Empty,
                 ChannelId = channelId ?? string.Empty,
-                Tag = tag ?? string.Empty,
+                Tags = tag ?? string.Empty,
                 OnlyLive = onlyLive ?? false,
                 Content = []
             });

@@ -1,3 +1,4 @@
+@using IT.WebHost.Components.Forms.Fields
 @using IT.WebHost.Core.Models
 @namespace IT.WebHost.Components.Profile
 
@@ -20,8 +21,29 @@
             <span class="text-lg font-semibold leading-tight">@user.DisplayName</span>
             <span class="text-sm text-muted-foreground leading-tight">@@@user.UserName</span>
         </div>
+        <ImageUploadField TriggerLabel="Change Picture" />
     </div>
     <BbSeparator class="my-4" />
+
+    <div class="flex flex-row items-start gap-8 flex-wrap">
+        @if (!string.IsNullOrWhiteSpace(user.Bio))
+        {
+            <div>
+                <BbLabel>Bio</BbLabel>
+                <p class="text-sm text-muted-foreground mt-1">@user.Bio</p>
+            </div>
+        }
+
+        <div>
+            <BbLabel>Member Since</BbLabel>
+            <p class="text-sm text-muted-foreground mt-1">
+                @user.CreatedOnUTC?.ToLocalTime().ToString("MMMM yyyy")
+            </p>
+        </div>
+
+        <BbButton Variant="ButtonVariant.Outline" class="self-end ml-auto">Change Password</BbButton>
+        <BbSeparator class="mb-4" />
+    </div>
 }
 
 @code {

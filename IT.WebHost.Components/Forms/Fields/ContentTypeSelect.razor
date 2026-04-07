@@ -1,0 +1,24 @@
+﻿﻿@using IT.WebServices.Fragments.Settings
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbFormFieldSelect TValue="ContentType" Label="Content Type" Placeholder="Select a Content Type To Filter By"
+    DisplayTextSelector="@(v => v switch {
+        ContentType.ContentNone => "None",
+        ContentType.ContentAudio => "Audio",
+        ContentType.ContentPicture => "Picture",
+        ContentType.ContentVideo => "Video",
+        ContentType.ContentWritten => "Written",
+        _ => v.ToString()
+    })"
+    @bind-Value="SelectedType">
+    <BbSelectItem Value="@(ContentType.ContentNone)" Text="None" />
+    <BbSelectItem Value="@(ContentType.ContentAudio)" Text="Audio" />
+    <BbSelectItem Value="@(ContentType.ContentPicture)" Text="Picture" />
+    <BbSelectItem Value="@(ContentType.ContentVideo)" Text="Video" />
+    <BbSelectItem Value="@(ContentType.ContentWritten)" Text="Written" />
+</BbFormFieldSelect>
+
+@code {
+    [Parameter] public ContentType SelectedType { get; set; } = ContentType.ContentNone;
+}

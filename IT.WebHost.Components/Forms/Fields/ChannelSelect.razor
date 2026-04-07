@@ -1,0 +1,18 @@
+﻿﻿@using IT.WebServices.Fragments.Settings
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbFormFieldSelect TValue="string" Label="Channel" Placeholder="Select a Channel"
+                   DisplayTextSelector="@(v => Channels.FirstOrDefault(c => c.ChannelId == v)?.DisplayName ?? v ?? "")"
+                   @bind-Value="SelectedChannel">
+    @foreach (var channel in Channels)
+    {
+        <BbSelectItem Value="@(channel.ChannelId)" Text="@(channel.DisplayName)" />
+    }
+</BbFormFieldSelect>
+
+@code {
+    [Parameter] public string SelectedChannel { get; set; } = string.Empty;
+    [Parameter] public IEnumerable<ChannelRecord> Channels { get; set; } = new List<ChannelRecord>();
+    [Parameter] public EventCallback<string> SelectedChannelChanged { get; set; }
+    [Parameter] public EventCallback<IEnumerable<ChannelRecord>> ChannelsChanged { get; set; }
+}

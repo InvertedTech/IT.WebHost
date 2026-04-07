@@ -1,0 +1,20 @@
+﻿﻿
+@namespace IT.WebHost.Components.Forms.Fields
+@using IT.WebServices.Fragments.Authorization
+
+<BbFormFieldSelect TValue="uint" Label="@Label"
+                   DisplayTextSelector="@(v => Tiers.FirstOrDefault(t => t.AmountCents == v)?.Name ?? v.ToString())"
+                   @bind-Value="SelectedLevel">
+    <BbSelectItem Value="@(0u)" Text="Any" />
+    @foreach (var tier in Tiers)
+    {
+        <BbSelectItem Value="@(tier.AmountCents)" Text="@(tier.Name)" />
+    }
+</BbFormFieldSelect>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Subscription Level";
+    [Parameter] public uint SelectedLevel { get; set; } = 0;
+    [Parameter] public EventCallback<uint> SelectedLevelChanged { get; set; }
+    [Parameter] public IEnumerable<SubscriptionTier> Tiers { get; set; } = new List<SubscriptionTier>();
+}
