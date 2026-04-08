@@ -1,7 +1,9 @@
 @using IT.WebHost.Components.Forms
 @using IT.WebServices.Fragments.Comment
+@using IT.WebServices.Authentication
 @namespace IT.WebHost.Components.Comments
 @inject CommentInterface.CommentInterfaceClient CommentClient
+@inject ONUserHelper UserHelper
 
 <BbItem>
     <BbItemMedia>
@@ -10,13 +12,16 @@
         </BbAvatar>
     </BbItemMedia>
     <BbItemContent>
-        <BbItemTitle>@Comment.UserID</BbItemTitle>
+        <BbItemTitle>@Comment.UserDisplayName</BbItemTitle>
         <BbItemDescription>@Comment.CommentText</BbItemDescription>
     </BbItemContent>
     <BbItemActions>
-        <BbButton Variant="@(isLiked ? ButtonVariant.Default : ButtonVariant.Outline)" Size="ButtonSize.Small" @onclick="ToggleLike">
-            <LucideIcon Name="heart" Size="14" class="@(isLiked ? "fill-current" : "")" />
-            @likeCount
+        <BbButton Variant="@(_liked ? ButtonVariant.Default : ButtonVariant.Outline)"
+                  Size="ButtonSize.Small"
+                  Disabled="@(!UserHelper.IsLoggedIn)"
+                  @onclick="ToggleLike">
+            <LucideIcon Name="heart" Size="14" class="@(_liked ? "fill-current" : "")" />
+            @_likeCount
         </BbButton>
         <NewCommentForCommentForm CommentId="@Comment.CommentID" />
     </BbItemActions>
@@ -30,10 +35,10 @@
         </BbButton>
     </CollapsibleTrigger>
     <CollapsibleContent>
-        @if (replies.Any())
+        @if (_replies.Any())
         {
             <div class="ml-8 flex flex-col divide-y">
-                @foreach (var reply in replies)
+                @foreach (var reply in _replies)
                 {
                     <CommentItem Comment="reply" />
                 }
@@ -44,40 +49,43 @@
 
 @code {
     [Parameter] public CommentResponseRecord Comment { get; set; }
-    [Parameter] public bool IsLiked { get; set; }
-    [Parameter] public EventCallback<bool> OnLikeToggled { get; set; }
 
-    private bool isLiked;
-    private uint likeCount;
-    private bool hasLoaded;
-    private IEnumerable<CommentResponseRecord> replies = new List<CommentResponseRecord>();
+    private bool _liked;
+    private uint _likeCount;
+    private bool _repliesLoaded;
+    private IEnumerable<CommentResponseRecord> _replies = new List<CommentResponseRecord>();
 
     protected override void OnParametersSet()
     {
-        isLiked = IsLiked;
-        likeCount = Comment.Likes;
+        _liked = Comment.LikedByUser;
+        _likeCount = Comment.Likes;
     }
 
     private async Task OnTriggerClicked()
     {
-        if (!hasLoaded)
-        {
-            var res = await CommentClient.GetCommentsForCommentAsync(new GetCommentsForCommentRequest
-            {
-                ParentCommentID = Comment.CommentID,
-                PageSize = 10,
-                Order = CommentOrder.Newest
-            });
+        if (_repliesLoaded) return;
 
-            replies = res.Records;
-            hasLoaded = true;
-        }
+        var res = await CommentClient.GetCommentsForCommentAsync(new GetCommentsForCommentRequest
+        {
+            ParentCommentID = Comment.CommentID,
+            PageSize = 10,
+            Order = CommentOrder.Newest
+        }, UserHelper.GetGrpcCallOptions());
+
+        _replies = res.Records;
+        _repliesLoaded = true;
     }
 
     private async Task ToggleLike()
     {
-        isLiked = !isLiked;
-        likeCount = isLiked ? likeCount + 1 : likeCount - 1;
-        await OnLikeToggled.InvokeAsync(isLiked);
+        if (!UserHelper.IsLoggedIn) return;
+
+        _liked = !_liked;
+        _likeCount = _liked ? _likeCount + 1 : _likeCount - 1;
+
+        if (_liked)
+            await CommentClient.LikeCommentAsync(new LikeCommentRequest { CommentID = Comment.CommentID }, UserHelper.GetGrpcCallOptions());
+        else
+            await CommentClient.UnLikeCommentAsync(new UnLikeCommentRequest { CommentID = Comment.CommentID }, UserHelper.GetGrpcCallOptions());
     }
 }

@@ -1,4 +1,8 @@
 @namespace IT.WebHost.Components.Content
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Content.Stats
+@inject ONUserHelper UserHelper
+@inject StatsSaveInterface.StatsSaveInterfaceClient StatsSaveClient
 
 <BbButton Variant="@(_on ? ButtonVariant.Default : ButtonVariant.Outline)"
           Size="ButtonSize.Small"
@@ -25,6 +29,26 @@
     {
         if (Disabled) return;
         _on = !_on;
+        if (_on)
+            await Save();
+        else
+            await Unsave();
         await OnToggled.InvokeAsync(_on);
+    }
+
+    private async Task Save()
+    {
+        await StatsSaveClient.SaveContentAsync(new SaveContentRequest
+        {
+            ContentID = ContentId
+        }, UserHelper.GetGrpcCallOptions());
+    }
+
+    private async Task Unsave()
+    {
+        await StatsSaveClient.UnsaveContentAsync(new SaveContentRequest
+        {
+            ContentID = ContentId
+        }, UserHelper.GetGrpcCallOptions());
     }
 }

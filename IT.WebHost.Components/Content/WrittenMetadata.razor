@@ -1,7 +1,5 @@
 @using IT.WebServices.Fragments.Content
-@using IT.WebServices.Authentication
 @namespace IT.WebHost.Components.Content
-@inject ONUserHelper UserHelper
 
 <div class="bg-card rounded-lg border p-4 sm:p-6">
     <header class="w-full space-y-4" aria-label="Article information">
@@ -20,12 +18,7 @@
                 @(Content?.Data?.Title ?? "Untitled Article")
             </h1>
             <div class="flex items-center gap-2 shrink-0">
-                <LikeUnlikeToggle ContentId="@(Content?.ContentID ?? string.Empty)"
-                                  InitialOn="@LikedByUser"
-                                  Disabled="@(!UserHelper.IsLoggedIn)" />
-                <SaveUnsaveToggle ContentId="@(Content?.ContentID ?? string.Empty)"
-                                  InitialOn="@SavedByUser"
-                                  Disabled="@(!UserHelper.IsLoggedIn)" />
+                <ContentStatsSection ContentId="@(Content?.ContentID ?? string.Empty)" />
             </div>
         </div>
 
@@ -70,8 +63,6 @@
 @code {
     [Parameter] public ContentPublicRecord? Content { get; set; }
     [Parameter] public bool ShowSubscriptionInfo { get; set; } = true;
-    [Parameter] public bool LikedByUser { get; set; }
-    [Parameter] public bool SavedByUser { get; set; }
 
     private DateTime? _publishDate;
 

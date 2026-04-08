@@ -1,0 +1,40 @@
+@using IT.WebServices.Fragments.Content.Stats
+@using IT.WebServices.Authentication
+@namespace IT.WebHost.Components.Content
+@inject StatsQueryInterface.StatsQueryInterfaceClient StatsQueryClient
+@inject ONUserHelper UserHelper
+
+<div class="flex items-center gap-2">
+    <LikeUnlikeToggle ContentId="@ContentId"
+                      InitialOn="@_likedByUser"
+                      Disabled="@(!UserHelper.IsLoggedIn)" />
+    <SaveUnsaveToggle ContentId="@ContentId"
+                      InitialOn="@_savedByUser"
+                      Disabled="@(!UserHelper.IsLoggedIn)" />
+</div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+
+    private bool _likedByUser;
+    private bool _savedByUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchStats();
+    }
+
+    private async Task FetchStats()
+    {
+        if (string.IsNullOrWhiteSpace(ContentId) || !UserHelper.IsLoggedIn)
+            return;
+
+        var res = await StatsQueryClient.GetContentStatsAsync(new GetContentStatsRequest
+        {
+            ContentID = ContentId
+        }, UserHelper.GetGrpcCallOptions());
+
+        _likedByUser = res.LikedByUser;
+        _savedByUser = res.SavedByUser;
+    }
+}

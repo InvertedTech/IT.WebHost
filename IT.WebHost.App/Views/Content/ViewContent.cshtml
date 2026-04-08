@@ -18,6 +18,13 @@
             <component type="typeof(IT.WebHost.Components.Content.WrittenMetadata)"
                        render-mode="ServerPrerendered"
                        param-Content="@Model.Record" />
+            @if (!string.IsNullOrEmpty(Model.Record.Data?.FeaturedImageAssetID))
+            {
+                <component type="typeof(IT.WebHost.Components.Content.FeaturedImage)"
+                           render-mode="Server"
+                           param-AssetId="@Model.Record.Data.FeaturedImageAssetID"
+                           param-Alt="@(Model.Record.Data.Title ?? "Featured image")" />
+            }
             <component type="typeof(IT.WebHost.Components.Content.WrittenBody)"
                        render-mode="ServerPrerendered"
                        param-Written="@Model.Record.Data.Written" />

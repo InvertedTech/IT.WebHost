@@ -1,7 +1,9 @@
 @using IT.WebServices.Fragments.Comment
 @using IT.WebHost.Components.Forms
+@using IT.WebServices.Authentication
 @namespace IT.WebHost.Components.Comments
 @inject CommentInterface.CommentInterfaceClient CommentClient
+@inject ONUserHelper UserHelper
 
 <div class="rounded-lg border p-4 sm:p-6 flex flex-col gap-6">
     <NewCommentForm ContentId="@ContentId" OnCommentSubmitted="RefreshComments" />
@@ -29,7 +31,7 @@
             ContentID = ContentId,
             PageSize = 10,
             Order = CommentOrder.Newest
-        });
+        }, UserHelper.GetGrpcCallOptions());
 
         Comments = res.Records;
     }
