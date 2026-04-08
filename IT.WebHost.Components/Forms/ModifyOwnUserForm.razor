@@ -2,20 +2,35 @@
 @using IT.WebHost.Components.Extensions
 @namespace IT.WebHost.Components.Forms
 
-<BbDynamicForm Schema="@_schema"
-               @bind-Values="_values"
-               ReadOnly="!EditModeEnabled"
-               ShowSubmitButton="false" />
+<BbCard>
+    <BbCardHeader>
+        <BbCardTitle>Profile</BbCardTitle>
+        <BbCardDescription>Update your basic information.</BbCardDescription>
+    </BbCardHeader>
+    <BbCardContent class="space-y-4">
+        <div class="flex items-center justify-between">
+            <p class="text-xs text-muted-foreground uppercase tracking-wide">
+                Only editable fields from the user update request.
+            </p>
+            @if (EditModeEnabled)
+            {
+                <div class="flex items-center gap-3">
+                    <button class="text-sm text-muted-foreground hover:text-foreground uppercase tracking-wide" @onclick="ToggleEditMode">Cancel</button>
+                    <BbButton @onclick="HandleSubmit">Save Changes</BbButton>
+                </div>
+            }
+            else
+            {
+                <BbButton Variant="ButtonVariant.Outline" @onclick="ToggleEditMode">Edit Profile</BbButton>
+            }
+        </div>
 
-@if (EditModeEnabled)
-{
-    <BbButton Class="w-full" @onclick="HandleSubmit">Save Changes</BbButton>
-    <BbButton Class="w-full" Variant="ButtonVariant.Outline" @onclick="ToggleEditMode">Discard Changes</BbButton>
-}
-else
-{
-    <BbButton Class="w-full" Variant="ButtonVariant.Outline" @onclick="ToggleEditMode">Edit</BbButton>
-}
+        <BbDynamicForm Schema="@_schema"
+                       @bind-Values="_values"
+                       ReadOnly="!EditModeEnabled"
+                       ShowSubmitButton="false" />
+    </BbCardContent>
+</BbCard>
 
 @code {
     [Parameter] public EventCallback<ModifyOwnUserRequest> OnSubmit { get; set; }
@@ -71,6 +86,7 @@ else
             PostalCode  = _values.GetString("PostalCode"),
         };
         await OnSubmit.InvokeAsync(request);
+        EditModeEnabled = false;
     }
 
     public void ToggleEditMode()

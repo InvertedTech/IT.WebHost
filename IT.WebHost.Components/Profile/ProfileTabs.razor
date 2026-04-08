@@ -1,37 +1,36 @@
-﻿@using IT.WebHost.Core.Models
+﻿@using IT.WebHost.Components.Forms
+@using IT.WebHost.Components.Payments
+@using IT.WebHost.Core.Models
 
-<BbTabs DefaultValue="account" class="w-[400px]">
+<BbTabs DefaultValue="account" class="w-full">
     <BbTabsList>
         <BbTabsTrigger Value="account">Account</BbTabsTrigger>
-        <BbTabsTrigger Value="password">Password</BbTabsTrigger>
         <BbTabsTrigger Value="subscription">Subscription</BbTabsTrigger>
     </BbTabsList>
     <BbTabsContent Value="account" class="mx-auto">
-        <BbCard>
-            <BbCardHeader>
-                <BbCardTitle>Account</BbCardTitle>
-                <BbCardDescription>Make changes to your account.</BbCardDescription>
-            </BbCardHeader>
-            <BbCardContent class="space-y-2">
-                <div class="space-y-1">
-                    <BbLabel For="name">Name</BbLabel>
-                    <BbInput Id="name" Value="Nathan Clarke" />
-                </div>
-                <div class="space-y-1">
-                    <BbLabel For="username">Username</BbLabel>
-                    <BbInput Id="username" Value="@Model.UserRecord.UserName" />
-                </div>
-            </BbCardContent>
-            <BbCardFooter>
-                <BbButton>Save changes</BbButton>
-            </BbCardFooter>
-        </BbCard>
-    </BbTabsContent>
-    <BbTabsContent Value="password">
-        <!-- Password form -->
+        <ModifyOwnUserForm
+            userId="@(Model.UserRecord?.UserId ?? string.Empty)"
+            displayName="@(Model.UserRecord?.DisplayName ?? string.Empty)"
+            bio="@(Model.UserRecord?.Bio ?? string.Empty)"
+            email="@(Model.UserRecord?.Email ?? string.Empty)"
+            firstName="@(Model.UserRecord?.FirstName ?? string.Empty)"
+            lastName="@(Model.UserRecord?.LastName ?? string.Empty)"
+            postalCode="@(Model.UserRecord?.PostalCode ?? string.Empty)" />
     </BbTabsContent>
     <BbTabsContent Value="subscription">
-        <!-- Password form -->
+        @if (!Model.SubscriptionRecords.Any())
+        {
+            <p class="text-sm text-muted-foreground py-4">No subscriptions found.</p>
+        }
+        else
+        {
+            <div class="space-y-3">
+                @foreach (var sub in Model.SubscriptionRecords)
+                {
+                    <SubscriptionItem Record="sub" />
+                }
+            </div>
+        }
     </BbTabsContent>
 </BbTabs>
 @code {

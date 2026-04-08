@@ -1,0 +1,73 @@
+@using IT.WebHost.Core.Models
+
+<div class="border border-border rounded-lg overflow-hidden">
+    <!-- Clickable header -->
+    <button class="w-full flex items-start justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
+            @onclick="Toggle">
+        <div class="flex flex-col gap-1">
+            <span class="text-sm font-bold uppercase tracking-wide">
+                @Record.ProcessorName · @FormatCents(Record.AmountCents)
+            </span>
+            <span class="text-xs text-primary uppercase tracking-wide">
+                Renews: @FormatDate(Record.RenewsOn) · Last Paid: @FormatDate(Record.LastPaid)
+            </span>
+            <span class="inline-flex">
+                <BbBadge Variant="BadgeVariant.Outline" class="text-xs uppercase">
+                    Status: @Record.Status
+                </BbBadge>
+            </span>
+        </div>
+        <span class="text-muted-foreground mt-1 shrink-0">@(IsExpanded ? "∧" : "∨")</span>
+    </button>
+
+    <!-- Expandable content -->
+    @if (IsExpanded)
+    {
+        <div class="border-t border-border px-4 py-3 space-y-3">
+            <p class="text-xs text-primary uppercase tracking-wide font-semibold">
+                Paid Thru: @FormatDate(Record.PaidThru) · Total: @FormatCents((uint)Record.Payments.Sum(p => (long)p.AmountCents))
+            </p>
+
+            @if (!Record.Payments.Any())
+            {
+                <p class="text-xs text-muted-foreground">No payment records found.</p>
+            }
+            else
+            {
+                <!-- Scrollable payment list -->
+                <div class="overflow-y-auto max-h-64 space-y-2 pr-1">
+                    @foreach (var payment in Record.Payments)
+                    {
+                        <div class="border border-border rounded-md px-3 py-2 flex items-start justify-between gap-4">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-sm font-semibold">@FormatCents(payment.AmountCents)</span>
+                                <span class="text-xs text-muted-foreground uppercase tracking-wide">
+                                    Paid On: @FormatDate(payment.PaidOn) · Paid Thru: @FormatDate(payment.PaidThru)
+                                </span>
+                                <span class="text-xs text-muted-foreground uppercase tracking-wide">
+                                    Processor ID: @payment.ProcessorPaymentId
+                                </span>
+                            </div>
+                            <BbBadge Variant="BadgeVariant.Outline" class="text-xs uppercase shrink-0 mt-0.5">
+                                @payment.Status
+                            </BbBadge>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public SubscriptionData Record { get; set; } = new();
+
+    private bool IsExpanded { get; set; } = false;
+
+    private void Toggle() => IsExpanded = !IsExpanded;
+
+    private static string FormatCents(uint cents) => (cents / 100m).ToString("C");
+
+    private static string FormatDate(DateTime? dt)
+        => dt == null ? "—" : dt.Value.ToLocalTime().ToString("MMM d, yyyy").ToUpper();
+}

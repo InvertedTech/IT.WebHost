@@ -1,9 +1,12 @@
 @namespace IT.WebHost.Components.Forms.Fields
 
-<BbDialog>
-    <BbDialogTrigger>
-        <BbButton Variant="ButtonVariant.Outline">@(TriggerLabel)</BbButton>
-    </BbDialogTrigger>
+<BbDialog @bind-Open="IsOpen">
+    @if (ShowTrigger)
+    {
+        <BbDialogTrigger>
+            <BbButton Variant="ButtonVariant.Outline">@(TriggerLabel)</BbButton>
+        </BbDialogTrigger>
+    }
     <BbDialogContent>
         <BbDialogHeader>
             <BbFormFieldFileUpload @bind-Files="files"
@@ -11,7 +14,7 @@
                                    MaxFileCount="MaxFileCount" />
         </BbDialogHeader>
         <BbDialogFooter>
-            <BbButton Variant="ButtonVariant.Outline">Cancel</BbButton>
+            <BbButton @onclick="() => IsOpen = false">Close</BbButton>
             <BbButton>Continue</BbButton>
         </BbDialogFooter>
     </BbDialogContent>
@@ -20,6 +23,8 @@
 @code {
     [Parameter] public string TriggerLabel { get; set; } = "Upload Image";
     [Parameter] public int MaxFileCount { get; set; } = 1;
+    [Parameter] public bool ShowTrigger { get; set; } = true;
+    [Parameter] public bool IsOpen { get; set; } = false;
 
     private IReadOnlyList<FileUploadItem>? files;
 }

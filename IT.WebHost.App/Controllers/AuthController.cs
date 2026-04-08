@@ -146,7 +146,7 @@ namespace IT.WebHost.App.Controllers
 
             var subs = await _paymentClient.GetOwnSubscriptionRecordsAsync(new() { }, userHelper.GetGrpcCallOptions());
             var vm = new ProfileViewModel { UserRecord = response.Record != null ? ProfileData.FromRecord(response.Record) : null, };
-            vm.SubscriptionRecords = subs.Generic.Select(r => r.SubscriptionRecord).ToList();
+            vm.SubscriptionRecords = subs.Generic.Select(SubscriptionData.FromRecord).ToList();
             return View(vm);
         }
 
