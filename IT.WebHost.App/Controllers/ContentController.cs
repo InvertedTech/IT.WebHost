@@ -2,6 +2,7 @@
 using IT.WebHost.Core.Models;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
+using IT.WebServices.Fragments.Comment;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,17 @@ namespace IT.WebHost.App.Controllers
     public class ContentController : Controller
     {
         private readonly ContentInterface.ContentInterfaceClient _contentClient;
+        private readonly CommentInterface.CommentInterfaceClient _commentClient;
         private readonly SiteSettingsService _siteSettingsService;
         private readonly ONUserHelper userHelper;
-        public ContentController(ContentInterface.ContentInterfaceClient contentClient, SiteSettingsService siteSettingsService, ONUserHelper userHelper)
+        public ContentController(
+            ContentInterface.ContentInterfaceClient contentClient,
+            CommentInterface.CommentInterfaceClient commentClient,
+            SiteSettingsService siteSettingsService,
+            ONUserHelper userHelper)
         {
             _contentClient = contentClient;
+            _commentClient = commentClient;
             _siteSettingsService = siteSettingsService;
             this.userHelper = userHelper;
         }
@@ -34,8 +41,22 @@ namespace IT.WebHost.App.Controllers
                 ContentUrl = "/" + slug
             };
 
+            // TODO: Make these safer
             var res = await _contentClient.GetContentByUrlAsync(req, userHelper.GetGrpcCallOptions());
             return View(new ViewContentViewModel { Slug = slug, Record = res.Record });
+        }
+
+        [HttpPost("/content/{contentId}/comment")]
+        public async Task<IActionResult> MakeCommentForContent(string contentId, [FromBody] string text)
+        {
+            var req = new CreateCommentForContentRequest()
+            {
+                ContentID = contentId,
+                Text = text
+            };
+
+            var res = await _commentClient.CreateCommentForContentAsync(req, userHelper.GetGrpcCallOptions());
+            return View();
         }
 
         [HttpGet("/search")]

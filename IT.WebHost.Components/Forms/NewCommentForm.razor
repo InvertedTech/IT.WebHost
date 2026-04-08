@@ -1,12 +1,34 @@
 @using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Comment
 @inject ONUserHelper UserHelper
+@inject CommentInterface.CommentInterfaceClient CommentClient
 
-<div class="rounded-lg border p-4 sm:p-6">
-    <BbFormFieldTextarea Label="Comments"
-                         HelperText="Leave A Comment"
-                         Value=""
-                         Disabled="@(!UserHelper.IsLoggedIn)" />
-    <div class="flex justify-end mt-4">
-        <BbButton Disabled="@(!UserHelper.IsLoggedIn)">Create</BbButton>
-    </div>
+<BbFormFieldTextarea Label="Comments"
+                     HelperText="Leave A Comment"
+                     @bind-Value="CommentText"
+                     Disabled="@(!UserHelper.IsLoggedIn)" />
+<div class="flex justify-end mt-4">
+    <BbButton Disabled="@(!UserHelper.IsLoggedIn)" @onclick="SubmitComment">Create</BbButton>
 </div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCommentSubmitted { get; set; }
+
+    private string CommentText { get; set; } = string.Empty;
+
+    private async Task SubmitComment()
+    {
+        if (string.IsNullOrWhiteSpace(CommentText) || string.IsNullOrWhiteSpace(ContentId))
+            return;
+
+        await CommentClient.CreateCommentForContentAsync(new CreateCommentForContentRequest
+        {
+            ContentID = ContentId,
+            Text = CommentText
+        }, UserHelper.GetGrpcCallOptions());
+
+        CommentText = string.Empty;
+        await OnCommentSubmitted.InvokeAsync();
+    }
+}

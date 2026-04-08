@@ -1,0 +1,17 @@
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Content
+
+<div class="bg-card rounded-lg border p-4 sm:p-6 overflow-y-auto max-h-[70vh]">
+    <article class="prose prose-base sm:prose-lg max-w-none
+                    prose-headings:font-bold prose-headings:tracking-tight
+                    prose-a:text-primary prose-a:underline-offset-4
+                    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic
+                    prose-img:rounded-lg prose-img:shadow-md"
+             aria-label="Article body">
+        @((MarkupString)(Written?.HtmlBody ?? string.Empty))
+    </article>
+</div>
+
+@code {
+    [Parameter] public WrittenContentPublicData? Written { get; set; }
+}

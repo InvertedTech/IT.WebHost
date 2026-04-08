@@ -1,4 +1,8 @@
-﻿@using IT.WebServices.Fragments.Comment
+@using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Comment
+@namespace IT.WebHost.Components.Comments
+@inject CommentInterface.CommentInterfaceClient CommentClient
+
 <BbItem>
     <BbItemMedia>
         <BbAvatar>
@@ -7,28 +11,67 @@
     </BbItemMedia>
     <BbItemContent>
         <BbItemTitle>@Comment.UserID</BbItemTitle>
-        <BbItemDescription>@Comment.Data.CommentText</BbItemDescription>
+        <BbItemDescription>@Comment.CommentText</BbItemDescription>
     </BbItemContent>
     <BbItemActions>
         <BbButton Variant="@(isLiked ? ButtonVariant.Default : ButtonVariant.Outline)" Size="ButtonSize.Small" @onclick="ToggleLike">
             <LucideIcon Name="heart" Size="14" class="@(isLiked ? "fill-current" : "")" />
             @likeCount
         </BbButton>
+        <NewCommentForCommentForm CommentId="@Comment.CommentID" />
     </BbItemActions>
 </BbItem>
 
+<Collapsible>
+    <CollapsibleTrigger>
+        <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="OnTriggerClicked">
+            <LucideIcon Name="message-circle" Size="14" />
+            Replies
+        </BbButton>
+    </CollapsibleTrigger>
+    <CollapsibleContent>
+        @if (replies.Any())
+        {
+            <div class="ml-8 flex flex-col divide-y">
+                @foreach (var reply in replies)
+                {
+                    <CommentItem Comment="reply" />
+                }
+            </div>
+        }
+    </CollapsibleContent>
+</Collapsible>
+
 @code {
-    [Parameter] public CommentPublicRecord Comment { get; set; }
+    [Parameter] public CommentResponseRecord Comment { get; set; }
     [Parameter] public bool IsLiked { get; set; }
     [Parameter] public EventCallback<bool> OnLikeToggled { get; set; }
 
     private bool isLiked;
     private uint likeCount;
+    private bool hasLoaded;
+    private IEnumerable<CommentResponseRecord> replies = new List<CommentResponseRecord>();
 
     protected override void OnParametersSet()
     {
         isLiked = IsLiked;
-        likeCount = Comment.Data.Likes;
+        likeCount = Comment.Likes;
+    }
+
+    private async Task OnTriggerClicked()
+    {
+        if (!hasLoaded)
+        {
+            var res = await CommentClient.GetCommentsForCommentAsync(new GetCommentsForCommentRequest
+            {
+                ParentCommentID = Comment.CommentID,
+                PageSize = 10,
+                Order = CommentOrder.Newest
+            });
+
+            replies = res.Records;
+            hasLoaded = true;
+        }
     }
 
     private async Task ToggleLike()

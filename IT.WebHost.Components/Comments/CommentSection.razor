@@ -1,0 +1,36 @@
+@using IT.WebServices.Fragments.Comment
+@using IT.WebHost.Components.Forms
+@namespace IT.WebHost.Components.Comments
+@inject CommentInterface.CommentInterfaceClient CommentClient
+
+<div class="rounded-lg border p-4 sm:p-6 flex flex-col gap-6">
+    <NewCommentForm ContentId="@ContentId" OnCommentSubmitted="RefreshComments" />
+    <hr class="border-border" />
+    <CommentList Comments="Comments" />
+</div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+
+    private IEnumerable<CommentResponseRecord> Comments { get; set; } = new List<CommentResponseRecord>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshComments();
+    }
+
+    private async Task RefreshComments()
+    {
+        if (string.IsNullOrWhiteSpace(ContentId))
+            return;
+
+        var res = await CommentClient.GetCommentsForContentAsync(new GetCommentsForContentRequest
+        {
+            ContentID = ContentId,
+            PageSize = 10,
+            Order = CommentOrder.Newest
+        });
+
+        Comments = res.Records;
+    }
+}

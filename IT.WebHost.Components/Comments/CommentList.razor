@@ -1,0 +1,24 @@
+﻿@using IT.WebServices.Fragments.Comment
+@namespace IT.WebHost.Components.Comments
+
+@if (!Comments.Any())
+{
+    <BbEmpty Title="No Comments Yet"
+             Description="Be the first!">
+        <Icon>
+            <LucideIcon Name="search" class="h-12 w-12" />
+        </Icon>
+    </BbEmpty>
+} else
+{
+    <div class="flex flex-col divide-y">
+        @foreach (var comment in Comments)
+        {
+            <CommentItem Comment="comment" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<CommentResponseRecord> Comments { get; set; } = new List<CommentResponseRecord>();
+}

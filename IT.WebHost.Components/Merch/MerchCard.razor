@@ -2,7 +2,15 @@
 @using IT.WebServices.Fragments.Merch
 <BbCard class="w-full overflow-hidden flex flex-col">
     <div class="relative aspect-[1/1.25] overflow-hidden">
-        <img src="@($"http://localhost:8001/api/cms/asset/{Data.FeaturedImage.ImageAssetID}/data")" alt="Featured Image" class="w-full h-full object-cover transition-transform hover:scale-105" />
+        @if (_imageLoading)
+        {
+            <BbSkeleton class="absolute inset-0 w-full h-full rounded-none" />
+        }
+        <img src="@($"http://localhost:8001/api/cms/asset/{Data.FeaturedImage.ImageAssetID}/data")"
+             alt="Featured Image"
+             class="w-full h-full object-cover transition-transform hover:scale-105 @(_imageLoading ? "invisible" : "")"
+             @onload="() => _imageLoading = false"
+             @onerror="() => _imageLoading = false" />
     </div>
     <BbCardHeader>
         <BbCardTitle>@(Data.Title)</BbCardTitle>
@@ -28,4 +36,6 @@
 
 @code {
     [Parameter] public GenericMerchRecord Data { get; set; } = null!;
+
+    private bool _imageLoading = true;
 }

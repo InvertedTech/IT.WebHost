@@ -15,18 +15,24 @@
             break;
 
         case ContentPublicData.ContentDataOneofOneofCase.Written:
-            @* TODO: Written content layout *@
+            <component type="typeof(IT.WebHost.Components.Content.WrittenMetadata)"
+                       render-mode="ServerPrerendered"
+                       param-Content="@Model.Record" />
+            <component type="typeof(IT.WebHost.Components.Content.WrittenBody)"
+                       render-mode="ServerPrerendered"
+                       param-Written="@Model.Record.Data.Written" />
             break;
 
-        case ContentPublicData.ContentDataOneofOneofCase.Audio:
+        @* case ContentPublicData.ContentDataOneofOneofCase.Audio: *@
             @* TODO: Audio content layout *@
-            break;
+            @* break; *@
 
-        case ContentPublicData.ContentDataOneofOneofCase.Picture:
+        @* case ContentPublicData.ContentDataOneofOneofCase.Picture: *@
             @* TODO: Picture content layout *@
-            break;
+            @* break; *@
     }
 
-    <component type="typeof(IT.WebHost.Components.Forms.NewCommentForm)"
-               render-mode="Server" />
+    <component type="typeof(IT.WebHost.Components.Comments.CommentSection)"
+               render-mode="Server"
+               param-ContentId="@Model.Record.ContentID"/>
 </div>
