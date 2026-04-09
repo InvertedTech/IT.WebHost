@@ -21,4 +21,5 @@
 
 @code {
     [Parameter] public ContentType SelectedType { get; set; } = ContentType.ContentNone;
+    [Parameter] public EventCallback<ContentType> SelectedTypeChanged { get; set; }
 }
