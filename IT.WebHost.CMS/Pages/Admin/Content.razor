@@ -1,7 +1,9 @@
-﻿@page "/admin/content"
+@page "/admin/content"
 @layout AdminLayout
-<h3>Content</h3>
+<PageTitle>Content</PageTitle>
 
-@code {
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Content</h1>
+    <ContentTable Content="@content" />
+</div>
 
-}

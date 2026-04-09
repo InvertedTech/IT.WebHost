@@ -22,4 +22,8 @@
     <ProjectReference Include="../IT.WebHost.Core/IT.WebHost.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Layout\Hero\" />
+  </ItemGroup>
+
 </Project>

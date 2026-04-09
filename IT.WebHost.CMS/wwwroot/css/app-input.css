@@ -15,7 +15,7 @@
 @source "../../../IT.WebHost.Components";
 
 /* Safelist responsive utilities used by BbResponsiveNav components */
-@source inline("hidden md:flex md:hidden flex");
+@source inline("hidden md:flex md:hidden flex md:static md:block translate-x-0 -translate-x-full md:translate-x-0 fixed inset-0 inset-y-0 z-30 z-40");
 
 /* Container with responsive max-width */
 .container {

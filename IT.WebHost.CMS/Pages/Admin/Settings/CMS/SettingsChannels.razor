@@ -1,7 +1,31 @@
-﻿@page "/admin/settings/cms/channels"
+@page "/admin/settings/cms/channels"
 @layout AdminLayout
-<h3>SettingsChannels</h3>
+<PageTitle>Channels</PageTitle>
 
-@code {
+<div class="space-y-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Channels</h1>
+        <FormSheet TriggerText="Add Channel"
+                   Title="Create a Channel"
+                   Description="Fill in the details below to create a new channel.">
+            <Body>
+                <CreateChannelForm ParentChannels="@channels"
+                                   OnSubmit="SaveChannelAsync" />
+            </Body>
+        </FormSheet>
+    </div>
+    @if (channels.Any())
+    {
+        <div class="flex flex-col gap-2">
+            @foreach (var channel in channels)
+            {
+                <CMSChannel Channel="@channel" />
+            }
+        </div>
+    }
+    else
+    {
+        <EmptyChannelList OnSubmit="SaveChannelAsync" />
+    }
+</div>
 
-}

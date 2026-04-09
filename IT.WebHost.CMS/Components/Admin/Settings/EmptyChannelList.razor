@@ -1,0 +1,23 @@
+@namespace IT.WebHost.CMS.Components.Admin.Settings
+@using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Settings
+
+<BbEmpty Title="No Channels"
+         Description="Get started by creating a channel">
+    <Icon>
+        <LucideIcon Name="folder" class="h-12 w-12" />
+    </Icon>
+    <ChildContent>
+        <FormSheet TriggerText="Add Channel"
+                   Title="Create a Channel"
+                   Description="Fill in the details below to create a new channel.">
+            <Body>
+                <CreateChannelForm OnSubmit="OnSubmit" />
+            </Body>
+        </FormSheet>
+    </ChildContent>
+</BbEmpty>
+
+@code {
+    [Parameter] public EventCallback<ChannelRecord> OnSubmit { get; set; }
+}

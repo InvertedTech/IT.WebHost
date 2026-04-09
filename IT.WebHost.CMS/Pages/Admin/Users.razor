@@ -1,7 +1,9 @@
-﻿@page "/admin/users"
+@page "/admin/users"
 @layout AdminLayout
-<h3>Users</h3>
+<PageTitle>Users</PageTitle>
 
-@code {
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Users</h1>
+    <UserTable Users="@users" />
+</div>
 
-}

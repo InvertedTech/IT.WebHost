@@ -19,7 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\IT.WebHost.Components\IT.WebHost.Components.csproj" />
     <ProjectReference Include="..\IT.WebHost.Core\IT.WebHost.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Admin\Cms\AssetGallery\" />
   </ItemGroup>
 
 </Project>

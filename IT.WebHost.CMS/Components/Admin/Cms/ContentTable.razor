@@ -1,0 +1,16 @@
+@namespace IT.WebHost.CMS.Components.Admin.Cms
+@using IT.WebServices.Fragments.Content
+
+<BbDataTable TData="ContentListRecord" Data="@Content" InitialPageSize="@PageSize">
+    <Columns>
+        <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Title)" Header="Title" />
+        <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Author)" Header="Author" />
+        <BbDataTableColumn TData="ContentListRecord" TValue="uint" Property="(c => c.SubscriptionLevel)" Header="Level" />
+        <BbDataTableColumn TData="ContentListRecord" TValue="DateTime" Property="(c => c.CreatedOnUTC.ToDateTime())" Header="Created On" />
+    </Columns>
+</BbDataTable>
+
+@code {
+    [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = new List<ContentListRecord>();
+    [Parameter] public int PageSize { get; set; } = 10;
+}

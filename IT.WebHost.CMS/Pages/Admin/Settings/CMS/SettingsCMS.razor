@@ -1,7 +1,12 @@
-﻿@page "/admin/settings/cms"
+@page "/admin/settings/cms"
 @layout AdminLayout
-<h3>SettingsCMS</h3>
 
-@code {
+<PageTitle>CMS Settings</PageTitle>
 
-}
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">CMS</h1>
+    <div class="flex flex-wrap gap-4">
+        <NavCard Title="Channels" Description="Manage content channels." Link="/admin/settings/cms/channels" />
+        <NavCard Title="Categories" Description="Manage content categories." Link="/admin/settings/cms/categories" />
+    </div>
+</div>

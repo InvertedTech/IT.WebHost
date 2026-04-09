@@ -1,7 +1,29 @@
 ﻿@page "/admin/assets"
+@using IT.WebHost.Components.Content
+@using IT.WebHost.Components.Forms.Fields
+@using IT.WebServices.Fragments.Content
 @layout AdminLayout
-<h3>Assets</h3>
 
-@code {
+<h1>Assets</h1>
+<BbSeparator Class="mb-3"/>
 
-}
+<div class="mx-auto">
+    <div class="grid grid-cols-5 grid-rows-4 gap-3">
+        @foreach (var asset in AssetRecords)
+        {
+            switch (asset.AssetType)
+            {
+                case AssetType.AssetImage:
+                    <FeaturedImage AssetId="@asset.AssetID" Title="@asset.Title" />
+                    break;
+                case AssetType.AssetNone:
+                    break;
+            }
+        }
+    </div>
+
+    <Pagination PageOffset="PageOffsetParsed"
+                PageSize="PageSizeParsesd"
+                PageTotalItems="PageTotalItems" />
+</div>
+

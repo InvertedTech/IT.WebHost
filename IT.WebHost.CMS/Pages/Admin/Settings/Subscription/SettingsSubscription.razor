@@ -1,7 +1,12 @@
-﻿@page "/admin/settings/subscription"
+@page "/admin/settings/subscription"
 @layout AdminLayout
-<h3>Settings Subcription</h3>
 
-@code {
+<PageTitle>Subscription Settings</PageTitle>
 
-}
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Subscription</h1>
+    <div class="flex flex-wrap gap-4">
+        <NavCard Title="Tiers" Description="Define and manage subscription tiers." Link="/admin/settings/subscription/tiers" />
+        <NavCard Title="Billing" Description="Payment provider and billing settings." Link="/admin/settings/subscription/billing" />
+    </div>
+</div>

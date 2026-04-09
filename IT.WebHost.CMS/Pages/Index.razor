@@ -1,6 +1,4 @@
 @page "/"
-@using System.Reflection
-
 <PageTitle>Home - IT.WebHost.CMS</PageTitle>
 
 <div class="container py-10">
@@ -158,15 +156,3 @@
     </div>
 </div>
 
-@code {
-    private string? inputValue;
-    private bool agreeTerms;
-    private bool notifications = true;
-    private bool dialogOpen;
-
-    private static string componentsVersion = typeof(BbButton).Assembly
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "?";
-
-    private static string primitivesVersion = typeof(IPortalService).Assembly
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "?";
-}

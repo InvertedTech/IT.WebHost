@@ -35,6 +35,10 @@
                                 <BbDropdownMenuContent>
                                     <BbDropdownMenuSeparator />
                                     <BbDropdownMenuItem><a href="/profile">Profile</a></BbDropdownMenuItem>
+                                    <AuthorizeView Roles="Admin" Context="adminCtx">
+                                        <BbDropdownMenuSeparator />
+                                        <BbDropdownMenuItem><a href="/admin">Admin Panel</a></BbDropdownMenuItem>
+                                    </AuthorizeView>
                                     <BbDropdownMenuSeparator />
                                     <BbDropdownMenuItem><a href="/auth/logout">Log out</a></BbDropdownMenuItem>
                                 </BbDropdownMenuContent>
@@ -74,6 +78,9 @@
                     <AuthorizeView>
                         <Authorized>
                             <a href="/profile"><BbButton Variant="ButtonVariant.Outline" class="w-full">Profile</BbButton></a>
+                            <AuthorizeView Roles="Admin" Context="adminCtx">
+                                <a href="/admin"><BbButton Variant="ButtonVariant.Outline" class="w-full">Admin Panel</BbButton></a>
+                            </AuthorizeView>
                             <a href="/auth/logout"><BbButton Variant="ButtonVariant.Ghost" class="w-full">Log out</BbButton></a>
                         </Authorized>
                         <NotAuthorized>
