@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
 namespace IT.WebHost.CMS.Shared;
 
-public partial class AdminLayout : LayoutComponentBase
+public partial class AdminLayout : LayoutComponentBase, IDisposable
 {
+    private bool _disposed;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
     [Inject] private NavigationManager Nav { get; set; } = null!;
     [Inject] private IJSRuntime JS { get; set; } = null!;
@@ -29,6 +31,52 @@ public partial class AdminLayout : LayoutComponentBase
         new() { Text = "Subscription",    Href = "/admin/settings/subscription",    Icon = "credit-card" },
     };
 
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (!_disposed) InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+
+    private static readonly Dictionary<string, string> SegmentLabels = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["admin"]            = "Admin",
+        ["content"]          = "Content",
+        ["assets"]           = "Assets",
+        ["users"]            = "Users",
+        ["settings"]         = "Settings",
+        ["cms"]              = "CMS",
+        ["merch"]            = "Merch",
+        ["personalization"]  = "Personalization",
+        ["subscription"]     = "Subscription",
+    };
+
+    private List<(string Text, string? Href)> GetBreadcrumbs()
+    {
+        var segments = new Uri(Nav.Uri).AbsolutePath
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        var result = new List<(string, string?)>();
+        var path = "";
+        for (var i = 0; i < segments.Length; i++)
+        {
+            path += "/" + segments[i];
+            var label = SegmentLabels.TryGetValue(segments[i], out var n) ? n : segments[i];
+            result.Add((label, i < segments.Length - 1 ? path : null));
+        }
+        return result;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
@@ -42,7 +90,7 @@ public partial class AdminLayout : LayoutComponentBase
             return;
         }
 
-        if (!user.IsInRole("Admin"))
+        if (!user.Claims.Any(c => c.Type == System.Security.Claims.ClaimTypes.Role))
         {
             Nav.NavigateTo("/", forceLoad: false);
             return;

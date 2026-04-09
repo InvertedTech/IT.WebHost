@@ -10,7 +10,7 @@
             <div class="space-y-4">
                 <div class="space-y-2">
                     <BbLabel For="email">Email</BbLabel>
-                    <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" />
+                    <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" @bind-Value="email" />
                 </div>
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
@@ -19,9 +19,9 @@
                             Forgot your password?
                         </a>
                     </div>
-                    <BbInput Id="password" Type="InputType.Password" />
+                    <BbInput Id="password" Type="InputType.Password" @bind-Value="password" />
                 </div>
-                <BbButton Class="w-full">Login</BbButton>
+                <BbButton Class="w-full" OnClick="HandleLogin">Login</BbButton>
                 <div class="relative">
                     <div class="absolute inset-0 flex items-center">
                         <BbSeparator />

@@ -50,7 +50,30 @@
             <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" class="md:hidden" @onclick="() => sidebarOpen = !sidebarOpen">
                 <LucideIcon Name="menu" Size="20" />
             </BbButton>
-            <div class="hidden md:block"></div>
+            <BbBreadcrumb>
+                <BbBreadcrumbList>
+                    @{var crumbs = GetBreadcrumbs();}
+                    @for (var i = 0; i < crumbs.Count; i++)
+                    {
+                        var (text, href) = crumbs[i];
+                        var isLast = i == crumbs.Count - 1;
+                        @if (i > 0)
+                        {
+                            <BbBreadcrumbSeparator />
+                        }
+                        <BbBreadcrumbItem>
+                            @if (isLast)
+                            {
+                                <BbBreadcrumbPage>@text</BbBreadcrumbPage>
+                            }
+                            else
+                            {
+                                <BbBreadcrumbLink Href="@href">@text</BbBreadcrumbLink>
+                            }
+                        </BbBreadcrumbItem>
+                    }
+                </BbBreadcrumbList>
+            </BbBreadcrumb>
             <div class="flex items-center gap-2">
                 <BbDropdownMenu>
                     <BbDropdownMenuTrigger>

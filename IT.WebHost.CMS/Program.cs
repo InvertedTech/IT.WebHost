@@ -1,8 +1,7 @@
 using BlazorBlueprint.Components;
 using IT.WebHost.CMS;
-using IT.WebHost.CMS.Auth;
 using IT.WebHost.Core.Services;
-using Microsoft.AspNetCore.Components.Authorization;
+using IT.WebServices.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +12,6 @@ builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddGrpcClientClasses();
 builder.Services.AddCoreServices();
 builder.Services.AddAuthenticationClasses();
-builder.Services.AddSingleton<AuthenticationStateProvider, StubAuthenticationStateProvider>();
 
 var app = builder.Build();
 
@@ -31,6 +29,25 @@ app.UseAntiforgery();
 await app.Services.GetRequiredService<SiteSettingsService>().LoadAsync();
 
 app.MapStaticAssets();
+
+app.MapGet("/auth/set-cookie", (string token, string? returnUrl, HttpContext ctx) =>
+{
+    ctx.Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, token, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict,
+        Path = "/"
+    });
+    return Results.Redirect(returnUrl ?? "/");
+});
+
+app.MapGet("/auth/logout", (HttpContext ctx) =>
+{
+    ctx.Response.Cookies.Delete(JwtExtensions.JWT_COOKIE_NAME);
+    return Results.Redirect("/login");
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
