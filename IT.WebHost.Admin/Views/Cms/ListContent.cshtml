@@ -1,0 +1,9 @@
+﻿@page
+@using IT.WebHost.Admin.Models.Cms
+@using IT.WebServices.Fragments.Content
+<h1>Content</h1>
+<component
+    type="typeof(IT.WebHost.Admin.Components.Cms.ContentTable)"
+    render-mode="ServerPrerendered"
+    param-Content="@new List<ContentListRecord>()"
+ />

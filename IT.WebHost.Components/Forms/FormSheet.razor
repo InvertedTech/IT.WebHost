@@ -1,0 +1,20 @@
+﻿@namespace IT.WebHost.Components.Forms
+<BbSheet>
+    <BbSheetTrigger>
+        <BbButton Variant="ButtonVariant.Outline">@TriggerText</BbButton>
+    </BbSheetTrigger>
+    <BbSheetContent>
+        <BbSheetHeader>
+            <BbSheetTitle>@Title</BbSheetTitle>
+            <BbSheetDescription>@Description</BbSheetDescription>
+        </BbSheetHeader>
+        @Body
+    </BbSheetContent>
+</BbSheet>
+
+@code {
+    [Parameter] public string TriggerText { get; set; } = "Open Form";
+    [Parameter] public string Title { get; set; } = "Form";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
+}

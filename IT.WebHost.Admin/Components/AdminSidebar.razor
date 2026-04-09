@@ -1,0 +1,89 @@
+<BbSidebarProvider HeightClass="h-dvh" CookieKey="admin-sidebar-state">
+    <BbSidebar Collapsible="true">
+        <BbSidebarHeader>
+            <BbSidebarMenu>
+                <BbSidebarMenuItem>
+                    <BbSidebarMenuButton Size="SidebarMenuButtonSize.Large">
+                        <LucideIcon Name="shield" Size="20" class="text-primary" />
+                        <div class="grid flex-1 text-left text-sm leading-tight">
+                            <span class="truncate font-semibold">Admin</span>
+                            <span class="truncate text-xs text-muted-foreground">Control Panel</span>
+                        </div>
+                    </BbSidebarMenuButton>
+                </BbSidebarMenuItem>
+            </BbSidebarMenu>
+        </BbSidebarHeader>
+
+        <BbSidebarContent>
+            <BbSidebarGroup>
+                <BbSidebarGroupLabel>Navigation</BbSidebarGroupLabel>
+                <BbSidebarMenu>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/" Tooltip="Dashboard">
+                            <LucideIcon Name="layout-dashboard" Size="16" />
+                            <span>Dashboard</span>
+                        </BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/users" Tooltip="Users">
+                            <LucideIcon Name="users" Size="16" />
+                            <span>Users</span>
+                        </BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/content" Tooltip="Content">
+                            <LucideIcon Name="file-text" Size="16" />
+                            <span>Content</span>
+                        </BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/assets" Tooltip="Asset Library">
+                            <LucideIcon Name="images" Size="16" />
+                            <span>Asset Library</span>
+                        </BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                </BbSidebarMenu>
+            </BbSidebarGroup>
+
+            <BbSidebarGroup>
+                <BbSidebarGroupLabel>Settings</BbSidebarGroupLabel>
+                <BbSidebarMenu>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/settings/cms">CMS</BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/settings/merch">Merch</BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/settings/personalization">Personalization</BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                    <BbSidebarMenuItem>
+                        <BbSidebarMenuButton Href="/settings/subscription">Subscription</BbSidebarMenuButton>
+                    </BbSidebarMenuItem>
+                </BbSidebarMenu>
+            </BbSidebarGroup>
+        </BbSidebarContent>
+
+        <BbSidebarFooter>
+            <BbSidebarMenu>
+                <BbSidebarMenuItem>
+                    <BbSidebarMenuButton Href="/auth/logout" Tooltip="Sign Out">
+                        <LucideIcon Name="log-out" Size="16" />
+                        <span>Sign Out</span>
+                    </BbSidebarMenuButton>
+                </BbSidebarMenuItem>
+            </BbSidebarMenu>
+        </BbSidebarFooter>
+    </BbSidebar>
+
+    @if (ChildContent is not null)
+    {
+        <BbSidebarInset Class="flex flex-col bg-background min-w-0 min-h-0">
+            @ChildContent
+        </BbSidebarInset>
+    }
+</BbSidebarProvider>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

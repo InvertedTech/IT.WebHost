@@ -1,0 +1,16 @@
+﻿@using IT.WebServices.Fragments.Settings
+
+<BbItem AsChild="button" OnClick="HandleClick" Variant="ItemVariant.Outline">
+    <BbItemMedia>
+        @* // TODO: Replace With Channel Asset Id *@
+        <LucideIcon Name="book-open" class="h-5 w-5" />
+    </BbItemMedia>
+    <BbItemContent>
+        <BbItemTitle>@Channel.DisplayName</BbItemTitle>
+    </BbItemContent>
+    <LucideIcon Name="chevron-right" class="h-5 w-5" />
+</BbItem>
+
+@code {
+    [Parameter] public ChannelRecord Channel { get; set; } = null!;
+}

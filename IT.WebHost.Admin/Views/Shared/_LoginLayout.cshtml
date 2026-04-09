@@ -1,0 +1,29 @@
+@using Admin
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin</title>
+    <script type="importmap"></script>
+    <link href="~/css/theme.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
+    <link href="~/css/app.css" rel="stylesheet" asp-append-version="true" />
+    <base href="@Url.Content("~/")" />
+    <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)"
+               render-mode="ServerPrerendered" />
+</head>
+<body class="font-sans antialiased bg-background text-foreground">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-sm">
+            <div class="flex flex-col items-center gap-2 mb-6">
+                <span class="text-2xl font-bold">Admin</span>
+                <span class="text-sm text-muted-foreground">Sign in to your account</span>
+            </div>
+            @RenderBody()
+        </div>
+    </div>
+    <script src="_framework/blazor.server.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
