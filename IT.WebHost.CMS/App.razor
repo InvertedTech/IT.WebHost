@@ -1,15 +1,17 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Web
-@using IT.WebHost.CMS.Client
+@using IT.WebHost.Core.Services
+@inject TemplateService templateService
+@inject SiteSettingsService SiteSettings
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="@(SiteSettings.Settings?.Personalization?.DefaultToDarkMode == true ? "dark" : "")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <!-- Theme CSS variables - must load first -->
-    <link href="styles/themes/default.css" rel="stylesheet" />
+    <link href="styles/themes/@(templateService.TemplateFile).css" rel="stylesheet" />
     <!-- BlazorBlueprint component styles -->
     <link href="_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
     <!-- App styles (Tailwind utilities for template pages) -->
@@ -17,7 +19,7 @@
     <HeadOutlet />
 </head>
 <body class="font-sans antialiased">
-    <Routes @rendermode="InteractiveAuto" />
+    <Routes @rendermode="InteractiveServer" />
 
     <div id="blazor-error-ui" class="hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-destructive text-destructive-foreground">
         An error has occurred. This application may no longer respond until reloaded.
@@ -34,6 +36,7 @@
     <script>
         window.toggleDarkMode = () => document.documentElement.classList.toggle('dark');
         window.isDarkModeEnabled = () => document.documentElement.classList.contains('dark');
+        window.setDarkMode = (dark) => { if (dark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); };
     </script>
 </body>
 </html>

@@ -1,19 +1,22 @@
 using BlazorBlueprint.Components;
 using IT.WebHost.CMS;
+using IT.WebHost.CMS.Auth;
+using IT.WebHost.Core.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveServerComponents();
 
-// Add BlazorBlueprint services
 builder.Services.AddBlazorBlueprintComponents();
+builder.Services.AddGrpcClientClasses();
+builder.Services.AddCoreServices();
+builder.Services.AddAuthenticationClasses();
+builder.Services.AddSingleton<AuthenticationStateProvider, StubAuthenticationStateProvider>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -21,12 +24,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
+
+await app.Services.GetRequiredService<SiteSettingsService>().LoadAsync();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(IT.WebHost.CMS.Client._Imports).Assembly);
+    .AddInteractiveServerRenderMode();
 
 app.Run();

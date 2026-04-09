@@ -4,6 +4,5 @@
   <Project Path="../../IT.WebServices/Fragments/IT.WebServices.Fragments.csproj" />
   <Project Path="../IT.WebHost.Components/IT.WebHost.Components.csproj" />
   <Project Path="../IT.WebHost.Core/IT.WebHost.Core.csproj" />
-  <Project Path="IT.WebHost.CMS.Client/IT.WebHost.CMS.Client.csproj" />
   <Project Path="IT.WebHost.CMS.csproj" />
 </Solution>

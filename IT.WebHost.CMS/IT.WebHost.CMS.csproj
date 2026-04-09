@@ -7,17 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="IT.WebHost.CMS.Client\**" />
-    <Content Remove="IT.WebHost.CMS.Client\**" />
-    <None Remove="IT.WebHost.CMS.Client\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BlazorBlueprint.Components" Version="3.*" />
     <PackageReference Include="BlazorBlueprint.Primitives" Version="3.*" />
     <PackageReference Include="BlazorBlueprint.Icons.Lucide" Version="2.*" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.*" />
-    <ProjectReference Include="IT.WebHost.CMS.Client\IT.WebHost.CMS.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IT.WebHost.Core\IT.WebHost.Core.csproj" />
   </ItemGroup>
 
 </Project>
