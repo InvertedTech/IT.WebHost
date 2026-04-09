@@ -12,6 +12,10 @@
 /* Scan template files for utility classes */
 @source "../../Pages";
 @source "../../Shared";
+@source "../../../IT.WebHost.Components";
+
+/* Safelist responsive utilities used by BbResponsiveNav components */
+@source inline("hidden md:flex md:hidden flex");
 
 /* Container with responsive max-width */
 .container {

@@ -14,10 +14,17 @@ public partial class AdminLayout : LayoutComponentBase
 
     private readonly List<AdminNavItem> navItems = new()
     {
-        new() { Text = "Dashboard", Href = "/admin",          Icon = "layout-dashboard" },
-        new() { Text = "Content",   Href = "/admin/content",  Icon = "file-text" },
-        new() { Text = "Users",     Href = "/admin/users",    Icon = "users" },
-        new() { Text = "Settings",  Href = "/admin/settings", Icon = "settings" },
+        new() { Text = "Dashboard", Href = "/admin",         Icon = "layout-dashboard" },
+        new() { Text = "Content",   Href = "/admin/content", Icon = "file-text" },
+        new() { Text = "Users",     Href = "/admin/users",   Icon = "users" },
+    };
+
+    private readonly List<AdminNavItem> settingsNavItems = new()
+    {
+        new() { Text = "CMS",             Href = "/admin/settings/cms",             Icon = "layout" },
+        new() { Text = "Merch",           Href = "/admin/settings/merch",           Icon = "shopping-bag" },
+        new() { Text = "Personalization", Href = "/admin/settings/personalization", Icon = "palette" },
+        new() { Text = "Subscription",    Href = "/admin/settings/subscription",    Icon = "credit-card" },
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

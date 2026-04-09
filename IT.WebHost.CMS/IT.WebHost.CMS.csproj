@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="BuildTailwindCSS" BeforeTargets="BeforeBuild" Condition="'$(DOTNET_WATCH)' != '1'">
+    <Message Text="Building Tailwind CSS..." Importance="high" />
+    <Exec Command="dotnet tool run tailwindcss -i wwwroot/css/app-input.css -o wwwroot/css/app.css" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="BlazorBlueprint.Components" Version="3.*" />
     <PackageReference Include="BlazorBlueprint.Primitives" Version="3.*" />

@@ -1,5 +1,4 @@
 using BlazorBlueprint.Components;
-using IT.WebHost.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
@@ -9,7 +8,6 @@ namespace IT.WebHost.CMS.Shared;
 public partial class MainLayout : LayoutComponentBase
 {
     [Inject] private IJSRuntime JS { get; set; } = null!;
-    [Inject] private SiteSettingsService SiteSettings { get; set; } = null!;
 
     private bool isDarkMode;
 

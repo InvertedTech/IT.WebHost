@@ -1,0 +1,49 @@
+﻿@page "/login"
+
+<div class="flex justify-center py-12">
+    <BbCard class="w-full max-w-sm">
+        <BbCardHeader>
+            <BbCardTitle class="text-2xl">Login to your account</BbCardTitle>
+            <BbCardDescription>Enter your email below to login to your account</BbCardDescription>
+        </BbCardHeader>
+        <BbCardContent>
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <BbLabel For="email">Email</BbLabel>
+                    <BbInput Id="email" Type="InputType.Email" Placeholder="m@example.com" />
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <BbLabel For="password">Password</BbLabel>
+                        <a href="#" class="text-sm text-muted-foreground underline-offset-4 hover:underline">
+                            Forgot your password?
+                        </a>
+                    </div>
+                    <BbInput Id="password" Type="InputType.Password" />
+                </div>
+                <BbButton Class="w-full">Login</BbButton>
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <BbSeparator />
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-card px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                </div>
+                <BbButton Variant="ButtonVariant.Outline" Class="w-full">
+                    <!-- Google icon SVG -->
+                    Login with Google
+                </BbButton>
+            </div>
+        </BbCardContent>
+        <BbCardFooter>
+            <div class="w-full text-center text-sm text-muted-foreground">
+                Don't have an account?
+                <a href="#" class="text-primary underline-offset-4 hover:underline">Sign up</a>
+            </div>
+        </BbCardFooter>
+    </BbCard>
+</div>
+
+@code {
+}
