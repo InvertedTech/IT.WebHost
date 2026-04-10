@@ -1,0 +1,33 @@
+@page "/content/{**Slug}"
+@using IT.WebHost.Components.Content
+@using IT.WebHost.Components.Comments
+@using IT.WebServices.Fragments.Content
+
+<div class="max-w-5xl mx-auto flex flex-col gap-4 py-8">
+    @if (_record is null)
+    {
+        <p class="text-muted-foreground">Loading...</p>
+    }
+    else
+    {
+        @switch (_record.Data?.ContentDataOneofCase)
+        {
+            case ContentPublicData.ContentDataOneofOneofCase.Video:
+                <VideoPlayer Video="_record.Data.Video" Title="@(_record.Data.Title ?? "Video")" />
+                <VideoMetadata Content="_record" />
+                break;
+
+            case ContentPublicData.ContentDataOneofOneofCase.Written:
+                <WrittenMetadata Content="_record" />
+                @if (!string.IsNullOrEmpty(_record.Data?.FeaturedImageAssetID))
+                {
+                    <FeaturedImage AssetId="_record.Data.FeaturedImageAssetID"
+                                   Alt="@(_record.Data.Title ?? "Featured image")" />
+                }
+                <WrittenBody Written="_record.Data.Written" />
+                break;
+        }
+
+        <CommentSection ContentId="@_record.ContentID" />
+    }
+</div>

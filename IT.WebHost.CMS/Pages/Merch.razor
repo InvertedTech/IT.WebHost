@@ -1,0 +1,15 @@
+@page "/merch"
+@using IT.WebHost.Components.Merch
+@using IT.WebHost.Components.Forms.Fields
+
+<PageTitle>Merch</PageTitle>
+
+<div class="container py-10">
+    <MerchGridView Merch="Records" />
+    <div class="flex justify-center py-4">
+        <Pagination PageOffset="PageOffsetParsed"
+                    PageSize="PageSizeParsed"
+                    PageTotalItems="PageTotalItems"
+                    BaseUrl="@BaseMerchUrl" />
+    </div>
+</div>

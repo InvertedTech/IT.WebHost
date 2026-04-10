@@ -5,14 +5,17 @@
 <div class="space-y-4">
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-bold">Channels</h1>
-        <FormSheet TriggerText="Add Channel"
-                   Title="Create a Channel"
-                   Description="Fill in the details below to create a new channel.">
-            <Body>
-                <CreateChannelForm ParentChannels="@channels"
-                                   OnSubmit="SaveChannelAsync" />
-            </Body>
-        </FormSheet>
+        @if (channels.Any())
+        {
+            <FormSheet TriggerText="Add Channel"
+                       Title="Create a Channel"
+                       Description="Fill in the details below to create a new channel.">
+                <Body>
+                    <CreateChannelForm ParentChannels="@channels"
+                                       OnSubmit="SaveChannelAsync" />
+                </Body>
+            </FormSheet>
+        }
     </div>
     @if (channels.Any())
     {

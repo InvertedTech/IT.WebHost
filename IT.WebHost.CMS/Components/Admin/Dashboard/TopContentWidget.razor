@@ -1,0 +1,30 @@
+@namespace IT.WebHost.CMS.Components.Admin.Dashboard
+
+<div class="flex flex-col gap-3">
+    @foreach (var item in _items)
+    {
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex flex-col min-w-0">
+                <p class="text-sm font-medium truncate">@item.Title</p>
+                <p class="text-xs text-muted-foreground">@item.Views unique viewers</p>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <LucideIcon Name="heart" class="h-3 w-3 text-muted-foreground" />
+                <span class="text-sm font-medium">@item.Likes</span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private record ContentItem(string Title, int Likes, int Views);
+
+    private readonly List<ContentItem> _items =
+    [
+        new("How to Build Better Prompts", 842, 2310),
+        new("Advanced Workflow Automation", 719, 1980),
+        new("Scaling Teams Without Burnout", 655, 1745),
+        new("Understanding AI Safety Basics", 601, 1620),
+        new("The Future of Developer Tooling", 488, 1390),
+    ];
+}

@@ -1,0 +1,13 @@
+@page "/members-area"
+@using IT.WebHost.Components.Content
+
+<PageTitle>Members Area</PageTitle>
+
+<div class="container py-10">
+    <ContentFeed InitialContent="ContentRecords"
+                 Layout="Layout"
+                 NextPageOffset="NextPageOffset"
+                 PageSize="PageSize"
+                 TotalItems="TotalItems"
+                 SubscriptionSearch="@(new IT.WebServices.Fragments.Content.SubscriptionLevelSearch { MinimumLevel = 10, MaximumLevel = 9999 })" />
+</div>

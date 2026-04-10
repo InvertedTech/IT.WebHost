@@ -1,18 +1,21 @@
 @page "/admin/content"
 @layout AdminLayout
 @using IT.WebServices.Fragments.Content
+@using IT.WebHost.Components.Forms
 <PageTitle>Content</PageTitle>
 
 <div class="space-y-4">
     <h1 class="text-2xl font-bold">Content</h1>
 
-    <div class="flex flex-wrap items-end gap-2">
-        <SearchInput query="@_query" queryChanged="@(v => _query = v)" OnSearchQuery="@(val => OnQuerySearch(val))" />
-        <ChannelSelect SelectedChannel="@_channelId" SelectedChannelChanged="OnChannelChanged" Channels="Channels" />
-        <CategorySelect SelectedCategory="@_categoryId" SelectedCategoryChanged="OnCategoryChanged" Categories="Categories" />
-        <ContentTypeSelect SelectedType="@_contentType" SelectedTypeChanged="OnContentTypeChanged" />
-        <PageSizeSelect pageSize="@PageSizeParsed" pageSizeChanged="OnPageSizeSelectChanged" />
-    </div>
+    <AdminSearchContentForm @bind-query="_query"
+                            pageSize="PageSizeParsed"
+                            pageSizeChanged="OnPageSizeSelectChanged"
+                            @bind-contentType="_contentType"
+                            @bind-channelId="_channelId"
+                            @bind-categoryId="_categoryId"
+                            Channels="Channels"
+                            Categories="Categories"
+                            OnSearch="HandleSearchKey" />
 
     <ContentTable Content="@ContentRecords" PageSize="(int)PageSizeParsed" IsLoading="@_isLoading" />
 

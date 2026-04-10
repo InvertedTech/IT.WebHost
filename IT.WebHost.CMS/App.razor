@@ -5,7 +5,7 @@
 @inject SiteSettingsService SiteSettings
 
 <!DOCTYPE html>
-<html lang="en" class="h-full overflow-hidden @(SiteSettings.Settings?.Personalization?.DefaultToDarkMode == true ? "dark" : "")">
+<html lang="en" class="h-full @(SiteSettings.Settings?.Personalization?.DefaultToDarkMode == true ? "dark" : "")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +18,7 @@
     <link href="css/app.css" rel="stylesheet" />
     <HeadOutlet />
 </head>
-<body class="h-full overflow-hidden font-sans antialiased">
+<body class="h-full font-sans antialiased">
     <Routes @rendermode="InteractiveServer" />
 
     <div id="blazor-error-ui" class="hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-destructive text-destructive-foreground">

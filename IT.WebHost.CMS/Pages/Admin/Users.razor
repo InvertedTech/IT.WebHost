@@ -1,13 +1,16 @@
 @page "/admin/users"
 @layout AdminLayout
+@using IT.WebHost.Components.Forms
 <PageTitle>Users</PageTitle>
 
 <div class="space-y-4">
     <h1 class="text-2xl font-bold">Users</h1>
 
-    <div class="flex items-end gap-2">
-        <PageSizeSelect pageSize="@PageSizeParsed" pageSizeChanged="OnPageSizeSelectChanged" />
-    </div>
+    <AdminSearchUsersForm @bind-searchString="_searchString"
+                          pageSize="PageSizeParsed"
+                          pageSizeChanged="OnPageSizeSelectChanged"
+                          @bind-includeDeleted="_includeDeleted"
+                          OnSearch="HandleSearchKey" />
 
     <UserTable Users="@users" PageSize="(int)PageSizeParsed" IsLoading="@_isLoading" />
 

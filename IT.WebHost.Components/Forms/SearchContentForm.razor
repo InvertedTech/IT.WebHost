@@ -5,15 +5,27 @@
 @using IT.WebServices.Fragments.Settings
 @namespace IT.WebHost.Components.Forms
 
-<div class="flex items-end gap-2">
-    <SearchInput @bind-query="query" OnSearch="HandleSearchKey" />
-    <PageSizeSelect @bind-pageSize="pageSize" />
-    <SubscriptionLevelSelect Label="Min Level" @bind-SelectedLevel="minSubscriptionLevel" Tiers="Tiers" />
-    <SubscriptionLevelSelect Label="Max Level" @bind-SelectedLevel="maxSubscriptionLevel" Tiers="Tiers" />
-    <ChannelSelect @bind-Channels="Channels" @bind-SelectedChannel="channelId" />
-    <CategorySelect @bind-Categories="Categories" @bind-SelectedCategory="categoryId" />
-    <BbFormFieldTagInput Label="Tags"
-                         @bind-Tags="tags" Placeholder="Add tag..." />
+<div class="rounded-lg border bg-card p-4 space-y-3">
+    <div class="flex items-end gap-3">
+        <div class="flex-1 min-w-[200px]">
+            <SearchInput @bind-query="query" OnSearch="HandleSearchKey" />
+        </div>
+        <PageSizeSelect @bind-pageSize="pageSize" />
+        <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => _filtersOpen = !_filtersOpen">
+            <LucideIcon Name="@(_filtersOpen ? "chevron-up" : "sliders-horizontal")" Size="18" />
+        </BbButton>
+    </div>
+
+    @if (_filtersOpen)
+    {
+        <div class="flex flex-wrap items-end gap-3 pt-1 border-t">
+            <SubscriptionLevelSelect Label="Min Level" @bind-SelectedLevel="minSubscriptionLevel" Tiers="Tiers" />
+            <SubscriptionLevelSelect Label="Max Level" @bind-SelectedLevel="maxSubscriptionLevel" Tiers="Tiers" />
+            <ChannelSelect @bind-Channels="Channels" @bind-SelectedChannel="channelId" />
+            <CategorySelect @bind-Categories="Categories" @bind-SelectedCategory="categoryId" />
+            <BbFormFieldTagInput Label="Tags" @bind-Tags="tags" Placeholder="Add tag..." />
+        </div>
+    }
 </div>
 
 @code {
@@ -32,6 +44,8 @@
     [Parameter] public IEnumerable<CategoryRecord> Categories { get; set; } = [];
 
     [Inject] private NavigationManager Nav { get; set; } = null!;
+
+    private bool _filtersOpen = false;
 
     private void HandleSearchKey(KeyboardEventArgs e)
     {

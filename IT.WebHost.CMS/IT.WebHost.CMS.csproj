@@ -12,6 +12,13 @@
   </Target>
 
   <ItemGroup>
+    <Compile Remove="Components\Admin\Cms\AssetGallery\**" />
+    <Content Remove="Components\Admin\Cms\AssetGallery\**" />
+    <EmbeddedResource Remove="Components\Admin\Cms\AssetGallery\**" />
+    <None Remove="Components\Admin\Cms\AssetGallery\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BlazorBlueprint.Components" Version="3.*" />
     <PackageReference Include="BlazorBlueprint.Primitives" Version="3.*" />
     <PackageReference Include="BlazorBlueprint.Icons.Lucide" Version="2.*" />
@@ -21,10 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\IT.WebHost.Components\IT.WebHost.Components.csproj" />
     <ProjectReference Include="..\IT.WebHost.Core\IT.WebHost.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Components\Admin\Cms\AssetGallery\" />
   </ItemGroup>
 
 </Project>

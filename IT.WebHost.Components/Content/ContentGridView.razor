@@ -15,7 +15,7 @@ else
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         @foreach (var item in Content)
         {
-            <ContentCard Item="item" />
+            <ContentCard @key="item.ContentID" Content="@item" Url="@($"/content/{item.URL.TrimStart('/')}")" />
         }
     </div>
 }

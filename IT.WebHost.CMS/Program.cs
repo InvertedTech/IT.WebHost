@@ -1,5 +1,7 @@
 using BlazorBlueprint.Components;
 using IT.WebHost.CMS;
+using IT.WebHost.CMS.Components.Admin.Dashboard;
+using IT.WebHost.CMS.Services;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
 
@@ -12,6 +14,13 @@ builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddGrpcClientClasses();
 builder.Services.AddCoreServices();
 builder.Services.AddAuthenticationClasses();
+builder.Services.AddSingleton<WidgetRegistryService>(sp => {
+    var registry = new WidgetRegistryService();
+    registry.Register(new("stats-cards", "Stats Cards", "bar-chart-2", typeof(StatsCardsWidget)));
+    registry.Register(new("top-content", "Top Content", "film", typeof(TopContentWidget)));
+    return registry;
+});
+
 
 var app = builder.Build();
 

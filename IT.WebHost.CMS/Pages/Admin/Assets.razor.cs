@@ -9,32 +9,34 @@ public partial class Assets
     [Inject] private AssetInterface.AssetInterfaceClient AssetClient { get; set; } = null!;
     [Inject] private ONUserHelper UserHelper { get; set; } = null!;
 
-    public IEnumerable<AssetListRecord> AssetRecords { get; set; } = new List<AssetListRecord>();
+    public IEnumerable<AssetListRecord> AssetRecords { get; set; } = [];
+
+    [Parameter, SupplyParameterFromQuery(Name = "pageSize")]
     public string PageSize { get; set; } = "20";
+
+    [Parameter, SupplyParameterFromQuery(Name = "pageOffset")]
     public string PageOffset { get; set; } = "0";
-    private uint PageSizeParsesd => uint.TryParse(PageSize, out var v) ? v : 20;
-    private uint PageOffsetParsed => uint.TryParse(PageOffset, out var v) ? v : 20;
+
+    private uint PageSizeParsed => uint.TryParse(PageSize, out var v) ? v : 20;
+    private uint PageOffsetParsed => uint.TryParse(PageOffset, out var v) ? v : 0;
     private uint PageTotalItems { get; set; }
+
+    private string BaseUrl => "/admin/assets";
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadAssetsAsync();
     }
 
-    // TODO: Make A BaseURL
-
     private async Task LoadAssetsAsync()
     {
-        var res = await AssetClient.GetImageAssetsAsync(new GetImageAssetsRequest {
-            PageSize = PageSizeParsesd,
+        var res = await AssetClient.GetImageAssetsAsync(new GetImageAssetsRequest
+        {
+            PageSize = PageSizeParsed,
             PageOffset = PageOffsetParsed,
         }, UserHelper.GetGrpcCallOptions());
 
-        if (res.Records.Count > 0)
-        {
-            AssetRecords = res.Records;
-            PageTotalItems = res.PageTotalItems;
-        }
+        AssetRecords = res.Records;
+        PageTotalItems = res.PageTotalItems;
     }
-    private Task SearchAssetsAsync(string query) => throw new NotImplementedException();
 }

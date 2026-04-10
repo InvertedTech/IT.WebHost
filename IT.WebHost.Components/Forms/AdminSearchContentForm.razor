@@ -1,0 +1,49 @@
+@using BlazorBlueprint.Components
+@using IT.WebHost.Components.Forms.Fields
+@using IT.WebServices.Fragments.Content
+@using IT.WebServices.Fragments.Settings
+@namespace IT.WebHost.Components.Forms
+
+<div class="rounded-lg border bg-card p-4 space-y-3">
+    <div class="flex items-end gap-3">
+        <div class="flex-1 min-w-[200px]">
+            <SearchInput @bind-query="query" OnSearch="HandleSearchKey" />
+        </div>
+        <PageSizeSelect @bind-pageSize="pageSize" />
+        <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => _filtersOpen = !_filtersOpen">
+            <LucideIcon Name="@(_filtersOpen ? "chevron-up" : "sliders-horizontal")" Size="18" />
+        </BbButton>
+    </div>
+
+    @if (_filtersOpen)
+    {
+        <div class="flex flex-wrap items-end gap-3 pt-1 border-t">
+            <ContentTypeSelect @bind-SelectedType="contentType" />
+            <ChannelSelect @bind-Channels="Channels" @bind-SelectedChannel="channelId" />
+            <CategorySelect @bind-Categories="Categories" @bind-SelectedCategory="categoryId" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string query { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> queryChanged { get; set; }
+    [Parameter] public uint pageSize { get; set; } = 20;
+    [Parameter] public EventCallback<uint> pageSizeChanged { get; set; }
+    [Parameter] public ContentType contentType { get; set; } = ContentType.ContentNone;
+    [Parameter] public EventCallback<ContentType> contentTypeChanged { get; set; }
+    [Parameter] public string? channelId { get; set; }
+    [Parameter] public EventCallback<string> channelIdChanged { get; set; }
+    [Parameter] public string? categoryId { get; set; }
+    [Parameter] public EventCallback<string> categoryIdChanged { get; set; }
+    [Parameter] public IEnumerable<ChannelRecord> Channels { get; set; } = [];
+    [Parameter] public IEnumerable<CategoryRecord> Categories { get; set; } = [];
+    [Parameter] public EventCallback<KeyboardEventArgs> OnSearch { get; set; }
+
+    private bool _filtersOpen = false;
+
+    private async Task HandleSearchKey(KeyboardEventArgs e)
+    {
+        await OnSearch.InvokeAsync(e);
+    }
+}

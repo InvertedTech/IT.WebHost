@@ -6,7 +6,7 @@
         <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Title)" Header="Title" />
         <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Author)" Header="Author" />
         <BbDataTableColumn TData="ContentListRecord" TValue="uint" Property="(c => c.SubscriptionLevel)" Header="Level" />
-        <BbDataTableColumn TData="ContentListRecord" TValue="DateTime" Property="(c => c.PublishOnUTC.ToDateTime())" Header="Publish On" />
+        <BbDataTableColumn TData="ContentListRecord" TValue="DateTime?" Property="(c => c.PublishOnUTC?.ToDateTime())" Header="Publish On" />
         <BbDataTableColumn TData="ContentListRecord" TValue="DateTime" Property="(c => c.CreatedOnUTC.ToDateTime())" Header="Created On" />
     </Columns>
 </BbDataTable>

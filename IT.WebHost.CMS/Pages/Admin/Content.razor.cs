@@ -3,6 +3,7 @@ using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Settings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace IT.WebHost.CMS.Pages.Admin;
 
@@ -86,17 +87,11 @@ public partial class Content
         }));
     }
 
-    private void OnChannelChanged(string val) =>
-        NavigateFilter("channelId", string.IsNullOrEmpty(val) ? null : val);
-
-    private void OnCategoryChanged(string val) =>
-        NavigateFilter("categoryId", string.IsNullOrEmpty(val) ? null : val);
-
-    private void OnContentTypeChanged(ContentType ct) =>
-        NavigateFilter("contentType", ct == ContentType.ContentNone ? null : ct.ToString());
-
-    private void OnQuerySearch(string val) =>
-        NavigateFilter("query", string.IsNullOrWhiteSpace(val) ? null : val.Trim());
+    private void HandleSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            NavigateFilter("query", string.IsNullOrWhiteSpace(_query) ? null : _query.Trim());
+    }
 
     private void NavigateFilter(string key, string? value)
     {

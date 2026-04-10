@@ -1,0 +1,42 @@
+@using BlazorBlueprint.Components
+@using IT.WebHost.Components.Forms.Fields
+@namespace IT.WebHost.Components.Forms
+
+<div class="rounded-lg border bg-card p-4 space-y-3">
+    <div class="flex items-end gap-3">
+        <div class="flex-1 min-w-[200px]">
+            <SearchInput @bind-query="searchString" OnSearch="HandleSearchKey" />
+        </div>
+        <PageSizeSelect @bind-pageSize="pageSize" />
+        <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => _filtersOpen = !_filtersOpen">
+            <LucideIcon Name="@(_filtersOpen ? "chevron-up" : "sliders-horizontal")" Size="18" />
+        </BbButton>
+    </div>
+
+    @if (_filtersOpen)
+    {
+        <div class="flex flex-wrap items-end gap-4 pt-1 border-t">
+            <div class="flex items-center gap-2">
+                <BbSwitch id="include-deleted" @bind-Checked="includeDeleted" />
+                <BbLabel For="include-deleted" class="font-normal">Include Deleted</BbLabel>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string searchString { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> searchStringChanged { get; set; }
+    [Parameter] public uint pageSize { get; set; } = 20;
+    [Parameter] public EventCallback<uint> pageSizeChanged { get; set; }
+    [Parameter] public bool includeDeleted { get; set; } = false;
+    [Parameter] public EventCallback<bool> includeDeletedChanged { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> OnSearch { get; set; }
+
+    private bool _filtersOpen = false;
+
+    private async Task HandleSearchKey(KeyboardEventArgs e)
+    {
+        await OnSearch.InvokeAsync(e);
+    }
+}
