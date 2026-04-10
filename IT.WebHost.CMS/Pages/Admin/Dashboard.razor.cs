@@ -1,30 +1,49 @@
-using IT.WebHost.CMS.Models;
-using static BlazorBlueprint.Components.BbDashboardGrid;
+using BlazorBlueprint.Primitives.DashboardGrid;
+using IT.WebHost.CMS.Services;
+using Microsoft.AspNetCore.Components;
 
 namespace IT.WebHost.CMS.Pages.Admin;
 
 public partial class Dashboard
 {
+    [Inject] private DashboardLayoutService LayoutService { get; set; } = default!;
+
     private bool isEditing = false;
     private bool isAddWidgetOpen = false;
 
-    private List<IT.WebHost.CMS.Models.DashboardWidgetConfig> Widgets { get; set; } =
-    [
-        new() { WidgetId = "stats-cards", Col = 1,  Row = 1, ColSpan = 24, RowSpan = 4 },
-        new() { WidgetId = "top-content", Col = 1,  Row = 5, ColSpan = 12, RowSpan = 6 },
-    ];
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await LayoutService.LoadAsync();
+        StateHasChanged();
+    }
 
     private void HandleAddWidget() => isAddWidgetOpen = true;
 
-    private void AddWidget(string widgetId)
+    private async Task AddWidget(string widgetId)
     {
-        if (Widgets.Any(w => w.WidgetId == widgetId)) return;
-
-        var nextRow = Widgets.Count > 0 ? Widgets.Max(w => w.Row + w.RowSpan) : 1;
-        Widgets.Add(new() { WidgetId = widgetId, Col = 1, Row = nextRow, ColSpan = 12, RowSpan = 4 });
+        LayoutService.State.AddWidget(widgetId);
         isAddWidgetOpen = false;
+        await LayoutService.SaveAsync();
     }
 
-    private void RemoveWidget(string widgetId) =>
-        Widgets.RemoveAll(w => w.WidgetId == widgetId);
+    private async Task RemoveWidget(string widgetId)
+    {
+        LayoutService.State.RemoveWidget(widgetId);
+        await LayoutService.SaveAsync();
+    }
+
+    private async Task HandleDragEnd(WidgetDragEventArgs args)
+    {
+        var p = args.NewPosition;
+        LayoutService.State.UpdatePosition(args.WidgetId, p.Column, p.Row, p.ColumnSpan, p.RowSpan);
+        await LayoutService.SaveAsync();
+    }
+
+    private async Task HandleResizeEnd(WidgetResizeEventArgs args)
+    {
+        var p = args.NewPosition;
+        LayoutService.State.UpdatePosition(args.WidgetId, p.Column, p.Row, p.ColumnSpan, p.RowSpan);
+        await LayoutService.SaveAsync();
+    }
 }

@@ -4,16 +4,15 @@ using IT.WebHost.CMS.Components.Admin.Dashboard;
 using IT.WebHost.CMS.Services;
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
 builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddGrpcClientClasses();
 builder.Services.AddCoreServices();
 builder.Services.AddAuthenticationClasses();
+builder.Services.AddScoped<DashboardLayoutService>();
 builder.Services.AddSingleton<WidgetRegistryService>(sp => {
     var registry = new WidgetRegistryService();
     registry.Register(new("stats-cards", "Stats Cards", "bar-chart-2", typeof(StatsCardsWidget)));
@@ -21,6 +20,9 @@ builder.Services.AddSingleton<WidgetRegistryService>(sp => {
     registry.Register(new("user-stats", "User Stats", "users", typeof(UserStatsWidget)));
     registry.Register(new("top-plans", "Top Plans by Revenue", "trophy", typeof(TopPlansWidget)));
     registry.Register(new("content-engagement", "Content Engagement", "activity", typeof(ContentEngagementWidget)));
+
+    registry.RegisterDefault(new() { WidgetId = "stats-cards", Col = 1, Row = 1, ColSpan = 24, RowSpan = 4 });
+    registry.RegisterDefault(new() { WidgetId = "top-content", Col = 1, Row = 5, ColSpan = 12, RowSpan = 6 });
     return registry;
 });
 

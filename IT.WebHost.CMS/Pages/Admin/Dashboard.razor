@@ -1,7 +1,7 @@
 @page "/admin"
 @using IT.WebHost.CMS.Services
 @layout AdminLayout
-@inject WidgetRegistryService Registry;
+@inject WidgetRegistryService Registry
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -23,7 +23,7 @@
             <div class="grid grid-cols-2 gap-3 py-4">
                 @foreach (var descriptor in Registry.GetAll())
                 {
-                    var alreadyAdded = Widgets.Any(w => w.WidgetId == descriptor.Id);
+                    var alreadyAdded = LayoutService.State.Widgets.Any(w => w.WidgetId == descriptor.Id);
                     <button class="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled="@alreadyAdded"
                             @onclick="() => AddWidget(descriptor.Id)">
@@ -44,8 +44,11 @@
     </BbDialog>
 </div>
 
-<BbDashboardGrid OnAddWidget="HandleAddWidget" Editable="@isEditing">
-    @foreach (var config in Widgets)
+<BbDashboardGrid OnAddWidget="HandleAddWidget"
+                 Editable="@isEditing"
+                 OnWidgetDragEnd="HandleDragEnd"
+                 OnWidgetResizeEnd="HandleResizeEnd">
+    @foreach (var config in LayoutService.State.Widgets)
     {
         var descriptor = Registry.Get(config.WidgetId);
         if (descriptor is not null)
@@ -56,9 +59,9 @@
                                ColumnSpan="@config.ColSpan"
                                RowSpan="@config.RowSpan"
                                Title="@descriptor.DisplayName"
-                               OnRemove="@((id) => RemoveWidget(id))">
+                               OnRemove="RemoveWidget">
                 <DynamicComponent Type="descriptor.ComponentType" />
             </BbDashboardWidget>
         }
     }
-    </BbDashboardGrid>
+</BbDashboardGrid>
