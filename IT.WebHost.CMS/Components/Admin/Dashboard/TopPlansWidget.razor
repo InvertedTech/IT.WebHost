@@ -1,0 +1,49 @@
+@namespace IT.WebHost.CMS.Components.Admin.Dashboard
+@using IT.WebServices.Fragments.Dashboard
+@inject DashboardInterface.DashboardInterfaceClient DashboardClient
+@inject IT.WebServices.Authentication.ONUserHelper UserHelper
+
+@if (_plans is null)
+{
+    <div class="flex flex-col gap-3">
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="flex items-center justify-between gap-2">
+                <div class="h-4 w-36 bg-muted rounded animate-pulse"></div>
+                <div class="h-4 w-16 bg-muted rounded animate-pulse shrink-0"></div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="flex flex-col gap-3">
+        @foreach (var plan in _plans)
+        {
+            <div class="flex items-center justify-between gap-2">
+                <p class="text-sm font-medium truncate">@plan.PlanName</p>
+                <span class="text-sm font-medium shrink-0">@FormatCents(plan.RevenueCents)</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<TopPlanByRevenue>? _plans;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await DashboardClient.GetKpisAsync(new GetKpisRequest(), UserHelper.GetGrpcCallOptions());
+            _plans = response.Subscriptions.TopPlansByRevenue;
+        }
+        catch
+        {
+            _plans = [];
+        }
+    }
+
+    private static string FormatCents(long cents) =>
+        (cents / 100.0).ToString("C0");
+}

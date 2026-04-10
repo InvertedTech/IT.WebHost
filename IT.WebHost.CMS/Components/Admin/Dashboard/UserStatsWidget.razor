@@ -1,0 +1,50 @@
+@namespace IT.WebHost.CMS.Components.Admin.Dashboard
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+    @if (_data?.Users is null)
+    {
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Total Users</p>
+            <p class="text-2xl font-bold">@_data.Users.TotalUsers.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Users.TotalUsers.PercentageChange)">@FormatChange(_data.Users.TotalUsers.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">New Users</p>
+            <p class="text-2xl font-bold">@_data.Users.NewUsers.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Users.NewUsers.PercentageChange)">@FormatChange(_data.Users.NewUsers.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Disabled Users</p>
+            <p class="text-2xl font-bold">@_data.Users.DisabledUsers.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Users.DisabledUsers.PercentageChange, inverse: true)">@FormatChange(_data.Users.DisabledUsers.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Churn Rate</p>
+            <p class="text-2xl font-bold">@FormatRatio(_data.Users.ChurnRate.CurrentRatio)</p>
+            <p class="text-xs @ChangeColor(_data.Users.ChurnRate.PercentageChange, inverse: true)">@FormatChange(_data.Users.ChurnRate.PercentageChange)</p>
+        </div>
+    }
+</div>

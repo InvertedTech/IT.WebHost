@@ -18,6 +18,9 @@ builder.Services.AddSingleton<WidgetRegistryService>(sp => {
     var registry = new WidgetRegistryService();
     registry.Register(new("stats-cards", "Stats Cards", "bar-chart-2", typeof(StatsCardsWidget)));
     registry.Register(new("top-content", "Top Content", "film", typeof(TopContentWidget)));
+    registry.Register(new("user-stats", "User Stats", "users", typeof(UserStatsWidget)));
+    registry.Register(new("top-plans", "Top Plans by Revenue", "trophy", typeof(TopPlansWidget)));
+    registry.Register(new("content-engagement", "Content Engagement", "activity", typeof(ContentEngagementWidget)));
     return registry;
 });
 

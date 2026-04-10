@@ -1,8 +1,13 @@
 @namespace IT.WebHost.CMS.Components.Admin.Dashboard
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-6 h-full">
-    @if (_data is null)
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-6 h-full">
+    @if (_data?.Subscriptions is null)
     {
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
         <div class="flex flex-col gap-1">
             <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
             <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
@@ -45,6 +50,11 @@
             <p class="text-xs text-muted-foreground">Cancellations</p>
             <p class="text-2xl font-bold">@_data.Subscriptions.CanceledSubscriptions.CurrentCount.ToString("N0")</p>
             <p class="text-xs @ChangeColor(_data.Subscriptions.CanceledSubscriptions.PercentageChange, inverse: true)">@FormatChange(_data.Subscriptions.CanceledSubscriptions.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">New Revenue</p>
+            <p class="text-2xl font-bold">@FormatCents(_data.Subscriptions.NewSubscriptionRevenue.CurrentCents)</p>
+            <p class="text-xs @ChangeColor(_data.Subscriptions.NewSubscriptionRevenue.PercentageChange)">@FormatChange(_data.Subscriptions.NewSubscriptionRevenue.PercentageChange)</p>
         </div>
     }
 </div>

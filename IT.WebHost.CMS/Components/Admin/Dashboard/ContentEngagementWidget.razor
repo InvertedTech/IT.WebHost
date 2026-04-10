@@ -1,0 +1,40 @@
+@namespace IT.WebHost.CMS.Components.Admin.Dashboard
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+    @if (_data?.Content is null)
+    {
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Completion Rate</p>
+            <p class="text-2xl font-bold">@FormatRatio(_data.Content.CompletionRate.CurrentRatio)</p>
+            <p class="text-xs @ChangeColor(_data.Content.CompletionRate.PercentageChange)">@FormatChange(_data.Content.CompletionRate.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Median Completion</p>
+            <p class="text-2xl font-bold">@FormatRatio(_data.Content.MedianCompletionPercent.CurrentRatio)</p>
+            <p class="text-xs @ChangeColor(_data.Content.MedianCompletionPercent.PercentageChange)">@FormatChange(_data.Content.MedianCompletionPercent.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Avg Watch Time</p>
+            <p class="text-2xl font-bold">@FormatSeconds(_data.Content.AvgConsumptionSeconds.CurrentRatio)</p>
+            <p class="text-xs @ChangeColor(_data.Content.AvgConsumptionSeconds.PercentageChange)">@FormatChange(_data.Content.AvgConsumptionSeconds.PercentageChange)</p>
+        </div>
+    }
+</div>
