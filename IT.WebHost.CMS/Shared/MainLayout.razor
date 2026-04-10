@@ -41,6 +41,17 @@
                                         <BbDropdownMenuItem><a href="/admin">Admin Panel</a></BbDropdownMenuItem>
                                     }
                                     <BbDropdownMenuSeparator />
+                                    <BbDropdownMenuLabel>Theme</BbDropdownMenuLabel>
+                                    @foreach (var (key, value) in TemplateService.BaseTemplates)
+                                    {
+                                        <BbDropdownMenuItem OnClick="() => SetTheme(value)">
+                                            <span class="flex items-center justify-between w-full">
+                                                @key.ToString()
+                                                @if (currentTheme == value) { <LucideIcon Name="check" Size="12" /> }
+                                            </span>
+                                        </BbDropdownMenuItem>
+                                    }
+                                    <BbDropdownMenuSeparator />
                                     <BbDropdownMenuItem><a href="/auth/logout">Log out</a></BbDropdownMenuItem>
                                 </BbDropdownMenuContent>
                             </BbDropdownMenu>

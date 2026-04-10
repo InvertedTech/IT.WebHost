@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <!-- Theme CSS variables - must load first -->
-    <link href="styles/themes/@(templateService.TemplateFile).css" rel="stylesheet" />
+    <link id="theme-css" href="styles/themes/@(templateService.TemplateFile).css" rel="stylesheet" />
     <!-- BlazorBlueprint component styles -->
     <link href="_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
     <!-- App styles (Tailwind utilities for template pages) -->
@@ -37,6 +37,7 @@
         window.toggleDarkMode = () => document.documentElement.classList.toggle('dark');
         window.isDarkModeEnabled = () => document.documentElement.classList.contains('dark');
         window.setDarkMode = (dark) => { if (dark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); };
+        window.setTheme = (name) => { const l = document.getElementById('theme-css'); if (l) l.href = `/styles/themes/${name}.css`; };
     </script>
 </body>
 </html>

@@ -1,6 +1,8 @@
+using IT.WebHost.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
 
 namespace IT.WebHost.CMS.Shared;
@@ -11,9 +13,12 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
     [Inject] private NavigationManager Nav { get; set; } = null!;
     [Inject] private IJSRuntime JS { get; set; } = null!;
+    [Inject] private ProtectedLocalStorage Storage { get; set; } = null!;
+    [Inject] private TemplateService TemplateService { get; set; } = null!;
 
     private bool isDarkMode;
     private bool sidebarOpen = false;
+    private string currentTheme = "default";
 
     private readonly List<AdminNavItem> navItems = new()
     {
@@ -29,8 +34,8 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
         new() { Text = "Merch",           Href = "/admin/settings/merch",           Icon = "shopping-bag" },
         new() { Text = "Personalization", Href = "/admin/settings/personalization", Icon = "palette" },
         new() { Text = "Subscription",    Href = "/admin/settings/subscription",    Icon = "credit-card" },
-        new() { Text = "Comments",      Href = "/admin/settings/comments",      Icon = "message-circle" },
-        new() { Text = "Notifications", Href = "/admin/settings/notifications", Icon = "bell" },
+        new() { Text = "Comments",        Href = "/admin/settings/comments",        Icon = "message-circle" },
+        new() { Text = "Notifications",   Href = "/admin/settings/notifications",   Icon = "bell" },
     };
 
     protected override void OnInitialized()
@@ -100,6 +105,22 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
         }
 
         isDarkMode = await JS.InvokeAsync<bool>("isDarkModeEnabled");
+
+        try
+        {
+            var saved = await Storage.GetAsync<string>("local-theme");
+            if (saved.Success && !string.IsNullOrEmpty(saved.Value))
+            {
+                currentTheme = saved.Value;
+                await JS.InvokeVoidAsync("setTheme", currentTheme);
+            }
+            else
+            {
+                currentTheme = TemplateService.TemplateFile;
+            }
+        }
+        catch { currentTheme = TemplateService.TemplateFile; }
+
         StateHasChanged();
     }
 
@@ -107,6 +128,13 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
     {
         await JS.InvokeVoidAsync("toggleDarkMode");
         isDarkMode = !isDarkMode;
+    }
+
+    private async Task SetTheme(string name)
+    {
+        currentTheme = name;
+        await JS.InvokeVoidAsync("setTheme", name);
+        try { await Storage.SetAsync("local-theme", name); } catch { }
     }
 
     private record AdminNavItem
