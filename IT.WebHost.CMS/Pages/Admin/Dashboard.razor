@@ -5,9 +5,44 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<BbButton OnClick="() => isEditing = !isEditing" Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
-    @(isEditing ? "Lock Dashboard" : "Edit Dashboard")
-</BbButton>
+<div class="flex flex-row">
+    <BbButton OnClick="() => isEditing = !isEditing" Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+        @(isEditing ? "Lock Dashboard" : "Edit Dashboard")
+    </BbButton>
+    <BbDialog @bind-Open="isAddWidgetOpen">
+        <BbDialogTrigger AsChild>
+            <BbButton Variant="ButtonVariant.Default" Size="ButtonSize.Small">
+                Add Widget
+            </BbButton>
+        </BbDialogTrigger>
+        <BbDialogContent>
+            <BbDialogHeader>
+                <BbDialogTitle>Add Widget</BbDialogTitle>
+                <BbDialogDescription>Choose a widget to add to your dashboard.</BbDialogDescription>
+            </BbDialogHeader>
+            <div class="grid grid-cols-2 gap-3 py-4">
+                @foreach (var descriptor in Registry.GetAll())
+                {
+                    var alreadyAdded = Widgets.Any(w => w.WidgetId == descriptor.Id);
+                    <button class="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled="@alreadyAdded"
+                            @onclick="() => AddWidget(descriptor.Id)">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                            <LucideIcon Name="@descriptor.Icon" class="h-4 w-4" />
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-medium">@descriptor.DisplayName</span>
+                            @if (alreadyAdded)
+                            {
+                                <span class="text-xs text-muted-foreground">Already added</span>
+                            }
+                        </div>
+                    </button>
+                }
+            </div>
+        </BbDialogContent>
+    </BbDialog>
+</div>
 
 <BbDashboardGrid OnAddWidget="HandleAddWidget" Editable="@isEditing">
     @foreach (var config in Widgets)
@@ -15,12 +50,13 @@
         var descriptor = Registry.Get(config.WidgetId);
         if (descriptor is not null)
         {
-            <BbDashboardWidget Id="config.WidgetId"
-                               Column="config.Col"
-                               Row="config.Row"
-                               ColumnSpan="config.ColSpan"
-                               RowSpan="config.RowSpan"
-                               Title="descriptor.DisplayName">
+            <BbDashboardWidget @key="config.WidgetId" Id="@config.WidgetId"
+                               Column="@config.Col"
+                               Row="@config.Row"
+                               ColumnSpan="@config.ColSpan"
+                               RowSpan="@config.RowSpan"
+                               Title="@descriptor.DisplayName"
+                               OnRemove="@((id) => RemoveWidget(id))">
                 <DynamicComponent Type="descriptor.ComponentType" />
             </BbDashboardWidget>
         }
