@@ -1,0 +1,32 @@
+@using IT.WebServices.Fragments.Authorization.Payment.Stripe
+
+<BbFormSection Title="Stripe"
+               Description="Stripe payment gateway credentials">
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.Account"
+                      ValueChanged="@(v => Data.Account = v ?? string.Empty)"
+                      Label="Account"
+                      HelperText="Your Stripe account ID" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.ClientID"
+                      ValueChanged="@(v => Data.ClientID = v ?? string.Empty)"
+                      Label="Client ID"
+                      HelperText="Your Stripe client ID" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.ClientSecret"
+                      ValueChanged="@(v => Data.ClientSecret = v ?? string.Empty)"
+                      Label="Client Secret"
+                      HelperText="Your Stripe client secret"
+                      Type="InputType.Password" />
+    @if (OnSubmit.HasDelegate)
+    {
+        <div class="flex justify-end">
+            <BbButton OnClick="@(_ => OnSubmit.InvokeAsync(Data))">Save Changes</BbButton>
+        </div>
+    }
+</BbFormSection>
+
+@code {
+    [Parameter] public StripeOwnerSettings Data { get; set; } = new();
+    [Parameter] public EventCallback<StripeOwnerSettings> OnSubmit { get; set; }
+}

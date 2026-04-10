@@ -1,0 +1,24 @@
+@page "/admin/settings/notifications/providers"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Notification
+@using IT.WebHost.CMS.Components.Admin.Forms
+
+<PageTitle>Notification Providers</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Providers</h1>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Sendgrid</p>
+                <p class="text-sm text-muted-foreground">Send transactional emails via Sendgrid.</p>
+            </div>
+            <BbSwitch @bind-Checked="_sendgridEnabled" />
+        </BbCardContent>
+    </BbCard>
+    @if (_sendgridEnabled)
+    {
+        <SendgridSettingsForm Data="@_sendgridSettings" OnSubmit="HandleSendgridSubmit" />
+    }
+</div>

@@ -1,24 +1,50 @@
-﻿@namespace IT.WebHost.CMS.Components.Admin.Dashboard
+@namespace IT.WebHost.CMS.Components.Admin.Dashboard
 
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 h-full">
-    <div class="flex flex-col gap-1">
-        <p class="text-xs text-muted-foreground">Active Subscriptions</p>
-        <p class="text-2xl font-bold">3,810</p>
-        <p class="text-xs text-emerald-500">+4.67% from last month</p>
-    </div>
-    <div class="flex flex-col gap-1">
-        <p class="text-xs text-muted-foreground">Total Revenue</p>
-        <p class="text-2xl font-bold">$129,845</p>
-        <p class="text-xs text-emerald-500">+7.21% from last month</p>
-    </div>
-    <div class="flex flex-col gap-1">
-        <p class="text-xs text-muted-foreground">New Subscriptions</p>
-        <p class="text-2xl font-bold">228</p>
-        <p class="text-xs text-emerald-500">+13.43% from last month</p>
-    </div>
-    <div class="flex flex-col gap-1">
-        <p class="text-xs text-muted-foreground">Cancellations</p>
-        <p class="text-2xl font-bold">61</p>
-        <p class="text-xs text-emerald-500">-16.44% from last month</p>
-    </div>
+    @if (_data is null)
+    {
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="h-3 w-28 bg-muted rounded animate-pulse"></div>
+            <div class="h-8 w-16 bg-muted rounded animate-pulse"></div>
+            <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Active Subscriptions</p>
+            <p class="text-2xl font-bold">@_data.Subscriptions.ActiveSubscriptions.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Subscriptions.ActiveSubscriptions.PercentageChange)">@FormatChange(_data.Subscriptions.ActiveSubscriptions.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Total Revenue</p>
+            <p class="text-2xl font-bold">@FormatCents(_data.Subscriptions.TotalSubscriptionRevenue.CurrentCents)</p>
+            <p class="text-xs @ChangeColor(_data.Subscriptions.TotalSubscriptionRevenue.PercentageChange)">@FormatChange(_data.Subscriptions.TotalSubscriptionRevenue.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">New Subscriptions</p>
+            <p class="text-2xl font-bold">@_data.Subscriptions.NewSubscriptions.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Subscriptions.NewSubscriptions.PercentageChange)">@FormatChange(_data.Subscriptions.NewSubscriptions.PercentageChange)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+            <p class="text-xs text-muted-foreground">Cancellations</p>
+            <p class="text-2xl font-bold">@_data.Subscriptions.CanceledSubscriptions.CurrentCount.ToString("N0")</p>
+            <p class="text-xs @ChangeColor(_data.Subscriptions.CanceledSubscriptions.PercentageChange, inverse: true)">@FormatChange(_data.Subscriptions.CanceledSubscriptions.PercentageChange)</p>
+        </div>
+    }
 </div>

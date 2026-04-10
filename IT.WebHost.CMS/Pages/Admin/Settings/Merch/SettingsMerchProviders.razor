@@ -1,0 +1,25 @@
+@page "/admin/settings/merch/providers"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Merch.Shopify
+@using IT.WebHost.CMS.Components.Admin.Forms
+
+<PageTitle>Merch Providers</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Providers</h1>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Shopify</p>
+                <p class="text-sm text-muted-foreground">Sync products and collections from your Shopify storefront.</p>
+            </div>
+            <BbSwitch @bind-Checked="_shopifyEnabled" />
+        </BbCardContent>
+    </BbCard>
+
+    @if (_shopifyEnabled)
+    {
+        <ShopifyStorefrontForm Data="@_shopifySettings" OnSubmit="HandleShopifySubmit" />
+    }
+</div>

@@ -1,0 +1,74 @@
+@page "/admin/settings/subscription/providers"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Authorization.Payment.Fortis
+@using IT.WebServices.Fragments.Authorization.Payment.Stripe
+@using IT.WebServices.Fragments.Authorization.Payment.Paypal
+@using IT.WebHost.CMS.Components.Admin.Forms
+
+<PageTitle>Subscription Providers</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Providers</h1>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Manual</p>
+                <p class="text-sm text-muted-foreground">Allow manual payment processing for subscriptions.</p>
+            </div>
+            <BbSwitch @bind-Checked="_manualEnabled" />
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Stripe</p>
+                <p class="text-sm text-muted-foreground">Accept payments via Stripe.</p>
+            </div>
+            <BbSwitch @bind-Checked="_stripeEnabled" />
+        </BbCardContent>
+    </BbCard>
+    @if (_stripeEnabled)
+    {
+        <StripeSettingsForm Data="@_stripeSettings" OnSubmit="HandleStripeSubmit" />
+    }
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">PayPal</p>
+                <p class="text-sm text-muted-foreground">Accept payments via PayPal.</p>
+            </div>
+            <BbSwitch @bind-Checked="_paypalEnabled" />
+        </BbCardContent>
+    </BbCard>
+    @if (_paypalEnabled)
+    {
+        <PaypalSettingsForm Data="@_paypalSettings" OnSubmit="HandlePaypalSubmit" />
+    }
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Crypto</p>
+                <p class="text-sm text-muted-foreground">Accept cryptocurrency payments.</p>
+            </div>
+            <BbSwitch @bind-Checked="_cryptoEnabled" />
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Fortis</p>
+                <p class="text-sm text-muted-foreground">Accept payments via Fortis.</p>
+            </div>
+            <BbSwitch @bind-Checked="_fortisEnabled" />
+        </BbCardContent>
+    </BbCard>
+    @if (_fortisEnabled)
+    {
+        <FortisSettingsForm Data="@_fortisSettings" OnSubmit="HandleFortisSubmit" />
+    }
+</div>

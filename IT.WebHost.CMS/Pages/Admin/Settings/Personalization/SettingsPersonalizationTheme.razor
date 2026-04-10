@@ -1,0 +1,21 @@
+@page "/admin/settings/personalization/theme"
+@layout AdminLayout
+<PageTitle>Theme</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Theme</h1>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Dark Mode</p>
+                <p class="text-sm text-muted-foreground">Default new visitors to dark mode.</p>
+            </div>
+            <BbSwitch @bind-Checked="_defaultToDarkMode" />
+        </BbCardContent>
+    </BbCard>
+
+    <div class="flex justify-end">
+        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
+    </div>
+</div>

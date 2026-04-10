@@ -1,0 +1,34 @@
+@page "/admin/settings/personalization/branding"
+@layout AdminLayout
+<PageTitle>Branding</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Branding</h1>
+
+    <BbFormSection Title="Site Identity"
+                   Description="Basic information shown in the browser and search results">
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="_title"
+                          Label="Site Title"
+                          HelperText="The name of your site" />
+        <BbFormFieldTextarea @bind-Value="_metaDescription"
+                             Label="Meta Description"
+                             HelperText="A short description used by search engines (150–160 characters recommended)" />
+    </BbFormSection>
+
+    <BbFormSection Title="Images"
+                   Description="Asset IDs for your site's profile and header images">
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="_profileImageAssetId"
+                          Label="Profile Image Asset ID"
+                          HelperText="Asset ID of the profile/logo image" />
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="_headerImageAssetId"
+                          Label="Header Image Asset ID"
+                          HelperText="Asset ID of the site header image" />
+    </BbFormSection>
+
+    <div class="flex justify-end">
+        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
+    </div>
+</div>

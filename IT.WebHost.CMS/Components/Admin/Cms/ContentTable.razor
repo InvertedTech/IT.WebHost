@@ -1,7 +1,7 @@
 @namespace IT.WebHost.CMS.Components.Admin.Cms
 @using IT.WebServices.Fragments.Content
 
-<BbDataTable TData="ContentListRecord" Data="@Content" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading">
+<BbDataTable TData="ContentListRecord" Data="@Content" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading" Class="bb-table-fix">
     <Columns>
         <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Title)" Header="Title" />
         <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Author)" Header="Author" />

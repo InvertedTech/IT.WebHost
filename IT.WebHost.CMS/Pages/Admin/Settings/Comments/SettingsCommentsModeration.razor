@@ -1,0 +1,38 @@
+@page "/admin/settings/comments/moderation"
+@layout AdminLayout
+<PageTitle>Comments - Moderation</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Moderation</h1>
+
+    <BbFormSection Title="Blacklist"
+                   Description="Blocked words or phrases — comments containing these will be rejected">
+
+        @if (_blackList.Count == 0)
+        {
+            <p class="text-sm text-muted-foreground">No entries.</p>
+        }
+
+        @for (var i = 0; i < _blackList.Count; i++)
+        {
+            var idx = i;
+            <div class="flex items-center gap-2 mb-2">
+                <BbFormFieldInput TValue="string"
+                                  Value="@_blackList[idx]"
+                                  ValueChanged="@(v => _blackList[idx] = v ?? string.Empty)"
+                                  Label="" />
+                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(_ => RemoveEntry(idx))">
+                    Remove
+                </BbButton>
+            </div>
+        }
+
+        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="@(_ => AddEntry())">
+            + Add Entry
+        </BbButton>
+    </BbFormSection>
+
+    <div class="flex justify-end">
+        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
+    </div>
+</div>

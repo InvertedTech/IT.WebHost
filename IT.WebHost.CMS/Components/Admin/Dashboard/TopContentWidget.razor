@@ -1,30 +1,56 @@
 @namespace IT.WebHost.CMS.Components.Admin.Dashboard
+@using IT.WebServices.Fragments.Dashboard
+@inject DashboardInterface.DashboardInterfaceClient DashboardClient
 
-<div class="flex flex-col gap-3">
-    @foreach (var item in _items)
-    {
-        <div class="flex items-center justify-between gap-2">
-            <div class="flex flex-col min-w-0">
-                <p class="text-sm font-medium truncate">@item.Title</p>
-                <p class="text-xs text-muted-foreground">@item.Views unique viewers</p>
+@if (_items is null)
+{
+    <div class="flex flex-col gap-3">
+        @for (int i = 0; i < 5; i++)
+        {
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex flex-col gap-1 min-w-0">
+                    <div class="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                    <div class="h-3 w-24 bg-muted rounded animate-pulse"></div>
+                </div>
+                <div class="h-4 w-10 bg-muted rounded animate-pulse shrink-0"></div>
             </div>
-            <div class="flex items-center gap-1 shrink-0">
-                <LucideIcon Name="heart" class="h-3 w-3 text-muted-foreground" />
-                <span class="text-sm font-medium">@item.Likes</span>
+        }
+    </div>
+}
+else
+{
+    <div class="flex flex-col gap-3">
+        @foreach (var item in _items)
+        {
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex flex-col min-w-0">
+                    <p class="text-sm font-medium truncate">@item.ContentTitle</p>
+                    <p class="text-xs text-muted-foreground">@_uniqueViewers unique viewers</p>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <LucideIcon Name="heart" class="h-3 w-3 text-muted-foreground" />
+                    <span class="text-sm font-medium">@item.LikeCount.ToString("N0")</span>
+                </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 
 @code {
-    private record ContentItem(string Title, int Likes, int Views);
+    private IReadOnlyList<TopLikedContentItem>? _items;
+    private string _uniqueViewers = "";
 
-    private readonly List<ContentItem> _items =
-    [
-        new("How to Build Better Prompts", 842, 2310),
-        new("Advanced Workflow Automation", 719, 1980),
-        new("Scaling Teams Without Burnout", 655, 1745),
-        new("Understanding AI Safety Basics", 601, 1620),
-        new("The Future of Developer Tooling", 488, 1390),
-    ];
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await DashboardClient.GetKpisAsync(new GetKpisRequest());
+            _items = response.Content.TopLikedContent;
+            _uniqueViewers = response.Content.UniqueViewers.CurrentCount.ToString("N0");
+        }
+        catch
+        {
+            _items = [];
+        }
+    }
 }

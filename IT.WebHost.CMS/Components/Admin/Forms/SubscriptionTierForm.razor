@@ -1,10 +1,104 @@
-﻿<h3>SubscriptionTierForm</h3>
+@using IT.WebServices.Fragments.Authorization
 
-<div class="space-y-4 max-w-lg">
-</div>
+<BbFormSection Title="Subscription Tiers"
+               Description="Define the tiers available to your subscribers">
+
+    @if (_tiers.Count == 0)
+    {
+        <p class="text-sm text-muted-foreground">No tiers configured.</p>
+    }
+
+    @for (var i = 0; i < _tiers.Count; i++)
+    {
+        var idx = i;
+        var tier = _tiers[idx];
+        <BbCard>
+            <BbCardHeader>
+                <div class="flex items-center justify-between">
+                    <BbCardTitle>@(string.IsNullOrEmpty(tier.Name) ? $"Tier {idx + 1}" : tier.Name)</BbCardTitle>
+                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(_ => RemoveTier(idx))">
+                        Remove
+                    </BbButton>
+                </div>
+            </BbCardHeader>
+            <BbCardContent Class="space-y-4">
+                <BbFormFieldInput TValue="string"
+                                  Value="@tier.Name"
+                                  ValueChanged="@(v => tier.Name = v ?? string.Empty)"
+                                  Label="Name"
+                                  HelperText="The display name of this tier" />
+                <BbFormFieldInput TValue="string"
+                                  Value="@tier.Description"
+                                  ValueChanged="@(v => tier.Description = v ?? string.Empty)"
+                                  Label="Description"
+                                  HelperText="A short description shown to subscribers" />
+                <BbFormFieldCurrencyInput Value="@tier.AmountDollars"
+                                          ValueChanged="@(v => tier.AmountDollars = v)"
+                                          Label="Amount"
+                                          HelperText="Monthly subscription price" />
+                <div>
+                    <p class="text-sm font-medium mb-2">Color</p>
+                    <BbColorPicker @bind-Value="@tier.Color" />
+                </div>
+            </BbCardContent>
+        </BbCard>
+    }
+
+    <div class="flex gap-2 mt-4">
+        <BbButton Variant="ButtonVariant.Outline" OnClick="@(_ => AddTier())">
+            + Add Tier
+        </BbButton>
+        @if (OnSubmit.HasDelegate)
+        {
+            <BbButton OnClick="@(_ => HandleSubmit())">
+                Save Changes
+            </BbButton>
+        }
+    </div>
+
+</BbFormSection>
 
 @code {
-    [Parameter] public string Name { get; set; } = null!;
-    [Parameter] public string Color { get; set; } = null!;
-    [Parameter] public uint AmountCents { get; set; } = 0;
+    [Parameter] public IList<SubscriptionTier> Data { get; set; } = new List<SubscriptionTier>();
+    [Parameter] public EventCallback<IList<SubscriptionTier>> OnSubmit { get; set; }
+
+    private List<TierEdit> _tiers = new();
+
+    protected override void OnParametersSet()
+    {
+        _tiers = Data.Select(TierEdit.From).ToList();
+    }
+
+    private void AddTier() => _tiers.Add(new TierEdit());
+
+    private void RemoveTier(int index) => _tiers.RemoveAt(index);
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync(_tiers.Select(t => t.ToTier()).ToList());
+    }
+
+    private class TierEdit
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public decimal AmountDollars { get; set; }
+
+        public SubscriptionTier ToTier() => new()
+        {
+            Name = Name,
+            Description = Description,
+            Color = Color,
+            AmountCents = (uint)(AmountDollars * 100)
+        };
+
+        public static TierEdit From(SubscriptionTier tier) => new()
+        {
+            Name = tier.Name,
+            Description = tier.Description,
+            Color = tier.Color,
+            AmountDollars = tier.AmountCents / 100m
+        };
+    }
 }

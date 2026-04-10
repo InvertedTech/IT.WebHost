@@ -17,6 +17,13 @@
 /* Safelist responsive utilities used by BbResponsiveNav components */
 @source inline("hidden md:flex md:hidden flex md:static md:block translate-x-0 -translate-x-full md:translate-x-0 fixed inset-0 inset-y-0 z-30 z-40");
 
+/* Prevent BbDataTable from creating a vertical scroll container inside the page scroll area.
+   The table primitive wraps <table> in overflow:auto (both axes). By clipping the y-axis we
+   keep horizontal scrolling for wide tables while letting vertical scroll events reach <main>. */
+.bb-table-fix div:has(> table) {
+  overflow-y: clip !important;
+}
+
 /* Container with responsive max-width */
 .container {
   width: 100%;

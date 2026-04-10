@@ -1,0 +1,21 @@
+@page "/admin/settings/merch/stores"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Merch.Shopify
+@using IT.WebServices.Fragments.Settings
+@using IT.WebHost.CMS.Components.Admin.Forms
+
+<PageTitle>Merch Stores</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Stores</h1>
+    <ShopifyStorefrontForm Data="@_settings" OnSubmit="HandleSubmit" />
+</div>
+
+@code {
+    private ShopifyOwnerSettings _settings = new();
+
+    private async Task HandleSubmit(ModifyMerchOwnerSettingsRequest request)
+    {
+        // TODO: call settings service
+    }
+}

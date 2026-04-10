@@ -1,0 +1,22 @@
+@using IT.WebServices.Fragments.Authorization.Payment.Paypal
+
+<BbFormSection Title="PayPal"
+               Description="PayPal payment gateway credentials">
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.ClientSecret"
+                      ValueChanged="@(v => Data.ClientSecret = v ?? string.Empty)"
+                      Label="Client Secret"
+                      HelperText="Your PayPal client secret"
+                      Type="InputType.Password" />
+    @if (OnSubmit.HasDelegate)
+    {
+        <div class="flex justify-end">
+            <BbButton OnClick="@(_ => OnSubmit.InvokeAsync(Data))">Save Changes</BbButton>
+        </div>
+    }
+</BbFormSection>
+
+@code {
+    [Parameter] public PaypalOwnerSettings Data { get; set; } = new();
+    [Parameter] public EventCallback<PaypalOwnerSettings> OnSubmit { get; set; }
+}

@@ -1,0 +1,37 @@
+@using IT.WebServices.Fragments.Authorization.Payment.Fortis
+
+<BbFormSection Title="Fortis"
+               Description="Fortis payment gateway credentials">
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.UserID"
+                      ValueChanged="@(v => Data.UserID = v ?? string.Empty)"
+                      Label="User ID"
+                      HelperText="Your Fortis user ID" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.UserApiKey"
+                      ValueChanged="@(v => Data.UserApiKey = v ?? string.Empty)"
+                      Label="User API Key"
+                      HelperText="Your Fortis API key"
+                      Type="InputType.Password" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.LocationID"
+                      ValueChanged="@(v => Data.LocationID = v ?? string.Empty)"
+                      Label="Location ID"
+                      HelperText="Your Fortis location ID" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.ProductID"
+                      ValueChanged="@(v => Data.ProductID = v ?? string.Empty)"
+                      Label="Product ID"
+                      HelperText="Your Fortis product ID" />
+    @if (OnSubmit.HasDelegate)
+    {
+        <div class="flex justify-end">
+            <BbButton OnClick="@(_ => OnSubmit.InvokeAsync(Data))">Save Changes</BbButton>
+        </div>
+    }
+</BbFormSection>
+
+@code {
+    [Parameter] public FortisOwnerSettings Data { get; set; } = new();
+    [Parameter] public EventCallback<FortisOwnerSettings> OnSubmit { get; set; }
+}

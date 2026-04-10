@@ -29,6 +29,8 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
         new() { Text = "Merch",           Href = "/admin/settings/merch",           Icon = "shopping-bag" },
         new() { Text = "Personalization", Href = "/admin/settings/personalization", Icon = "palette" },
         new() { Text = "Subscription",    Href = "/admin/settings/subscription",    Icon = "credit-card" },
+        new() { Text = "Comments",      Href = "/admin/settings/comments",      Icon = "message-circle" },
+        new() { Text = "Notifications", Href = "/admin/settings/notifications", Icon = "bell" },
     };
 
     protected override void OnInitialized()
@@ -58,6 +60,7 @@ public partial class AdminLayout : LayoutComponentBase, IDisposable
         ["merch"]            = "Merch",
         ["personalization"]  = "Personalization",
         ["subscription"]     = "Subscription",
+        ["notifications"]    = "Notifications",
     };
 
     private List<(string Text, string? Href)> GetBreadcrumbs()

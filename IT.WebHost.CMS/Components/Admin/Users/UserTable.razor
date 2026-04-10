@@ -1,7 +1,7 @@
 @namespace IT.WebHost.CMS.Components.Admin.Users
 @using IT.WebServices.Fragments.Authentication
 
-<BbDataTable TData="UserSearchRecord" Data="@Users" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading">
+<BbDataTable TData="UserSearchRecord" Data="@Users" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading" Class="bb-table-fix">
     <Columns>
         <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.FirstName)" Header="First Name" />
         <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.LastName)" Header="Last Name" />

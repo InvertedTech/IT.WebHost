@@ -1,0 +1,40 @@
+@page "/admin/settings/comments/restrictions"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Comment
+
+<PageTitle>Comments - Restrictions</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Restrictions</h1>
+
+    <BbFormSection Title="Default Restriction"
+                   Description="The minimum requirement for a user to post comments">
+        <BbFormFieldSelect TValue="CommentRestrictionMinimumEnum"
+                           @bind-Value="_minimum"
+                           Label="Minimum"
+                           HelperText="The lowest access level allowed to comment"
+                           DisplayTextSelector="@(v => v switch {
+                               CommentRestrictionMinimumEnum.Anonymous         => "Anonymous",
+                               CommentRestrictionMinimumEnum.Subscriber        => "Subscriber",
+                               CommentRestrictionMinimumEnum.PaidSubscriber    => "Paid Subscriber",
+                               CommentRestrictionMinimumEnum.CommentModerator  => "Comment Moderator",
+                               CommentRestrictionMinimumEnum.AdminOnly         => "Admin Only",
+                               _ => v.ToString()
+                           })">
+            <BbSelectItem Value="@(CommentRestrictionMinimumEnum.Anonymous)"        Text="Anonymous" />
+            <BbSelectItem Value="@(CommentRestrictionMinimumEnum.Subscriber)"       Text="Subscriber" />
+            <BbSelectItem Value="@(CommentRestrictionMinimumEnum.PaidSubscriber)"   Text="Paid Subscriber" />
+            <BbSelectItem Value="@(CommentRestrictionMinimumEnum.CommentModerator)" Text="Comment Moderator" />
+            <BbSelectItem Value="@(CommentRestrictionMinimumEnum.AdminOnly)"        Text="Admin Only" />
+        </BbFormFieldSelect>
+
+        <BbFormFieldNumericInput TValue="float"
+                                 @bind-Value="_level"
+                                 Label="Level"
+                                 HelperText="Minimum subscription level required (0 = any)" />
+    </BbFormSection>
+
+    <div class="flex justify-end">
+        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
+    </div>
+</div>

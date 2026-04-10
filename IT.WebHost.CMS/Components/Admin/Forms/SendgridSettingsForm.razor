@@ -1,0 +1,28 @@
+@using IT.WebServices.Fragments.Notification
+
+<BbFormSection Title="Sendgrid"
+               Description="Sendgrid email delivery credentials">
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.ApiKeySecret"
+                      ValueChanged="@(v => Data.ApiKeySecret = v ?? string.Empty)"
+                      Label="API Key"
+                      HelperText="Your Sendgrid API key"
+                      Type="InputType.Password" />
+    <BbFormFieldInput TValue="string"
+                      Value="@Data.SendFromAddress"
+                      ValueChanged="@(v => Data.SendFromAddress = v ?? string.Empty)"
+                      Label="Send From Address"
+                      HelperText="The email address notifications are sent from"
+                      Type="InputType.Email" />
+    @if (OnSubmit.HasDelegate)
+    {
+        <div class="flex justify-end">
+            <BbButton OnClick="@(_ => OnSubmit.InvokeAsync(Data))">Save Changes</BbButton>
+        </div>
+    }
+</BbFormSection>
+
+@code {
+    [Parameter] public SendgridOwnerSettings Data { get; set; } = new();
+    [Parameter] public EventCallback<SendgridOwnerSettings> OnSubmit { get; set; }
+}

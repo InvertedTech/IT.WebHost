@@ -1,0 +1,115 @@
+@using IT.WebServices.Fragments.Merch.Shopify
+@using IT.WebServices.Fragments.Merch
+@using IT.WebServices.Fragments.Settings
+
+<BbFormSection Title="Shopify Storefronts"
+               Description="Manage your Shopify store connections">
+
+    @if (_stores.Count == 0)
+    {
+        <p class="text-sm text-muted-foreground">No stores configured.</p>
+    }
+
+    @for (var i = 0; i < _stores.Count; i++)
+    {
+        var idx = i;
+        var store = _stores[idx];
+        <BbCard>
+            <BbCardHeader>
+                <div class="flex items-center justify-between">
+                    <BbCardTitle>@(string.IsNullOrEmpty(store.StoreName) ? $"Store {idx + 1}" : store.StoreName)</BbCardTitle>
+                    <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(_ => RemoveStore(idx))">
+                        Remove
+                    </BbButton>
+                </div>
+            </BbCardHeader>
+            <BbCardContent Class="space-y-4">
+                <BbFormFieldInput TValue="string"
+                                  Value="@store.InternalStoreID"
+                                  ValueChanged="@(v => store.InternalStoreID = v ?? string.Empty)"
+                                  Label="Internal Store ID"
+                                  HelperText="A unique identifier for this store" />
+                <BbFormFieldInput TValue="string"
+                                  Value="@store.StoreName"
+                                  ValueChanged="@(v => store.StoreName = v ?? string.Empty)"
+                                  Label="Store Name"
+                                  HelperText="The display name of your Shopify store" />
+                <BbFormFieldInput TValue="string"
+                                  Value="@store.StoreAdminToken"
+                                  ValueChanged="@(v => store.StoreAdminToken = v ?? string.Empty)"
+                                  Label="Admin Token"
+                                  HelperText="Your Shopify Admin API token" />
+                <BbFormFieldInput TValue="string"
+                                  Value="@store.StorefrontDomain"
+                                  ValueChanged="@(v => store.StorefrontDomain = v ?? string.Empty)"
+                                  Label="Storefront Domain"
+                                  HelperText="e.g. your-store.myshopify.com" />
+
+                <div>
+                    <p class="text-sm font-medium mb-2">Collection IDs</p>
+                    @for (var ci = 0; ci < store.CollectionIds.Count; ci++)
+                    {
+                        var colIdx = ci;
+                        <div class="flex items-center gap-2 mb-2">
+                            <BbFormFieldInput TValue="string"
+                                              Value="@store.CollectionIds[colIdx]"
+                                              ValueChanged="@(v => store.CollectionIds[colIdx] = v ?? string.Empty)"
+                                              Label=""
+                                              Placeholder="gid://shopify/Collection/123456789" />
+                            <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(_ => RemoveCollectionId(store, colIdx))">
+                                Remove
+                            </BbButton>
+                        </div>
+                    }
+                    <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="@(_ => AddCollectionId(store))">
+                        + Add Collection ID
+                    </BbButton>
+                </div>
+            </BbCardContent>
+        </BbCard>
+    }
+
+    <div class="flex gap-2 mt-4">
+        <BbButton Variant="ButtonVariant.Outline" OnClick="@(_ => AddStore())">
+            + Add Store
+        </BbButton>
+        @if (OnSubmit.HasDelegate)
+        {
+            <BbButton OnClick="@(_ => HandleSubmit())">
+                Save Changes
+            </BbButton>
+        }
+    </div>
+
+</BbFormSection>
+
+@code {
+    [Parameter] public ShopifyOwnerSettings Data { get; set; } = new();
+    [Parameter] public EventCallback<ModifyMerchOwnerSettingsRequest> OnSubmit { get; set; }
+
+    private List<ShopifyStoreConfig> _stores = new();
+
+    protected override void OnParametersSet()
+    {
+        _stores = Data.Stores.Select(s => s.Clone()).ToList();
+    }
+
+    private void AddStore() => _stores.Add(new ShopifyStoreConfig());
+
+    private void RemoveStore(int index) => _stores.RemoveAt(index);
+
+    private void AddCollectionId(ShopifyStoreConfig store) => store.CollectionIds.Add(string.Empty);
+
+    private void RemoveCollectionId(ShopifyStoreConfig store, int index) => store.CollectionIds.RemoveAt(index);
+
+    private async Task HandleSubmit()
+    {
+        var shopify = new ShopifyOwnerSettings();
+        shopify.Stores.AddRange(_stores);
+
+        await OnSubmit.InvokeAsync(new ModifyMerchOwnerSettingsRequest
+        {
+            Data = new MerchOwnerSettings { Shopify = shopify }
+        });
+    }
+}

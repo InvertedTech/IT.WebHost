@@ -1,0 +1,50 @@
+@page "/admin/settings/comments/general"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Comment
+
+<PageTitle>Comments - General</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">General</h1>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Allow Links</p>
+                <p class="text-sm text-muted-foreground">Permit hyperlinks in comment text.</p>
+            </div>
+            <BbSwitch @bind-Checked="_allowLinks" />
+        </BbCardContent>
+    </BbCard>
+
+    <BbCard>
+        <BbCardContent Class="flex items-center justify-between p-6">
+            <div class="space-y-1">
+                <p class="text-sm font-medium">Explicit Mode</p>
+                <p class="text-sm text-muted-foreground">Enable explicit content warnings on comments.</p>
+            </div>
+            <BbSwitch @bind-Checked="_explicitModeEnabled" />
+        </BbCardContent>
+    </BbCard>
+
+    <BbFormSection Title="Default Order"
+                   Description="How comments are sorted by default">
+        <BbFormFieldSelect TValue="CommentOrder"
+                           @bind-Value="_defaultOrder"
+                           Label="Order"
+                           DisplayTextSelector="@(v => v switch {
+                               CommentOrder.Liked  => "Most Liked",
+                               CommentOrder.Older  => "Oldest First",
+                               CommentOrder.Newest => "Newest First",
+                               _ => v.ToString()
+                           })">
+            <BbSelectItem Value="@(CommentOrder.Liked)"  Text="Most Liked" />
+            <BbSelectItem Value="@(CommentOrder.Older)"  Text="Oldest First" />
+            <BbSelectItem Value="@(CommentOrder.Newest)" Text="Newest First" />
+        </BbFormFieldSelect>
+    </BbFormSection>
+
+    <div class="flex justify-end">
+        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
+    </div>
+</div>

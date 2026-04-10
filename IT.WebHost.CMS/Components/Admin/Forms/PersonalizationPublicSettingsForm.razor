@@ -1,0 +1,37 @@
+﻿@using IT.WebHost.Components.Extensions
+@using IT.WebServices.Fragments.Settings
+
+<BbCard>
+    <BbCardHeader>
+        <BbCardTitle>Personalization</BbCardTitle>
+        <BbCardDescription>Update Site Settings </BbCardDescription>
+    </BbCardHeader>
+    <BbCardContent class="space-y-4">
+        <div class="flex items-center justify-between">
+            <BbDynamicForm Schema="@_schema"
+                           @bind-Values="_values"
+                           ReadOnly="!EditModeEnabled"
+                           ShowSubmitButton="false" />
+        </div>
+    </BbCardContent>
+</BbCard>
+
+@code {
+    [Parameter] public EventCallback<ModifyPersonalizationPublicDataRequest> OnSubmit { get; set; }
+    [Parameter] public PersonalizationPublicRecord Settings { get; set; } = new();
+    public bool EditModeEnabled { get; set; } = false;
+    private static readonly FormSchema _schema = BuildSchema();
+    private Dictionary<string, object?> _values = new();
+    public void ToggleEditMode()
+    {
+        EditModeEnabled = !EditModeEnabled;
+        // if (!EditModeEnabled)
+        //     ResetValues();
+        StateHasChanged();
+    }
+
+    private static FormSchema BuildSchema()
+    {
+        return FormSchemaExtensions.MapProtoToFormSchema(new ModifyPersonalizationPublicDataRequest());
+    }
+}
