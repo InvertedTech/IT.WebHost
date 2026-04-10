@@ -1,0 +1,53 @@
+@namespace IT.WebHost.CMS.Components.Admin.Forms
+@using IT.WebServices.Fragments.Settings
+
+<div class="space-y-4 max-w-lg">
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="displayName"
+                      Label="Display Name"
+                      Placeholder="e.g. Videos" />
+
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="urlStub"
+                      Label="URL Stub"
+                      Placeholder="e.g. videos" />
+
+    @if (ParentChannels.Any())
+    {
+        <BbField Label="Parent Channel">
+            <select class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                    @bind="parentChannelId">
+                <option value="">— None —</option>
+                @foreach (var channel in ParentChannels)
+                {
+                    <option value="@channel.ChannelId">@channel.DisplayName</option>
+                }
+            </select>
+        </BbField>
+    }
+
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="youtubeUrl"
+                      Label="YouTube URL"
+                      Placeholder="https://youtube.com/..."
+                      Type="InputType.Url" />
+
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="rumbleUrl"
+                      Label="Rumble URL"
+                      Placeholder="https://rumble.com/..."
+                      Type="InputType.Url" />
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-sm text-destructive">@errorMessage</p>
+    }
+
+    <div class="flex gap-2">
+        <BbButton OnClick="HandleSubmit">Create Channel</BbButton>
+        @if (OnCancel.HasDelegate)
+        {
+            <BbButton Variant="ButtonVariant.Outline" OnClick="() => OnCancel.InvokeAsync()">Cancel</BbButton>
+        }
+    </div>
+</div>

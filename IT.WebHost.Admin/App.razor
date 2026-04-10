@@ -1,0 +1,18 @@
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link href="css/theme.css" rel="stylesheet" />
+    <link href="_content/BlazorBlueprint.Components/blazorblueprint.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <HeadOutlet />
+</head>
+<body class="font-sans antialiased">
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>

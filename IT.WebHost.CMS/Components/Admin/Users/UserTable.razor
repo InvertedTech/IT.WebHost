@@ -1,0 +1,18 @@
+@namespace IT.WebHost.CMS.Components.Admin.Users
+@using IT.WebServices.Fragments.Authentication
+
+<BbDataTable TData="UserNormalRecord" Data="@Users" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading">
+    <Columns>
+        <BbDataTableColumn TData="UserNormalRecord" TValue="string" Property="(u => u.Private.Data.FirstName)" Header="First Name" />
+        <BbDataTableColumn TData="UserNormalRecord" TValue="string" Property="(u => u.Private.Data.LastName)" Header="Last Name" />
+        <BbDataTableColumn TData="UserNormalRecord" TValue="string" Property="(u => u.Private.Data.Email)" Header="Email" />
+        <BbDataTableColumn TData="UserNormalRecord" TValue="string" Property="(u => u.Public.Data.DisplayName)" Header="Display Name" />
+        <BbDataTableColumn TData="UserNormalRecord" TValue="string" Property="(u => u.Public.Data.UserName)" Header="User Name" />
+    </Columns>
+</BbDataTable>
+
+@code {
+    [Parameter] public IEnumerable<UserNormalRecord> Users { get; set; } = new List<UserNormalRecord>();
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public bool IsLoading { get; set; }
+}

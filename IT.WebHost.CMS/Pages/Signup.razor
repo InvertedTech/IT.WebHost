@@ -1,0 +1,36 @@
+﻿@page "/signup"
+
+@* // TODO: Make this a wizard *@
+<div class="flex justify-center py-12">
+    <BbFormWizard OnComplete="HandleComplete">
+        <BbWizardStep Title="Account" Icon="user">
+            <div class="space-y-4 max-w-sm">
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="email"
+                                  Label="Email"
+                                  Placeholder="you@example.com"
+                                  Type="InputType.Email" />
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="password"
+                                  Label="Password"
+                                  Type="InputType.Password" />
+            </div>
+        </BbWizardStep>
+        <BbWizardStep Title="Profile" Icon="id-card">
+            <div class="space-y-4 max-w-sm">
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="displayName"
+                                  Label="Display Name"
+                                  Placeholder="Jane Doe" />
+                <BbField Label="Bio">
+                    <BbTextarea @bind-Value="bio"
+                                Placeholder="Tell us about yourself..." />
+                </BbField>
+            </div>
+        </BbWizardStep>
+        <BbWizardStep Title="Done" Icon="circle-check">
+            <p class="text-muted-foreground">All set! Click Complete to finish.</p>
+        </BbWizardStep>
+    </BbFormWizard>
+</div>
+

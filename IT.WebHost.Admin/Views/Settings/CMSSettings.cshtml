@@ -1,0 +1,16 @@
+﻿@page
+<h1>cms settings</h1>
+<div class="flex flex-row gap-2">
+    <component type="typeof(IT.WebHost.Admin.Components.Settings.NavCard)"
+               render-mode="Server"
+               param-Link="@("/settings/cms/channels")"
+               param-Title="@("Channels")" />
+    <component type="typeof(IT.WebHost.Admin.Components.Settings.NavCard)"
+               render-mode="Server"
+               param-Link="@("/settings/cms/categories")"
+               param-Title="@("Categories")" />
+    <component type="typeof(IT.WebHost.Admin.Components.Settings.NavCard)"
+               render-mode="Server"
+               param-Link="@("/settings/cms/layout")"
+               param-Title="@("Layout")" />
+</div>

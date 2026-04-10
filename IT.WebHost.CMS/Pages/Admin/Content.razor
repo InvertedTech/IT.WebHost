@@ -1,0 +1,22 @@
+@page "/admin/content"
+@layout AdminLayout
+@using IT.WebServices.Fragments.Content
+<PageTitle>Content</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Content</h1>
+
+    <div class="flex flex-wrap items-end gap-2">
+        <SearchInput query="@_query" queryChanged="@(v => _query = v)" OnSearchQuery="@(val => OnQuerySearch(val))" />
+        <ChannelSelect SelectedChannel="@_channelId" SelectedChannelChanged="OnChannelChanged" Channels="Channels" />
+        <CategorySelect SelectedCategory="@_categoryId" SelectedCategoryChanged="OnCategoryChanged" Categories="Categories" />
+        <ContentTypeSelect SelectedType="@_contentType" SelectedTypeChanged="OnContentTypeChanged" />
+        <PageSizeSelect pageSize="@PageSizeParsed" pageSizeChanged="OnPageSizeSelectChanged" />
+    </div>
+
+    <ContentTable Content="@ContentRecords" PageSize="(int)PageSizeParsed" IsLoading="@_isLoading" />
+
+    <BbPagination TotalPages="TotalPages"
+                  CurrentPage="CurrentPage"
+                  OnPageChanged="OnPageChanged" />
+</div>

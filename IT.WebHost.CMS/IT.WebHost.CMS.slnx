@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="../../IT.WebServices/Authentication/Shared/IT.WebServices.Authentication.Shared.csproj" />
+  <Project Path="../../IT.WebServices/Clients/IT.WebServices.Clients.csproj" />
+  <Project Path="../../IT.WebServices/Fragments/IT.WebServices.Fragments.csproj" />
+  <Project Path="../IT.WebHost.Components/IT.WebHost.Components.csproj" />
+  <Project Path="../IT.WebHost.Core/IT.WebHost.Core.csproj" />
+  <Project Path="IT.WebHost.CMS.csproj" />
+</Solution>

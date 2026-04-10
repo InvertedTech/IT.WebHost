@@ -1,0 +1,21 @@
+@namespace IT.WebHost.CMS.Components.Admin.Settings
+
+<BbCard class="w-[350px]">
+    <BbCardHeader>
+        <BbCardTitle>@Title</BbCardTitle>
+        <BbCardDescription>@Description</BbCardDescription>
+    </BbCardHeader>
+    <BbCardContent>
+        @Body
+    </BbCardContent>
+    <BbCardFooter>
+        <BbButton Href="@Link">View</BbButton>
+    </BbCardFooter>
+</BbCard>
+
+@code {
+    [Parameter] public string? Link { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Body { get; set; } = null;
+}

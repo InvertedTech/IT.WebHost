@@ -1,0 +1,15 @@
+/* Admin - Tailwind CSS input
+ * BlazorBlueprint provides component styles via blazorblueprint.css
+ * This generates utility classes for MVC views and Blazor components
+ */
+
+@config "../../tailwind.config.js";
+
+@import 'tailwindcss';
+
+@source "../../Views";
+@source "../../Components";
+@source "../../Shared";
+
+/* Safelist sidebar responsive utilities */
+@source inline("hidden md:flex md:hidden flex min-h-screen flex-1 flex-col min-w-0");

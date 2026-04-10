@@ -1,0 +1,11 @@
+{
+	"version": 1,
+	"isRoot": true,
+	"tools": {
+		"tailwindcss.cli": {
+			"version": "4.2.2",
+			"commands": ["tailwindcss"],
+			"rollForward": false
+		}
+	}
+}

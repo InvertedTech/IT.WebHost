@@ -1,0 +1,105 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+
+<div class="flex h-screen overflow-hidden bg-background">
+
+    @if (sidebarOpen)
+    {
+        <div class="fixed inset-0 z-30 bg-black/50 md:hidden" @onclick="() => sidebarOpen = false"></div>
+    }
+
+    <aside class="fixed md:static inset-y-0 left-0 z-40 w-64 border-r bg-background flex flex-col shrink-0 transition-transform duration-200 @(sidebarOpen ? "translate-x-0" : "-translate-x-full") md:translate-x-0">
+        <div class="h-14 flex items-center px-4 border-b shrink-0">
+            <a href="/" class="flex items-center space-x-2">
+                <LucideIcon Name="box" Size="24" class="text-primary" />
+                <span class="font-bold">Inverted CMS</span>
+            </a>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+            @foreach (var item in navItems)
+            {
+                <NavLink href="@item.Href" Match="@(item.Href == "/admin" ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    ActiveClass="bg-accent text-accent-foreground">
+                    <LucideIcon Name="@item.Icon" Size="16" />
+                    @item.Text
+                </NavLink>
+            }
+            <div class="mt-2">
+                <p class="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Settings</p>
+                @foreach (var item in settingsNavItems)
+                {
+                    <NavLink href="@item.Href" Match="NavLinkMatch.Prefix"
+                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                        ActiveClass="bg-accent text-accent-foreground">
+                        <LucideIcon Name="@item.Icon" Size="16" />
+                        @item.Text
+                    </NavLink>
+                }
+            </div>
+        </nav>
+        <div class="p-3 border-t shrink-0">
+            <a href="/" class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                <LucideIcon Name="arrow-left" Size="16" /> Exit
+            </a>
+        </div>
+    </aside>
+
+    <div class="flex flex-col flex-1 overflow-hidden">
+        <header class="h-14 border-b flex items-center justify-between px-6 shrink-0 bg-background">
+            <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" class="md:hidden" @onclick="() => sidebarOpen = !sidebarOpen">
+                <LucideIcon Name="menu" Size="20" />
+            </BbButton>
+            <BbBreadcrumb>
+                <BbBreadcrumbList>
+                    @{var crumbs = GetBreadcrumbs();}
+                    @for (var i = 0; i < crumbs.Count; i++)
+                    {
+                        var (text, href) = crumbs[i];
+                        var isLast = i == crumbs.Count - 1;
+                        @if (i > 0)
+                        {
+                            <BbBreadcrumbSeparator />
+                        }
+                        <BbBreadcrumbItem>
+                            @if (isLast)
+                            {
+                                <BbBreadcrumbPage>@text</BbBreadcrumbPage>
+                            }
+                            else
+                            {
+                                <BbBreadcrumbLink Href="@href">@text</BbBreadcrumbLink>
+                            }
+                        </BbBreadcrumbItem>
+                    }
+                </BbBreadcrumbList>
+            </BbBreadcrumb>
+            <div class="flex items-center gap-2">
+                <BbDropdownMenu>
+                    <BbDropdownMenuTrigger>
+                        <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Small">
+                            <LucideIcon Name="user" class="h-4 w-4 mr-1" /> Account
+                        </BbButton>
+                    </BbDropdownMenuTrigger>
+                    <BbDropdownMenuContent>
+                        <BbDropdownMenuItem><a href="/profile">Profile</a></BbDropdownMenuItem>
+                        <BbDropdownMenuSeparator />
+                        <BbDropdownMenuItem><a href="/auth/logout">Log out</a></BbDropdownMenuItem>
+                    </BbDropdownMenuContent>
+                </BbDropdownMenu>
+                <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="ToggleDarkMode">
+                    @if (isDarkMode) { <LucideIcon Name="sun" Size="20" /> } else { <LucideIcon Name="moon" Size="20" /> }
+                </BbButton>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6">
+            @Body
+        </main>
+    </div>
+
+</div>
+
+<BbToastProvider Position="ToastPosition.BottomRight" />
+<BbDialogProvider />
+<BbPortalHost />

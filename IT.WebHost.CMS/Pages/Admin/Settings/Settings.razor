@@ -1,0 +1,14 @@
+@page "/admin/settings"
+@layout AdminLayout
+
+<PageTitle>Settings</PageTitle>
+
+<div class="space-y-4">
+    <h1 class="text-2xl font-bold">Settings</h1>
+    <div class="flex flex-wrap gap-4">
+        <NavCard Title="CMS" Description="Manage channels and categories." Link="/admin/settings/cms" />
+        <NavCard Title="Merch" Description="Configure merchandise settings." Link="/admin/settings/merch" />
+        <NavCard Title="Personalization" Description="Theme and appearance options." Link="/admin/settings/personalization" />
+        <NavCard Title="Subscription" Description="Manage subscription tiers." Link="/admin/settings/subscription" />
+    </div>
+</div>

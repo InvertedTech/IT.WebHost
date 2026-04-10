@@ -1,0 +1,26 @@
+@page "/admin"
+@layout AdminLayout
+
+<PageTitle>Dashboard</PageTitle>
+
+<BbButton OnClick="() => isEditing = !isEditing" Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+    @(isEditing ? "Lock Dashboard" : "Edit Dashboard")
+</BbButton>
+
+<BbDashboardGrid Editable="@isEditing">
+    <BbDashboardWidget Id="edit-1" Column="1" Row="1" ColumnSpan="12" RowSpan="6"
+                       Title="Editable Widget"
+                       OnRemove="RemoveWidget">
+        <div class="flex items-center justify-center h-full text-muted-foreground">
+            @(isEditing ? "Drag handles visible on hover" : "Editing disabled")
+        </div>
+    </BbDashboardWidget>
+    <BbDashboardWidget Id="edit-2" Column="13" Row="1" ColumnSpan="12" RowSpan="6"
+                       Title="Another Widget"
+                       OnRemove="RemoveWidget">
+        <div class="flex items-center justify-center h-full text-muted-foreground">
+            @(isEditing ? "Resize handles visible on hover" : "Editing disabled")
+        </div>
+    </BbDashboardWidget>
+</BbDashboardGrid>
+

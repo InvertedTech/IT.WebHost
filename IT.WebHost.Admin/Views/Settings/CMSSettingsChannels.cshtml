@@ -1,0 +1,21 @@
+﻿@page
+@using IT.WebHost.Admin.Models.Settings.Cms
+@model SettingsCmsChannelsViewModel 
+<div class="flex flex-row">
+    <h1>Channels</h1>
+</div>
+@* @if (Model is not null && Model.Channels.Any())
+{
+    <div>
+        @foreach (var channel in Model.Channels)
+        {
+            <component type="typeof(IT.WebHost.Admin.Components.Settings.CMSChannel)"
+                       render-mode="Server"
+                       param-Channel="@channel" />
+        }
+    </div>
+} else
+{
+    <component type="typeof(IT.WebHost.Admin.Components.Settings.EmpyChannelList)" render-mode="Server" />
+} *@
+<component type="typeof(IT.WebHost.Admin.Components.Settings.EmpyChannelList)" render-mode="Server" />

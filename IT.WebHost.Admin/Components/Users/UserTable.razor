@@ -1,0 +1,17 @@
+﻿@namespace IT.WebHost.Admin.Components.Users
+@using IT.WebServices.Fragments.Authentication
+
+<BbDataTable TData="UserRecord" Data="@Users" InitialPageSize="@PageSize">
+    <Columns>
+        <BbDataTableColumn TData="UserRecord" TValue="string" Property="(u => u.Normal.Private.Data.FirstName)" Header="First Name" />
+        <BbDataTableColumn TData="UserRecord" TValue="string" Property="(u => u.Normal.Private.Data.LastName)" Header="Last Name" />
+        <BbDataTableColumn TData="UserRecord" TValue="string" Property="(u => u.Normal.Private.Data.Email)" Header="Email" />
+        <BbDataTableColumn TData="UserRecord" TValue="string" Property="(u => u.Normal.Public.Data.DisplayName)" Header="Display Name" />
+        <BbDataTableColumn TData="UserRecord" TValue="string" Property="(u => u.Normal.Public.Data.UserName)" Header="User Name" />
+    </Columns>
+</BbDataTable>
+
+@code {
+    [Parameter] public IEnumerable<UserRecord> Users { get; set; } = new List<UserRecord>();
+    [Parameter] public int PageSize { get; set; } = 10;
+}
