@@ -1,4 +1,5 @@
 @using IT.WebHost.Core.Models
+@using IT.WebServices.Fragments.Authorization.Payment
 
 <div class="border border-border rounded-lg overflow-hidden">
     <!-- Clickable header -->
@@ -6,14 +7,14 @@
             @onclick="Toggle">
         <div class="flex flex-col gap-1">
             <span class="text-sm font-bold uppercase tracking-wide">
-                @Record.ProcessorName · @FormatCents(Record.AmountCents)
+                @Record.ProcessorName · @FormatCents(Record.SubscriptionRecord.AmountCents)
             </span>
             <span class="text-xs text-primary uppercase tracking-wide">
-                Renews: @FormatDate(Record.RenewsOn) · Last Paid: @FormatDate(Record.LastPaid)
+                Renews: @FormatDate(Record.RenewsOnUTC?.ToDateTime()) · Last Paid: @FormatDate(Record.LastPaidUTC?.ToDateTime())
             </span>
             <span class="inline-flex">
                 <BbBadge Variant="BadgeVariant.Outline" class="text-xs uppercase">
-                    Status: @Record.Status
+                    Status: @Record.SubscriptionRecord.Status
                 </BbBadge>
             </span>
         </div>
@@ -25,7 +26,7 @@
     {
         <div class="border-t border-border px-4 py-3 space-y-3">
             <p class="text-xs text-primary uppercase tracking-wide font-semibold">
-                Paid Thru: @FormatDate(Record.PaidThru) · Total: @FormatCents((uint)Record.Payments.Sum(p => (long)p.AmountCents))
+                Paid Thru: @FormatDate(Record.PaidThruUTC?.ToDateTime()) · Total: @FormatCents((uint)Record.Payments.Sum(p => (long)p.AmountCents))
             </p>
 
             @if (!Record.Payments.Any())
@@ -42,10 +43,10 @@
                             <div class="flex flex-col gap-0.5">
                                 <span class="text-sm font-semibold">@FormatCents(payment.AmountCents)</span>
                                 <span class="text-xs text-muted-foreground uppercase tracking-wide">
-                                    Paid On: @FormatDate(payment.PaidOn) · Paid Thru: @FormatDate(payment.PaidThru)
+                                    Paid On: @FormatDate(payment.PaidOnUTC?.ToDateTime()) · Paid Thru: @FormatDate(payment.PaidThruUTC?.ToDateTime())
                                 </span>
                                 <span class="text-xs text-muted-foreground uppercase tracking-wide">
-                                    Processor ID: @payment.ProcessorPaymentId
+                                    Processor ID: @payment.ProcessorPaymentID
                                 </span>
                             </div>
                             <BbBadge Variant="BadgeVariant.Outline" class="text-xs uppercase shrink-0 mt-0.5">
@@ -60,7 +61,7 @@
 </div>
 
 @code {
-    [Parameter] public SubscriptionData Record { get; set; } = new();
+    [Parameter] public GenericSubscriptionFullRecord Record { get; set; } = new();
 
     private bool IsExpanded { get; set; } = false;
 

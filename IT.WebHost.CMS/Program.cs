@@ -48,6 +48,12 @@ app.MapGet("/auth/logout", (HttpContext ctx) =>
     return Results.Redirect("/login");
 });
 
+app.MapGet("/logout", (HttpContext ctx) =>
+{
+    ctx.Response.Cookies.Delete(JwtExtensions.JWT_COOKIE_NAME);
+    return Results.Redirect("/login");
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

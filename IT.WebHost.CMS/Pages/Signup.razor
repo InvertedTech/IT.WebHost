@@ -1,10 +1,15 @@
 ﻿@page "/signup"
 
-@* // TODO: Make this a wizard *@
+@* // TODO: Add Validation *@
 <div class="flex justify-center py-12">
     <BbFormWizard OnComplete="HandleComplete">
         <BbWizardStep Title="Account" Icon="user">
             <div class="space-y-4 max-w-sm">
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="userName"
+                                  Label="User Name"
+                                  Placeholder="jdoe"
+                                  Type="InputType.Text" />
                 <BbFormFieldInput TValue="string"
                                   @bind-Value="email"
                                   Label="Email"
@@ -13,6 +18,10 @@
                 <BbFormFieldInput TValue="string"
                                   @bind-Value="password"
                                   Label="Password"
+                                  Type="InputType.Password" />
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="confirmPassword"
+                                  Label="Confirm Password"
                                   Type="InputType.Password" />
             </div>
         </BbWizardStep>
@@ -26,6 +35,18 @@
                     <BbTextarea @bind-Value="bio"
                                 Placeholder="Tell us about yourself..." />
                 </BbField>
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="firstName"
+                                  Label="First Name"
+                                  Placeholder="John" />
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="lastName"
+                                  Label="Last Name"
+                                  Placeholder="Doe" />
+                <BbFormFieldInput TValue="string"
+                                  @bind-Value="postalCode"
+                                  Label="Postal/Zip Code"
+                                  Placeholder="00000" />
             </div>
         </BbWizardStep>
         <BbWizardStep Title="Done" Icon="circle-check">

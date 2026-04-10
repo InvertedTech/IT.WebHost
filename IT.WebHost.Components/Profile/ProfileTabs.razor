@@ -1,7 +1,11 @@
 ﻿@using IT.WebHost.Components.Forms
 @using IT.WebHost.Components.Payments
 @using IT.WebHost.Core.Models
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authentication
+@using IT.WebServices.Fragments.Authorization.Payment
 
+@if (User?.Public?.Data is null || User?.Private?.Data is null) { return; }
 <BbTabs DefaultValue="account" class="w-full">
     <BbTabsList>
         <BbTabsTrigger Value="account">Account</BbTabsTrigger>
@@ -9,23 +13,23 @@
     </BbTabsList>
     <BbTabsContent Value="account" class="mx-auto">
         <ModifyOwnUserForm
-            userId="@(Model.UserRecord?.UserId ?? string.Empty)"
-            displayName="@(Model.UserRecord?.DisplayName ?? string.Empty)"
-            bio="@(Model.UserRecord?.Bio ?? string.Empty)"
-            email="@(Model.UserRecord?.Email ?? string.Empty)"
-            firstName="@(Model.UserRecord?.FirstName ?? string.Empty)"
-            lastName="@(Model.UserRecord?.LastName ?? string.Empty)"
-            postalCode="@(Model.UserRecord?.PostalCode ?? string.Empty)" />
+            userId="@(User.Public.UserID ?? string.Empty)"
+            displayName="@(User.Public.Data.DisplayName ?? string.Empty)"
+            bio="@(string.Empty)"
+            email="@(User.Private.Data.Email ?? string.Empty)"
+            firstName="@(User.Private.Data.FirstName ?? string.Empty)"
+            lastName="@(User.Private.Data.LastName ?? string.Empty)"
+            postalCode="@(User.Private.Data.PostalCode ?? string.Empty)" />
     </BbTabsContent>
     <BbTabsContent Value="subscription">
-        @if (!Model.SubscriptionRecords.Any())
+        @if (SubscriptionRecords is null || !SubscriptionRecords.Any())
         {
             <p class="text-sm text-muted-foreground py-4">No subscriptions found.</p>
         }
         else
         {
             <div class="space-y-3">
-                @foreach (var sub in Model.SubscriptionRecords)
+                @foreach (var sub in SubscriptionRecords)
                 {
                     <SubscriptionItem Record="sub" />
                 }
@@ -34,5 +38,6 @@
     </BbTabsContent>
 </BbTabs>
 @code {
-    [Parameter] public ProfileViewModel Model { get; set; } = new();
+    [Parameter] public UserNormalRecord User { get; set; } = null!;
+    [Parameter] public IEnumerable<GenericSubscriptionFullRecord> SubscriptionRecords { get; set; } = null!;
 }

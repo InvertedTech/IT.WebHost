@@ -1,42 +1,44 @@
 @using IT.WebHost.Components.Forms.Fields
 @using IT.WebHost.Core.Models
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authentication
 @namespace IT.WebHost.Components.Profile
 
-@if (Model?.UserRecord is { } user)
+@if (User?.Public?.Data is not null)
 {
-    <div class="flex flex-row items-center gap-4">
-        <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center text-xl font-bold shrink-0 hover:cursor-pointer" @onclick="ToggleImageUploadOpen">
-            @if (user.ProfileImagePNG.Length > 0)
-            {
-                <img src="@($"data:image/png;base64,{Convert.ToBase64String(user.ProfileImagePNG)}")"
-                     alt="@user.DisplayName"
-                     class="w-full h-full rounded-full object-cover" />
-            }
-            else
-            {
-                @GetInitials(user.DisplayName)
-            }
-        </div>
-        <div class="flex flex-col gap-0.5">
-            <span class="text-lg font-semibold leading-tight">@user.DisplayName</span>
-            <span class="text-sm text-muted-foreground leading-tight">@@@user.UserName</span>
-            <div class="flex flex-row gap-4 mt-1 text-sm text-muted-foreground">
-                @if (!string.IsNullOrWhiteSpace(user.Bio))
-                {
-                    <span>@user.Bio</span>
-                    <span>·</span>
-                }
-                <span>Member since @user.CreatedOnUTC?.ToLocalTime().ToString("MMMM yyyy")</span>
-            </div>
-        </div>
-        <ImageUploadField TriggerLabel="Change Picture" ShowTrigger="false" IsOpen="@IsImageUploadOpen" />
-        <BbButton Variant="ButtonVariant.Outline" class="ml-auto">Change Password</BbButton>
+<div class="flex flex-row items-center gap-4">
+    <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center text-xl font-bold shrink-0 hover:cursor-pointer" @onclick="ToggleImageUploadOpen">
+        @if (User.Public.Data.ProfileImagePNG is not null && User.Public.Data.ProfileImagePNG.Length > 0)
+        {
+            <img src="@($"data:image/png;base64,{Convert.ToBase64String(User.Public.Data.ProfileImagePNG.ToByteArray())}")"
+                 alt="@User.Public.Data.DisplayName"
+                 class="w-full h-full rounded-full object-cover" />
+        }
+        else
+        {
+            @GetInitials(User.Public.Data.DisplayName)
+        }
+        @GetInitials(User.Public.Data.DisplayName)
     </div>
-    <BbSeparator class="my-4" />
+    <div class="flex flex-col gap-0.5">
+        <span class="text-lg font-semibold leading-tight">@User.Public.Data.DisplayName</span>
+        <span class="text-sm text-muted-foreground leading-tight">@@@User.Public.Data.UserName</span>
+        <div class="flex flex-row gap-4 mt-1 text-sm text-muted-foreground">
+            @if (!string.IsNullOrWhiteSpace(User.Public.Data.Bio))
+            {
+                <span>@User.Public.Data.Bio</span>
+                <span>·</span>
+            }
+            <span>Member since @User.Public.CreatedOnUTC?.ToDateTime().ToString("MMMM yyyy")</span>
+        </div>
+    </div>
+    <ImageUploadField TriggerLabel="Change Picture" ShowTrigger="false" IsOpen="@IsImageUploadOpen" />
+    <BbButton Variant="ButtonVariant.Outline" class="ml-auto">Change Password</BbButton>
+</div>
+<BbSeparator class="my-4" />
 }
-
 @code {
-    [Parameter] public ProfileViewModel Model { get; set; } = new();
+    [Parameter] public UserNormalRecord User { get; set; } = new();
     private bool IsImageUploadOpen { get; set; } = false;
 
     private string GetInitials(string displayName)
