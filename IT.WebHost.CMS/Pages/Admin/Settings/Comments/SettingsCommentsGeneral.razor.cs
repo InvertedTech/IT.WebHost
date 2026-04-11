@@ -7,6 +7,7 @@ namespace IT.WebHost.CMS.Pages.Admin.Settings.Comments;
 
 public partial class SettingsCommentsGeneral
 {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
     private bool _allowLinks;
@@ -15,7 +16,7 @@ public partial class SettingsCommentsGeneral
 
     protected override async Task OnInitializedAsync()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var c = data.Comments;
         if (c is null) return;
 
@@ -26,7 +27,7 @@ public partial class SettingsCommentsGeneral
 
     private async Task HandleSubmit()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var record = (data.Comments ?? new CommentsPublicRecord()).Clone();
         record.AllowLinks = _allowLinks;
         record.ExplicitModeEnabled = _explicitModeEnabled;

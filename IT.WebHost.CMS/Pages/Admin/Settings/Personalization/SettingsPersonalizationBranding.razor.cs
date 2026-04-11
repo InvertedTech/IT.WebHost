@@ -6,6 +6,7 @@ namespace IT.WebHost.CMS.Pages.Admin.Settings.Personalization;
 
 public partial class SettingsPersonalizationBranding
 {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
     private string _title = string.Empty;
@@ -15,7 +16,7 @@ public partial class SettingsPersonalizationBranding
 
     protected override async Task OnInitializedAsync()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var p = data.Personalization;
         if (p is null) return;
 
@@ -27,7 +28,7 @@ public partial class SettingsPersonalizationBranding
 
     private async Task HandleSubmit()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var record = (data.Personalization ?? new PersonalizationPublicRecord()).Clone();
         record.Title = _title;
         record.MetaDescription = _metaDescription;

@@ -9,6 +9,7 @@ namespace IT.WebHost.CMS.Pages.Admin.Settings.Subscription;
 
 public partial class SettingsSubscriptionProviders
 {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
     private bool _manualEnabled;
@@ -23,7 +24,7 @@ public partial class SettingsSubscriptionProviders
 
     protected override async Task OnInitializedAsync()
     {
-        var pub = await SettingsClient.PublicData;
+        var pub = await PublicSettingsClient.PublicData;
         var sub = pub.Subscription;
         if (sub is not null)
         {

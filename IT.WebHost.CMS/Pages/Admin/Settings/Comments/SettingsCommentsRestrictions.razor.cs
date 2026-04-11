@@ -7,6 +7,7 @@ namespace IT.WebHost.CMS.Pages.Admin.Settings.Comments;
 
 public partial class SettingsCommentsRestrictions
 {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
     private CommentRestrictionMinimumEnum _minimum = CommentRestrictionMinimumEnum.Anonymous;
@@ -14,7 +15,7 @@ public partial class SettingsCommentsRestrictions
 
     protected override async Task OnInitializedAsync()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var r = data.Comments?.DefaultRestriction;
         if (r is null) return;
 
@@ -24,7 +25,7 @@ public partial class SettingsCommentsRestrictions
 
     private async Task HandleSubmit()
     {
-        var data = await SettingsClient.PublicData;
+        var data = await PublicSettingsClient.PublicData;
         var record = (data.Comments ?? new CommentsPublicRecord()).Clone();
         record.DefaultRestriction ??= new CommentRestrictionMinimum();
         record.DefaultRestriction.Minimum = _minimum;

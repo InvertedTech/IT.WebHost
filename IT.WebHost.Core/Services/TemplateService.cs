@@ -9,10 +9,12 @@ namespace IT.WebHost.Core.Services
             { BaseFiles.Aurora, "aurora" },
             { BaseFiles.Galaxy, "galaxy" },
             { BaseFiles.Reef, "reef" },
-            { BaseFiles.Wildfire, "wildfire" }
+            { BaseFiles.Wildfire, "wildfire" },
+            { BaseFiles.CyberPunkGemma, "cyberpunk-gemma" },
+            { BaseFiles.CyberPunkQwen, "cyberpunk-qwen" },
         };
         // todo: load this from settings service
-        public string TemplateFile { get; set; } = "reef";
+        public string TemplateFile { get; set; } = "cyberpunk-gemma";
     }
 
     public enum BaseFiles
@@ -22,6 +24,8 @@ namespace IT.WebHost.Core.Services
         Aurora,
         Galaxy,
         Wildfire,
-        Reef
+        Reef,
+        CyberPunkGemma,
+        CyberPunkQwen,
     }
 }

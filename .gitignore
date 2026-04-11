@@ -482,3 +482,4 @@ $RECYCLE.BIN/
 *.swp
 IT.WebHost.App/appsettings.development.json
 /IT.WebHost.App/wwwroot/css/app.css
+/IT.WebHost.CMS/wwwroot/css/app.css

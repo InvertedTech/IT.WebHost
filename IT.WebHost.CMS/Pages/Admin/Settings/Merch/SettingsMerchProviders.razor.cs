@@ -7,6 +7,7 @@ namespace IT.WebHost.CMS.Pages.Admin.Settings.Merch;
 
 public partial class SettingsMerchProviders
 {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
     private bool _shopifyEnabled;
@@ -14,7 +15,7 @@ public partial class SettingsMerchProviders
 
     protected override async Task OnInitializedAsync()
     {
-        var pub = await SettingsClient.PublicData;
+        var pub = await PublicSettingsClient.PublicData;
         _shopifyEnabled = pub.Merch?.Shopify?.IsEnabled ?? false;
 
         var owner = await SettingsClient.OwnerData;

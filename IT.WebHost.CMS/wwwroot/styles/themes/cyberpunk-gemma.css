@@ -1,0 +1,226 @@
+/* =====================================
+   CYBERPUNK THEME UPDATE
+   (Based on shadcn/ui structure, customized for Neon/Grime)
+   ===================================== */
+
+/* --- 1. CYBERPUNK COLOR PALETTE DEFINITION --- */
+:root {
+    /* Base Dark Environment */
+    --color-bg-dark: oklch(0.08 0.05 240); /* Deep, slightly purplish black */
+    --color-bg-medium: oklch(0.15 0.05 240); /* Slightly lighter dark for cards/elements */
+    --color-text-light: oklch(0.98 0.01 240); /* Bright, slightly blueish white for text */
+    /* Neon Accents (Primary Colors) */
+    --color-primary-neon: oklch(0.6 0.1 260); /* Electric Cyan/Blue */
+    --color-secondary-neon: oklch(0.7 0.2 300); /* Hot Magenta/Pink */
+    /* UI Elements */
+    --color-card-bg: oklch(0.12 0.05 240); /* Card background in dark mode */
+    --color-input-bg: oklch(0.18 0.05 240); /* Input background */
+    --color-border: oklch(0.3 0.05 240); /* Subtle neon border */
+    --color-ring: oklch(0.6 0.1 260); /* Neon ring focus */
+    /* Standard Shadcn Variables (Adjusted for Cyberpunk feel) */
+    --background: var(--color-bg-dark);
+    --foreground: var(--color-text-light);
+    --card: var(--color-card-bg);
+    --card-foreground: var(--color-text-light);
+    --popover: var(--color-card-bg);
+    --popover-foreground: var(--color-text-light);
+    --primary: var(--color-primary-neon);
+    --primary-foreground: oklch(0.1 0.01 240); /* Dark text on bright primary */
+
+    --secondary: oklch(0.18 0.05 240); /* Used for secondary elements */
+    --secondary-foreground: var(--color-text-light);
+    --muted: oklch(0.08 0.05 240);
+    --muted-foreground: oklch(0.5 0.1 240);
+    --accent: var(--color-secondary-neon);
+    --accent-foreground: var(--color-bg-dark);
+    --destructive: oklch(0.55 0.22 27); /* Keep destructive colors slightly gritty */
+    --destructive-foreground: var(--color-bg-dark);
+    --border: var(--color-border);
+    --input: var(--color-input-bg);
+    --ring: var(--color-ring);
+    --radius: 0.3rem; /* Sharper, more angular radius */
+    /* Chart colors (Keep them cool and intense) */
+    --chart-1: oklch(0.5 0.1 260);
+    --chart-2: oklch(0.4 0.2 300);
+    --chart-3: oklch(0.3 0.2 260);
+    --chart-4: oklch(0.2 0.2 300);
+    --chart-5: oklch(0.1 0.1 260);
+    /* Sidebar variables (Darker/Gritier) */
+    --sidebar-background: oklch(0.06 0.03 240);
+    --sidebar-foreground: var(--color-text-light);
+    --sidebar-primary: var(--color-primary-neon);
+    --sidebar-primary-foreground: oklch(0.1 0.01 240);
+    --sidebar-accent: var(--color-secondary-neon);
+    --sidebar-accent-foreground: var(--color-bg-dark);
+    --sidebar-border: var(--color-border);
+    --sidebar-ring: var(--color-ring);
+    /* Alert colors (Adjusted for neon glow) */
+    --alert-success: oklch(0.4 0.2 142);
+    --alert-success-foreground: oklch(0.9 0.05 142);
+    --alert-success-bg: oklch(0.18 0.008 142);
+    --alert-info: oklch(0.4 0.2 255);
+    --alert-info-foreground: oklch(0.9 0.05 255);
+    --alert-info-bg: oklch(0.18 0.008 255);
+    --alert-warning: oklch(0.55 0.16 55);
+    --alert-warning-foreground: oklch(0.92 0.06 55);
+    --alert-warning-bg: oklch(0.19 0.008 55);
+    --alert-danger: oklch(0.55 0.20 27);
+    --alert-danger-foreground: oklch(0.9 0.06 27);
+    --alert-danger-bg: oklch(0.18 0.008 27);
+}
+
+/* --- 2. DARK MODE (Default Cyberpunk Look) --- */
+.dark {
+    /* Dark Mode remains dark, but foreground is bright neon */
+    --background: oklch(0.08 0.05 240);
+    --foreground: oklch(0.98 0.01 240);
+    --card: oklch(0.12 0.05 240);
+    --card-foreground: var(--color-text-light);
+    --popover: var(--color-card-bg);
+    --popover-foreground: var(--color-text-light);
+    --primary: var(--color-primary-neon);
+    --primary-foreground: oklch(0.1 0.01 240);
+    --secondary: oklch(0.18 0.05 240);
+    --secondary-foreground: var(--color-text-light);
+    --muted: oklch(0.08 0.05 240);
+    --muted-foreground: oklch(0.5 0.1 240);
+    --accent: var(--color-secondary-neon);
+    --accent-foreground: var(--color-bg-dark);
+    --destructive: oklch(0.55 0.22 27);
+    --destructive-foreground: var(--color-bg-dark);
+    --border: var(--color-border);
+    --input: var(--color-input-bg);
+    --ring: var(--color-ring);
+    /* Chart colors adjusted for better neon contrast */
+    --chart-1: oklch(0.5 0.1 260);
+    --chart-2: oklch(0.4 0.2 300);
+    --chart-3: oklch(0.3 0.2 260);
+    --chart-4: oklch(0.2 0.2 300);
+    --chart-5: oklch(0.1 0.1 260);
+    /* Sidebar variables remain dark and glowing */
+    --sidebar-background: oklch(0.06 0.03 240);
+    --sidebar-foreground: var(--color-text-light);
+    --sidebar-primary: var(--color-primary-neon);
+    --sidebar-primary-foreground: oklch(0.1 0.01 240);
+    --sidebar-accent: var(--color-secondary-neon);
+    --sidebar-accent-foreground: var(--color-bg-dark);
+    --sidebar-border: var(--color-border);
+    --sidebar-ring: var(--color-ring);
+}
+
+/* =====================================
+   3. GLOBAL STYLES & GLITCH EFFECTS
+   ===================================== */
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Monospace', 'Courier New', monospace; /* Crucial for cyberpunk feel */
+    line-height: 1.7;
+}
+
+h1, h2, h3 {
+    color: var(--color-primary-neon);
+    /* Heavy glow effect */
+    text-shadow: 0 0 10px var(--color-primary-neon), 0 0 20px rgba(0, 255, 255, 0.5);
+    margin-bottom: 0.7em;
+    letter-spacing: 3px; /* Spaced out, technical typography */
+}
+
+a {
+    color: var(--color-secondary-neon);
+    text-decoration: none;
+    transition: color 0.3s, text-shadow 0.3s;
+}
+
+    a:hover {
+        color: var(--color-primary-neon);
+        text-shadow: 0 0 8px var(--color-primary-neon);
+    }
+
+/* Card/Container Styling */
+.card, .container {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    padding: 30px;
+    margin: 30px auto;
+    width: 95%;
+    max-width: 1100px;
+    /* Gritty Neon Shadow */
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1), 0 0 30px rgba(255, 0, 255, 0.05);
+    transition: box-shadow 0.4s ease;
+}
+
+    .card:hover, .container:hover {
+        box-shadow: 0 0 20px var(--color-primary-neon), 0 0 40px rgba(255, 0, 255, 0.15);
+    }
+
+/* Form Inputs & Buttons */
+input[type="text"], input[type="password"], textarea {
+    background-color: var(--input);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    padding: 12px;
+    font-family: 'Monospace', monospace;
+    width: 100%;
+    margin-bottom: 18px;
+    box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.1); /* Subtle inner glow */
+}
+
+button, input[type="submit"] {
+    background: transparent;
+    border: 2px solid var(--color-primary-neon);
+    color: var(--color-primary-neon);
+    padding: 10px 25px;
+    cursor: pointer;
+    font-family: 'Monospace', monospace;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px var(--color-primary-neon);
+}
+
+    button:hover, input[type="submit"]:hover {
+        background: var(--color-primary-neon);
+        color: var(--color-bg-dark);
+        box-shadow: 0 0 20px var(--color-primary-neon);
+        transform: translateY(-2px);
+    }
+
+/* =====================================
+   4. GLITCH/TERMINAL EFFECTS (Optional)
+   ===================================== */
+
+/* This class can be applied to specific text elements */
+.glitch-text {
+    color: var(--color-primary-neon);
+    text-shadow: 2px 2px 0 var(--color-secondary-neon), -2px -2px 0 var(--color-primary-neon);
+    animation: glitch 1.2s infinite alternate;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+        text-shadow: 2px 2px 0 var(--color-secondary-neon), -1px -1px 0 var(--color-primary-neon);
+    }
+
+    25% {
+        transform: translate(-3px, 2px);
+        text-shadow: -1px 2px 0 var(--color-secondary-neon), 1px -1px 0 var(--color-primary-neon);
+    }
+
+    50% {
+        transform: translate(2px, -1px);
+        text-shadow: 0 1px 0 var(--color-secondary-neon), 3px 0 0 var(--color-primary-neon);
+    }
+
+    75% {
+        transform: translate(-1px, -2px);
+        text-shadow: 1px 0 0 var(--color-secondary-neon), -3px 1px 0 var(--color-primary-neon);
+    }
+
+    100% {
+        transform: translate(0);
+        text-shadow: 2px 2px 0 var(--color-secondary-neon), -2px -2px 0 var(--color-primary-neon);
+    }
+}
