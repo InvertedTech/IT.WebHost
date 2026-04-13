@@ -1,0 +1,66 @@
+﻿@page "/admin/content/create"
+@using IT.WebServices.Fragments.Content
+@layout AdminLayout
+
+<PageTitle>Create Content</PageTitle>
+
+<BbFormWizard OnComplete="HandleComplete">
+    <BbWizardStep Title="Post Type" Icon="file">
+
+        <ContentTypeCardField Label="What Kind Of Post Is This?"
+                SelectedType="Type"              
+                SelectedTypeChanged="OnContentTypeSelected"
+                              />
+    </BbWizardStep>
+    <BbWizardStep Title="Title & Details" Icon="id-card">
+        <div class="space-y-4 max-w-sm">
+            <BbFormFieldInput TValue="string"
+                    @bind-Value="ContentPublicData.Title"
+                    Label="Title"
+                    HelperText="The Title Of Your Post" />
+            <BbFormFieldInput TValue="string"
+                              Value="UrlStub"
+                              Label="Url"
+                              Disabled="true"
+                              HelperText="The URL Slug Of Your Post (Based On Title)" />
+            <BbFormFieldInput TValue="string"
+                              @bind-Value="ContentPublicData.Author"
+                              Label="Author"
+                              HelperText="The Author Of Your Post" />
+            <BbFormFieldInput TValue="string"
+                              @bind-Value="ContentPublicData.Description"
+                              Label="Description"
+                              HelperText="A Short Description Of Your Post" />
+                              @* // TODO: Add Image Gallery Select *@
+            <BbFormFieldInput TValue="string"
+                              @bind-Value="ContentPublicData.Author"
+                              Label="Author"
+                              HelperText="The Post Author" />
+            <SubscriptionLevelSelect @bind-SelectedLevel="ContentPublicData.SubscriptionLevel"
+                                     Label="Required Subscription Level" />
+            <ChannelSelect @bind-SelectedChannel="SelectedChannelId" />
+            <CategorySelect @bind-SelectedCategory="SelectedCategoryId" />
+            <BbFormFieldTagInput @bind-Tags="SelectedTags" Label="Tags"/>
+        </div>
+    </BbWizardStep>
+    <BbWizardStep Title="Content" Icon="file">
+        <div class="space-y-4 max-w-sm">
+            @switch (Type)
+            {
+                case  ContentType.ContentWritten:
+                    <ContentWrittenDataSection HtmlBody="ContentPublicData.Written.HtmlBody"
+                        HtmlBodyChanged="OnHtmlBodyChanged"/>
+                    break;
+                case ContentType.ContentVideo:
+                    <ContentVideoDataSection HtmlBody="@ContentPublicData.Video.HtmlBody"
+                                            IsLiveStream="@ContentPublicData.Video.IsLiveStream"
+                                            YoutubeVideoId="@ContentPublicData.Video.YoutubeVideoId"
+                                            RumbleVideoId="@ContentPublicData.Video.RumbleVideoId" />
+                    break;
+            }
+        </div>
+    </BbWizardStep>
+    <BbWizardStep Title="Done" Icon="circle-check">
+        <p class="text-muted-foreground">All set! Click Complete to finish.</p>
+    </BbWizardStep>
+</BbFormWizard>

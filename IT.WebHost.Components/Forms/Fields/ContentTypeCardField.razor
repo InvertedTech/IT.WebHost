@@ -1,0 +1,42 @@
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbField Label="@Label">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        @foreach (var (type, icon, title, description) in _options)
+        {
+            var isSelected = SelectedType == type;
+            <button type="button"
+                    class="@($"flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent {(isSelected ? "border-primary bg-accent ring-1 ring-primary" : "border-border")}")"
+                    @onclick="() => Select(type)">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <LucideIcon Name="@icon" class="h-4 w-4" />
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">@title</span>
+                    <span class="text-xs text-muted-foreground">@description</span>
+                </div>
+            </button>
+        }
+    </div>
+</BbField>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Select content type.";
+    [Parameter] public ContentType SelectedType { get; set; } = ContentType.ContentNone;
+    [Parameter] public EventCallback<ContentType> SelectedTypeChanged { get; set; }
+
+    private static readonly (ContentType Type, string Icon, string Title, string Description)[] _options =
+    [
+        (ContentType.ContentVideo,   "video",     "Video",   "Livestreams or hosted video."),
+        (ContentType.ContentWritten, "file-text", "Written", "Articles, posts, and stories."),
+        (ContentType.ContentAudio,   "mic",       "Audio",   "Podcast or audio-only content."),
+        (ContentType.ContentPicture, "image",     "Picture", "Single image with a caption."),
+    ];
+
+    private async Task Select(ContentType type)
+    {
+        SelectedType = type;
+        await SelectedTypeChanged.InvokeAsync(type);
+    }
+}

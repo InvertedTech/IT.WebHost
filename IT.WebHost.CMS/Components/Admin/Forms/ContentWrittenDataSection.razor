@@ -1,0 +1,8 @@
+﻿<BbFormSection Title="Written">
+    <BbRichTextEditor @bind-Value="HtmlBody" Toolbar="ToolbarPreset.Full" Placeholder="All formatting options..." />
+</BbFormSection>
+
+@code {
+    [Parameter] public string HtmlBody { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> HtmlBodyChanged { get; set; }
+}
