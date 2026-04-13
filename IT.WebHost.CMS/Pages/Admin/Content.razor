@@ -2,11 +2,34 @@
 @layout AdminLayout
 @using IT.WebServices.Fragments.Content
 @using IT.WebHost.Components.Forms
+
 <PageTitle>Content</PageTitle>
 
-<div class="space-y-4">
-    <h1 class="text-2xl font-bold">Content</h1>
+<div class="space-y-6">
 
+    @* Header *@
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold">Content</h1>
+            <p class="text-sm text-muted-foreground mt-0.5">
+                @if (_isLoading)
+                {
+                    <span>Loading…</span>
+                }
+                else
+                {
+                    <span>@PageTotalItems.ToString("N0") item@(PageTotalItems == 1 ? "" : "s")</span>
+                }
+            </p>
+        </div>
+        <BbButton Variant="ButtonVariant.Default" Size="ButtonSize.Small"
+                  OnClick='() => Nav.NavigateTo("/admin/content/create")'>
+            <LucideIcon Name="plus" class="h-4 w-4 mr-1.5" />
+            Create Content
+        </BbButton>
+    </div>
+
+    @* Search & filters *@
     <AdminSearchContentForm @bind-query="_query"
                             pageSize="PageSizeParsed"
                             pageSizeChanged="OnPageSizeSelectChanged"
@@ -17,9 +40,22 @@
                             Categories="Categories"
                             OnSearch="HandleSearchKey" />
 
-    <ContentTable Content="@ContentRecords" PageSize="(int)PageSizeParsed" IsLoading="@_isLoading" />
+    @* Table *@
+    <BbCard>
+        <BbCardContent class="p-0">
+            <ContentTable Content="@ContentRecords" PageSize="(int)PageSizeParsed" IsLoading="@_isLoading" />
+        </BbCardContent>
+    </BbCard>
 
-    <BbPagination TotalPages="TotalPages"
-                  CurrentPage="CurrentPage"
-                  OnPageChanged="OnPageChanged" />
+    @* Pagination *@
+    @if (TotalPages > 1)
+    {
+        <div class="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Page @CurrentPage of @TotalPages</span>
+            <BbPagination TotalPages="TotalPages"
+                          CurrentPage="CurrentPage"
+                          OnPageChanged="OnPageChanged" />
+        </div>
+    }
+
 </div>

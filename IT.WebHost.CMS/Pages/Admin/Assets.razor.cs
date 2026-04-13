@@ -8,8 +8,10 @@ public partial class Assets
 {
     [Inject] private AssetInterface.AssetInterfaceClient AssetClient { get; set; } = null!;
     [Inject] private ONUserHelper UserHelper { get; set; } = null!;
+    [Inject] private NavigationManager Nav { get; set; } = null!;
 
     public IEnumerable<AssetListRecord> AssetRecords { get; set; } = [];
+    private bool _isLoading = false;
 
     [Parameter, SupplyParameterFromQuery(Name = "pageSize")]
     public string PageSize { get; set; } = "20";
@@ -30,6 +32,7 @@ public partial class Assets
 
     private async Task LoadAssetsAsync()
     {
+        _isLoading = true;
         var res = await AssetClient.GetImageAssetsAsync(new GetImageAssetsRequest
         {
             PageSize = PageSizeParsed,
@@ -38,5 +41,6 @@ public partial class Assets
 
         AssetRecords = res.Records;
         PageTotalItems = res.PageTotalItems;
+        _isLoading = false;
     }
 }

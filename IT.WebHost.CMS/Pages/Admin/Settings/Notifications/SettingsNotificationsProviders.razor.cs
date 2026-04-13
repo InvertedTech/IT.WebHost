@@ -9,10 +9,16 @@ public partial class SettingsNotificationsProviders
 {
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
+    private bool _isEditing = false;
     private bool _sendgridEnabled;
     private SendgridOwnerSettings _sendgridSettings = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
     {
         var owner = await SettingsClient.OwnerData;
         var sendgrid = owner.Notification?.Sendgrid;
@@ -20,6 +26,14 @@ public partial class SettingsNotificationsProviders
 
         _sendgridEnabled = sendgrid.Enabled;
         _sendgridSettings = sendgrid.Clone();
+    }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadAsync();
     }
 
     private async Task HandleSendgridSubmit(SendgridOwnerSettings settings)
@@ -30,5 +44,11 @@ public partial class SettingsNotificationsProviders
         record.Sendgrid.Enabled = _sendgridEnabled;
 
         await SettingsClient.ModifyNotificationOwnerSettings(new ModifyNotificationOwnerDataRequest { Data = record });
+    }
+
+    private async Task HandleSave()
+    {
+        await HandleSendgridSubmit(_sendgridSettings);
+        _isEditing = false;
     }
 }

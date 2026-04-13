@@ -1,0 +1,22 @@
+@using IT.WebServices.Fragments.Authentication
+
+<BbItem Size="ItemSize.Default" Variant="ItemVariant.Outline">
+    <BbItemContent class="grid grid-cols-2 justify-between">
+        <div>
+            <BbItemTitle>@TOTPDevice.DeviceName</BbItemTitle>
+            <h3>Created On:</h3>
+            <p>@TOTPDevice.CreatedOnUTC.ToDateTime().ToString("mm/dd/yyyy")</p>
+        </div>
+        <div>
+            <BbButton Variant="ButtonVariant.Destructive" @onclick="OnClick">
+                <LucideIcon Name="Trash" class="h-4 w-4 mr-2 inline-block" />
+                Delete
+            </BbButton>
+        </div>
+    </BbItemContent>
+</BbItem>
+
+@code {
+    [Parameter] public TOTPDeviceLimited TOTPDevice { get; set; } = null!;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+}

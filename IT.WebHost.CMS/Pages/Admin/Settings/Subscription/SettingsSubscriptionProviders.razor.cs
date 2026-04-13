@@ -12,6 +12,7 @@ public partial class SettingsSubscriptionProviders
     [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
+    private bool _isEditing = false;
     private bool _manualEnabled;
     private bool _stripeEnabled;
     private bool _paypalEnabled;
@@ -23,6 +24,11 @@ public partial class SettingsSubscriptionProviders
     private PaypalOwnerSettings _paypalSettings = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
     {
         var pub = await PublicSettingsClient.PublicData;
         var sub = pub.Subscription;
@@ -43,6 +49,14 @@ public partial class SettingsSubscriptionProviders
             _stripeSettings = ownerSub.Stripe ?? new StripeOwnerSettings();
             _paypalSettings = ownerSub.Paypal ?? new PaypalOwnerSettings();
         }
+    }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadAsync();
     }
 
     private async Task HandleFortisSubmit(FortisOwnerSettings settings)
@@ -67,5 +81,13 @@ public partial class SettingsSubscriptionProviders
         var record = (owner.Subscription ?? new SubscriptionOwnerRecord()).Clone();
         record.Paypal = settings;
         await SettingsClient.ModifySubscriptionOwnerSettings(new ModifySubscriptionOwnerDataRequest { Data = record });
+    }
+
+    private async Task HandleSave()
+    {
+        await HandleStripeSubmit(_stripeSettings);
+        await HandlePaypalSubmit(_paypalSettings);
+        await HandleFortisSubmit(_fortisSettings);
+        _isEditing = false;
     }
 }

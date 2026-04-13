@@ -1,11 +1,15 @@
 @page "/admin/settings/comments/general"
 @layout AdminLayout
 @using IT.WebServices.Fragments.Comment
+@using IT.WebHost.Components.Forms
 
 <PageTitle>Comments - General</PageTitle>
 
 <div class="space-y-4">
-    <h1 class="text-2xl font-bold">General</h1>
+    <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">General</h1>
+        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="StartEdit" Disabled="_isEditing">Edit</BbButton>
+    </div>
 
     <BbCard>
         <BbCardContent Class="flex items-center justify-between p-6">
@@ -13,7 +17,7 @@
                 <p class="text-sm font-medium">Allow Links</p>
                 <p class="text-sm text-muted-foreground">Permit hyperlinks in comment text.</p>
             </div>
-            <BbSwitch @bind-Checked="_allowLinks" />
+            <BbSwitch @bind-Checked="_allowLinks" Disabled="!_isEditing" />
         </BbCardContent>
     </BbCard>
 
@@ -23,7 +27,7 @@
                 <p class="text-sm font-medium">Explicit Mode</p>
                 <p class="text-sm text-muted-foreground">Enable explicit content warnings on comments.</p>
             </div>
-            <BbSwitch @bind-Checked="_explicitModeEnabled" />
+            <BbSwitch @bind-Checked="_explicitModeEnabled" Disabled="!_isEditing" />
         </BbCardContent>
     </BbCard>
 
@@ -32,6 +36,7 @@
         <BbFormFieldSelect TValue="CommentOrder"
                            @bind-Value="_defaultOrder"
                            Label="Order"
+                           Disabled="!_isEditing"
                            DisplayTextSelector="@(v => v switch {
                                CommentOrder.Liked  => "Most Liked",
                                CommentOrder.Older  => "Oldest First",
@@ -44,7 +49,5 @@
         </BbFormFieldSelect>
     </BbFormSection>
 
-    <div class="flex justify-end">
-        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
-    </div>
+    <SaveChangesBar IsShown="_isEditing" OnDiscard="CancelEdit" OnSave="HandleSubmit" />
 </div>

@@ -1,0 +1,265 @@
+@page "/admin/content/{ContentId}"
+@layout AdminLayout
+@using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Content
+@using IT.WebHost.Components.Content
+
+<PageTitle>@(Public is not null ? $"{Public.Data?.Title} — Content" : "Content")</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="flex items-center justify-center h-64">
+        <div class="flex flex-col items-center gap-3 text-muted-foreground">
+            <LucideIcon Name="loader-circle" class="h-8 w-8 animate-spin" />
+            <span class="text-sm">Loading content…</span>
+        </div>
+    </div>
+}
+else if (Public is null)
+{
+    <div class="flex items-center justify-center h-64">
+        <BbEmpty Title="Content not found"
+                 Description="This item may have been deleted or the ID is invalid.">
+            <Icon>
+                <LucideIcon Name="file-x" class="h-12 w-12" />
+            </Icon>
+        </BbEmpty>
+    </div>
+}
+else
+{
+    var isVideo   = Public.Data?.Video   is not null;
+    var isWritten = Public.Data?.Written is not null;
+    var isPicture = Public.Data?.Picture is not null;
+    var isAudio   = Public.Data?.Audio   is not null;
+
+    var typeLabel = isVideo ? "Video" : isWritten ? "Written" : isPicture ? "Picture" : isAudio ? "Audio" : "Unknown";
+    var typeIcon  = isVideo ? "video" : isWritten ? "newspaper" : isPicture ? "image" : isAudio ? "headphones" : "file";
+
+    var publishDate = Public.PublishOnUTC?.ToDateTime();
+    var isPublished = publishDate.HasValue && publishDate.Value <= DateTime.UtcNow;
+    var isScheduled = publishDate.HasValue && publishDate.Value > DateTime.UtcNow;
+
+    <div class="space-y-6">
+
+        @* Hero *@
+        <BbCard class="overflow-hidden">
+            @if (!string.IsNullOrWhiteSpace(Public.Data?.FeaturedImageAssetID))
+            {
+                <div class="border-b">
+                    <FeaturedImage AssetId="@Public.Data.FeaturedImageAssetID"
+                                   Alt="@(Public.Data?.Title ?? "Featured image")"
+                                   Title="" />
+                </div>
+            }
+            else
+            {
+                <div class="h-36 bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30 flex items-center justify-center">
+                    <LucideIcon Name="@typeIcon" class="h-16 w-16 text-primary-foreground/40" />
+                </div>
+            }
+            <BbCardContent class="pt-4 pb-5 px-6">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <BbBadge Variant="BadgeVariant.Outline">
+                            <LucideIcon Name="@typeIcon" class="h-3 w-3 mr-1" />
+                            @typeLabel
+                        </BbBadge>
+                        @if (isPublished)
+                        {
+                            <BbBadge Variant="BadgeVariant.Default">Published</BbBadge>
+                        }
+                        else if (isScheduled)
+                        {
+                            <BbBadge Variant="BadgeVariant.Secondary">Scheduled</BbBadge>
+                        }
+                        else
+                        {
+                            <BbBadge Variant="BadgeVariant.Secondary">Draft</BbBadge>
+                        }
+                        @if (Public.Data?.SubscriptionLevel > 0)
+                        {
+                            <BbBadge Variant="BadgeVariant.Default">Members Only</BbBadge>
+                        }
+                        else
+                        {
+                            <BbBadge Variant="BadgeVariant.Secondary">Free</BbBadge>
+                        }
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+                            <LucideIcon Name="external-link" class="h-4 w-4 mr-1.5" />
+                            View
+                        </BbButton>
+                        <BbButton Variant="ButtonVariant.Default" Size="ButtonSize.Small" OnClick="StartEdit" Disabled="_isEditing">
+                            <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
+                            Edit
+                        </BbButton>
+                    </div>
+                </div>
+            </BbCardContent>
+        </BbCard>
+
+        @* Details *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>
+                    <LucideIcon Name="info" class="h-4 w-4 mr-2 inline-block" />
+                    Details
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @* Read-only *@
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Content ID</p>
+                        <p class="text-sm font-mono break-all">@Public.ContentID</p>
+                    </div>
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</p>
+                        <p class="text-sm">@typeLabel</p>
+                    </div>
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</p>
+                        <p class="text-sm">@(Public.CreatedOnUTC?.ToDateTime().ToString("yyyy-MM-dd") ?? "—")</p>
+                    </div>
+                    <BbFormFieldDatePicker Label="Publish Date"
+                                          Placeholder="Not scheduled"
+                                          @bind-Value="_publishDate"
+                                          Disabled="!_isEditing" />
+                </div>
+
+                <BbSeparator />
+
+                @* Editable *@
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <BbFormFieldInput TValue="string"
+                                      Label="Title"
+                                      @bind-Value="Public.Data.Title"
+                                      Disabled="!_isEditing" />
+                    <BbFormFieldInput TValue="string"
+                                      Label="Author"
+                                      @bind-Value="Public.Data.Author"
+                                      Disabled="!_isEditing" />
+                </div>
+                <BbFormFieldInput TValue="string"
+                                  Label="Description"
+                                  @bind-Value="Public.Data.Description"
+                                  Disabled="!_isEditing" />
+                <div class="@(!_isEditing ? "pointer-events-none opacity-60" : "")">
+                    <ImageSelectField Label="Featured Image"
+                                      @bind-SelectedAssetId="Public.Data.FeaturedImageAssetID" />
+                </div>
+                <div class="@(!_isEditing ? "pointer-events-none opacity-60" : "")">
+                    <SubscriptionLevelSelect @bind-SelectedLevel="Public.Data.SubscriptionLevel"
+                                             Label="Subscription Level" />
+                </div>
+                <div class="@(!_isEditing ? "pointer-events-none opacity-60" : "")">
+                    <BbFormFieldTagInput Label="Tags" @bind-Tags="_editTags" />
+                </div>
+            </BbCardContent>
+        </BbCard>
+
+        @* Type-specific *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>
+                    <LucideIcon Name="@typeIcon" class="h-4 w-4 mr-2 inline-block" />
+                    @typeLabel Content
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent class="space-y-4">
+                @if (isVideo && Public.Data?.Video is { } video)
+                {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <BbFormFieldInput TValue="string"
+                                          Label="YouTube Video ID"
+                                          @bind-Value="video.YoutubeVideoId"
+                                          Disabled="!_isEditing" />
+                        <BbFormFieldInput TValue="string"
+                                          Label="Rumble Video ID"
+                                          @bind-Value="video.RumbleVideoId"
+                                          Disabled="!_isEditing" />
+                    </div>
+                    <BbFormFieldSwitch Label="Live Stream"
+                                       HelperText="Toggle if this video is a live stream."
+                                       @bind-Checked="video.IsLiveStream"
+                                       Disabled="!_isEditing" />
+                    @if (!_isEditing && !string.IsNullOrWhiteSpace(video.YoutubeVideoId))
+                    {
+                        <div class="rounded-lg overflow-hidden border">
+                            <YoutubePlayer VideoId="@video.YoutubeVideoId" />
+                        </div>
+                    }
+                    else if (!_isEditing && !string.IsNullOrWhiteSpace(video.RumbleVideoId))
+                    {
+                        <div class="rounded-lg overflow-hidden border">
+                            <RumblePlayer VideoId="@video.RumbleVideoId" />
+                        </div>
+                    }
+                }
+                else if (isAudio && Public.Data?.Audio is { } audio)
+                {
+                    <BbFormFieldInput TValue="string"
+                                      Label="Audio Asset ID"
+                                      @bind-Value="audio.AudioAssetID"
+                                      Disabled="!_isEditing" />
+                }
+                else if (isPicture && Public.Data?.Picture is { } picture)
+                {
+                    @if (picture.ImageAssetIDs is { Count: > 0 })
+                    {
+                        <BbScrollArea MaxHeight="400px" class="w-full">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                @foreach (var assetId in picture.ImageAssetIDs)
+                                {
+                                    <FeaturedImage AssetId="@assetId" Alt="Gallery image" Title="" />
+                                }
+                            </div>
+                        </BbScrollArea>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-muted-foreground italic">No images attached.</p>
+                    }
+                }
+                else if (isWritten && Public.Data?.Written is { } written)
+                {
+                    <BbRichTextEditor @bind-Value="written.HtmlBody"
+                                      Toolbar="ToolbarPreset.Full"
+                                      ReadOnly="!_isEditing" />
+                }
+            </BbCardContent>
+        </BbCard>
+
+        @* Danger Zone *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle class="text-destructive">
+                    <LucideIcon Name="triangle-alert" class="h-4 w-4 mr-2 inline-block" />
+                    Danger Zone
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent>
+                <p class="text-sm text-muted-foreground mb-3">These actions affect the published content and cannot be undone.</p>
+                <div class="flex flex-wrap gap-2">
+                    @if (isPublished)
+                    {
+                        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+                            <LucideIcon Name="eye-off" class="h-4 w-4 mr-1.5" />
+                            Unpublish
+                        </BbButton>
+                    }
+                    <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small">
+                        <LucideIcon Name="trash-2" class="h-4 w-4 mr-1.5" />
+                        Delete Content
+                    </BbButton>
+                </div>
+            </BbCardContent>
+        </BbCard>
+
+    </div>
+
+    // TODO: Bind Actions
+    <SaveChangesBar IsShown="@_isEditing" />
+}

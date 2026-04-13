@@ -1,15 +1,17 @@
 @namespace IT.WebHost.CMS.Components.Admin.Cms
 @using IT.WebServices.Fragments.Content
+@inject NavigationManager Nav
 
-<BbDataTable TData="ContentListRecord" Data="@Content" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading" Class="bb-table-fix">
+<BbDataGrid TData="ContentListRecord" Items="@Content" InitialPageSize="@PageSize" ShowPagination="false" IsLoading="@IsLoading" Class="bb-table-fix cursor-pointer"
+            OnRowClick="@(c => Nav.NavigateTo($"/admin/content/{c.ContentID}"))">
     <Columns>
-        <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Title)" Header="Title" />
-        <BbDataTableColumn TData="ContentListRecord" TValue="string" Property="(c => c.Author)" Header="Author" />
-        <BbDataTableColumn TData="ContentListRecord" TValue="uint" Property="(c => c.SubscriptionLevel)" Header="Level" />
-        <BbDataTableColumn TData="ContentListRecord" TValue="DateTime?" Property="(c => c.PublishOnUTC?.ToDateTime())" Header="Publish On" />
-        <BbDataTableColumn TData="ContentListRecord" TValue="DateTime" Property="(c => c.CreatedOnUTC.ToDateTime())" Header="Created On" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="string" Property="(c => c.Title)" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="string" Property="(c => c.Author)" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="uint" Property="(c => c.SubscriptionLevel)" Title="Level" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime?" Property="(c => c.PublishOnUTC.ToDateTime())" Title="Publish On" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime" Property="(c => c.CreatedOnUTC.ToDateTime())" Title="Created On" />
     </Columns>
-</BbDataTable>
+</BbDataGrid>
 
 @code {
     [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = new List<ContentListRecord>();

@@ -10,11 +10,17 @@ public partial class SettingsCommentsGeneral
     [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
+    private bool _isEditing = false;
     private bool _allowLinks;
     private bool _explicitModeEnabled;
     private CommentOrder _defaultOrder = CommentOrder.Liked;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
     {
         var data = await PublicSettingsClient.PublicData;
         var c = data.Comments;
@@ -23,6 +29,14 @@ public partial class SettingsCommentsGeneral
         _allowLinks = c.AllowLinks;
         _explicitModeEnabled = c.ExplicitModeEnabled;
         _defaultOrder = c.DefaultOrder;
+    }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadAsync();
     }
 
     private async Task HandleSubmit()
@@ -34,5 +48,6 @@ public partial class SettingsCommentsGeneral
         record.DefaultOrder = _defaultOrder;
 
         await SettingsClient.ModifyCommentsPublicSettings(new ModifyCommentsPublicDataRequest { Data = record });
+        _isEditing = false;
     }
 }

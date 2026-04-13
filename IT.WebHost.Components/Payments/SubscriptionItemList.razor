@@ -1,0 +1,21 @@
+@using IT.WebServices.Fragments.Authorization.Payment
+
+@if (Records.Count() > 0)
+{
+    @foreach (var sub in Records)
+    {
+        <SubscriptionItem Record="sub"/>
+    }
+} else
+{
+    <BbEmpty Title="No results found"
+             Description="Try adjusting your search or filters.">
+        <Icon>
+            <LucideIcon Name="search" class="h-12 w-12" />
+        </Icon>
+    </BbEmpty>
+}
+
+@code {
+    [Parameter] public IEnumerable<GenericSubscriptionFullRecord> Records { get; set; } = new List<GenericSubscriptionFullRecord>();
+}

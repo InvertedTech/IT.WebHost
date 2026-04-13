@@ -9,12 +9,18 @@ public partial class SettingsPersonalizationBranding
     [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
+    private bool _isEditing = false;
     private string _title = string.Empty;
     private string _metaDescription = string.Empty;
     private string _profileImageAssetId = string.Empty;
     private string _headerImageAssetId = string.Empty;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
     {
         var data = await PublicSettingsClient.PublicData;
         var p = data.Personalization;
@@ -24,6 +30,14 @@ public partial class SettingsPersonalizationBranding
         _metaDescription = p.MetaDescription;
         _profileImageAssetId = p.ProfileImageAssetId;
         _headerImageAssetId = p.HeaderImageAssetId;
+    }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadAsync();
     }
 
     private async Task HandleSubmit()
@@ -36,5 +50,6 @@ public partial class SettingsPersonalizationBranding
         record.HeaderImageAssetId = _headerImageAssetId;
 
         await SettingsClient.ModifyPersonalizationPublicSettings(new ModifyPersonalizationPublicDataRequest { Data = record });
+        _isEditing = false;
     }
 }

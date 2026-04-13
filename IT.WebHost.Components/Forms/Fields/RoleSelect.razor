@@ -1,0 +1,32 @@
+﻿@using IT.WebServices.Fragments.Settings
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbFormFieldMultiSelect TValue="string"
+                        Label="Roles"
+                        HelperText="Select User Roles."
+                        Options="@roles"
+                        Placeholder="Select skills"
+                        @bind-Values="selected" />
+
+@code {
+    [Parameter] public IEnumerable<string> selected { get; set; } = new List<string>();
+    [Parameter] public EventCallback<IEnumerable<string>> selectedChanged { get; set; }
+
+    private IEnumerable<SelectOption<string>> roles = new List<SelectOption<string>>()
+    {
+        new SelectOption<string>("owner", "Owner"),
+        new SelectOption<string>("admin", "Admin"),
+        new SelectOption<string>("backup", "Backup"),
+        new SelectOption<string>("ops", "Ops"),
+        new SelectOption<string>("service", "Service"),
+        new SelectOption<string>("con_publisher", "Content Publisher"),
+        new SelectOption<string>("con_writer", "Conten Writer"),
+        new SelectOption<string>("com_mod", "Comment Moderator"),
+        new SelectOption<string>("com_appellate", "Comment Judge"),
+        new SelectOption<string>("bot_verification", "Bot Verification"),
+        new SelectOption<string>("evt_manager", "Event Manager"),
+        new SelectOption<string>("evt_tkt_manager", "Event Ticket Manager"),
+        new SelectOption<string>("member_manager", "Member Manager"),
+        new SelectOption<string>("sub_manager", "Subscription Manager"),
+    };
+}

@@ -11,6 +11,7 @@ public partial class SettingsChannels
     [Inject] private ONUserHelper UserHelper { get; set; } = null!;
 
     private IEnumerable<ChannelRecord> channels = new List<ChannelRecord>();
+    private bool _isEditing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,5 +26,16 @@ public partial class SettingsChannels
             channels = foundChannels;
         }
     }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadChannelsAsync();
+    }
+
+    private void HandleSave() => _isEditing = false;
+
     private Task SaveChannelAsync(ChannelRecord channel) => throw new NotImplementedException();
 }

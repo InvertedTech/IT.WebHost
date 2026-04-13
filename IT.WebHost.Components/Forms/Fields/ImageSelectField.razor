@@ -20,7 +20,7 @@
                 <span class="text-muted-foreground">Select an image...</span>
             }
         </div>
-        @if (!string.IsNullOrEmpty(SelectedAssetId))
+          @if (!string.IsNullOrEmpty(SelectedAssetId))
         {
             <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="Clear">
                 <LucideIcon Name="x" class="h-4 w-4" />

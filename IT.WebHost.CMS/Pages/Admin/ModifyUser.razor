@@ -1,0 +1,246 @@
+@page "/admin/users/{UserId}"
+@using IT.WebHost.Components.Forms
+@using IT.WebHost.Components.Payments
+@using IT.WebHost.Components.Profile
+@using IT.WebHost.Core.Models
+@layout AdminLayout
+
+<PageTitle>@(User is not null ? $"{User.Public?.Data?.DisplayName} — Profile" : "User Profile")</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="flex items-center justify-center h-64">
+        <div class="flex flex-col items-center gap-3 text-muted-foreground">
+            <LucideIcon Name="loader-circle" class="h-8 w-8 animate-spin" />
+            <span class="text-sm">Loading profile…</span>
+        </div>
+    </div>
+}
+else if (User is null)
+{
+    <div class="flex items-center justify-center h-64">
+        <BbEmpty Title="User not found"
+                 Description="This user may have been deleted or the ID is invalid.">
+            <Icon>
+                <LucideIcon Name="user-x" class="h-12 w-12" />
+            </Icon>
+        </BbEmpty>
+    </div>
+}
+else
+{
+    var profile = ProfileData.FromRecord(User);
+
+    <div class="space-y-6">
+
+        @* Hero card *@
+        <BbCard class="overflow-hidden">
+            <div class="h-28 bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30" />
+            <BbCardContent class="relative pt-0 pb-6 px-6">
+                <div class="flex items-end justify-between -mt-12 mb-4">
+                    <div class="h-24 w-24 rounded-full border-4 border-background bg-muted flex items-center justify-center text-2xl font-bold overflow-hidden shadow-md">
+                        @if (profile.ProfileImagePNG is { Length: > 0 })
+                        {
+                            <img src="@($"data:image/png;base64,{Convert.ToBase64String(profile.ProfileImagePNG)}")"
+                                 alt="@profile.DisplayName"
+                                 class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            @GetInitials(profile.DisplayName)
+                        }
+                    </div>
+                    <div class="flex gap-2 pb-1">
+                        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+                            <LucideIcon Name="key-round" class="h-4 w-4 mr-1.5" />
+                            Reset Password
+                        </BbButton>
+                        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small"
+                                  OnClick="StartEdit" Disabled="_isEditing">
+                            <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
+                            Edit
+                        </BbButton>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <h1 class="text-2xl font-bold leading-tight">@profile.DisplayName</h1>
+                    <p class="text-sm text-muted-foreground">@@@profile.UserName</p>
+                    @if (profile.Roles.Count > 0)
+                    {
+                        <div class="flex flex-wrap gap-1.5 pt-0.5">
+                            @foreach (var role in profile.Roles)
+                            {
+                                <BbBadge Variant="BadgeVariant.Secondary">@role</BbBadge>
+                            }
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(profile.Bio))
+                    {
+                        <p class="text-sm text-foreground/80 max-w-prose pt-0.5">@profile.Bio</p>
+                    }
+                </div>
+
+                <BbSeparator class="my-4" />
+
+                <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                    <span class="flex items-center gap-1.5">
+                        <LucideIcon Name="mail" class="h-4 w-4" />
+                        @profile.Email
+                    </span>
+                    @if (!string.IsNullOrWhiteSpace(profile.FirstName))
+                    {
+                        <span class="flex items-center gap-1.5">
+                            <LucideIcon Name="user" class="h-4 w-4" />
+                            @profile.FirstName @profile.LastName
+                        </span>
+                    }
+                    @if (profile.CreatedOnUTC.HasValue)
+                    {
+                        <span class="flex items-center gap-1.5">
+                            <LucideIcon Name="calendar" class="h-4 w-4" />
+                            Member since @profile.CreatedOnUTC.Value.ToString("MMMM yyyy")
+                        </span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(profile.PostalCode))
+                    {
+                        <span class="flex items-center gap-1.5">
+                            <LucideIcon Name="map-pin" class="h-4 w-4" />
+                            @profile.PostalCode
+                        </span>
+                    }
+                </div>
+            </BbCardContent>
+        </BbCard>
+
+        @* Details *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>
+                    <LucideIcon Name="user-round" class="h-4 w-4 mr-2 inline-block" />
+                    Details
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent class="space-y-4">
+                @* Read-only *@
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">User ID</p>
+                        <p class="text-sm font-mono break-all">@profile.UserId</p>
+                    </div>
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Username</p>
+                        <p class="text-sm">@profile.UserName</p>
+                    </div>
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Member Since</p>
+                        <p class="text-sm">@(profile.CreatedOnUTC?.ToString("yyyy-MM-dd") ?? "—")</p>
+                    </div>
+                </div>
+
+                <BbSeparator />
+
+                @* Editable *@
+                @if (_editProfile is not null)
+                {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <BbFormFieldInput TValue="string" Label="Display Name"
+                                          @bind-Value="_editProfile.DisplayName"
+                                          Disabled="!_isEditing" />
+                        <BbFormFieldInput TValue="string" Label="Email"
+                                          @bind-Value="_editProfile.Email"
+                                          Disabled="!_isEditing" />
+                        <BbFormFieldInput TValue="string" Label="First Name"
+                                          @bind-Value="_editProfile.FirstName"
+                                          Disabled="!_isEditing" />
+                        <BbFormFieldInput TValue="string" Label="Last Name"
+                                          @bind-Value="_editProfile.LastName"
+                                          Disabled="!_isEditing" />
+                        <BbFormFieldInput TValue="string" Label="Postal Code"
+                                          @bind-Value="_editProfile.PostalCode"
+                                          Disabled="!_isEditing" />
+                    </div>
+                    <BbField Label="Bio">
+                        <BbTextarea @bind-Value="_editProfile.Bio"
+                                    Placeholder="No bio set."
+                                    Disabled="!_isEditing" />
+                    </BbField>
+                }
+            </BbCardContent>
+        </BbCard>
+
+        @* Subscriptions *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>
+                    <LucideIcon Name="credit-card" class="h-4 w-4 mr-2 inline-block" />
+                    Subscriptions
+                    @if (SubscriptionRecords.Any())
+                    {
+                        <BbBadge Variant="BadgeVariant.Secondary" class="ml-2">@SubscriptionRecords.Count()</BbBadge>
+                    }
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent>
+                <BbScrollArea MaxHeight="400px" class="w-full">
+                    <SubscriptionItemList Records="SubscriptionRecords" />
+                </BbScrollArea>
+            </BbCardContent>
+        </BbCard>
+
+         @* MFA List *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle>
+                    <LucideIcon Name="phone" class="h-4 w-4 mr-2 inline-block" />
+                    MFA Devices
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent>
+                 @if (TOTPDevices.Count() > 0)
+                {
+                    <BbScrollArea MaxHeight="400px" class="w-full">
+                            @foreach (var device in TOTPDevices)
+                            {
+                                <TotpItem TOTPDevice="@device" />
+                            }
+                    </BbScrollArea>
+                } else
+                {
+                    <BbEmpty Title="No results found"
+                             Description="Try adjusting your search or filters.">
+                        <Icon>
+                            <LucideIcon Name="search" class="h-12 w-12" />
+                        </Icon>
+                    </BbEmpty>
+                }
+            </BbCardContent>
+        </BbCard>
+
+        @* Danger Zone *@
+        <BbCard>
+            <BbCardHeader>
+                <BbCardTitle class="text-destructive">
+                    <LucideIcon Name="triangle-alert" class="h-4 w-4 mr-2 inline-block" />
+                    Danger Zone
+                </BbCardTitle>
+            </BbCardHeader>
+            <BbCardContent>
+                <p class="text-sm text-muted-foreground mb-3">These actions affect the user's account and cannot be undone.</p>
+                <div class="flex flex-wrap gap-2">
+                    <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+                        <LucideIcon Name="key-round" class="h-4 w-4 mr-1.5" />
+                        Reset Password
+                    </BbButton>
+                    <BbButton Variant="ButtonVariant.Destructive" Size="ButtonSize.Small">
+                        <LucideIcon Name="user-x" class="h-4 w-4 mr-1.5" />
+                        Disable Account
+                    </BbButton>
+                </div>
+            </BbCardContent>
+        </BbCard>
+
+    </div>
+
+    <SaveChangesBar IsShown="@_isEditing" OnDiscard="CancelEdit" OnSave="SaveUser" />
+}

@@ -1,15 +1,17 @@
 @namespace IT.WebHost.CMS.Components.Admin.Users
 @using IT.WebServices.Fragments.Authentication
+@inject NavigationManager Nav
 
-<BbDataTable TData="UserSearchRecord" Data="@Users" InitialPageSize="@PageSize" ShowPagination="false" ShowToolbar="false" IsLoading="@IsLoading" Class="bb-table-fix">
+<BbDataGrid TData="UserSearchRecord" Items="@Users" InitialPageSize="@PageSize" ShowPagination="false" IsLoading="@IsLoading" Class="bb-table-fix cursor-pointer"
+            OnRowClick="@(u => Nav.NavigateTo($"/admin/users/{u.UserID}"))">
     <Columns>
-        <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.FirstName)" Header="First Name" />
-        <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.LastName)" Header="Last Name" />
-        <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.Email)" Header="Email" />
-        <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.DisplayName)" Header="Display Name" />
-        <BbDataTableColumn TData="UserSearchRecord" TValue="string" Property="(u => u.UserName)" Header="User Name" />
+        <BbDataGridPropertyColumn TData="UserSearchRecord" TProp="string" Property="(u => u.FirstName)" Title="First Name" />
+        <BbDataGridPropertyColumn TData="UserSearchRecord" TProp="string" Property="(u => u.LastName)" Title="Last Name" />
+        <BbDataGridPropertyColumn TData="UserSearchRecord" TProp="string" Property="(u => u.Email)" />
+        <BbDataGridPropertyColumn TData="UserSearchRecord" TProp="string" Property="(u => u.DisplayName)" Title="Display Name" />
+        <BbDataGridPropertyColumn TData="UserSearchRecord" TProp="string" Property="(u => u.UserName)" Title="User Name" />
     </Columns>
-</BbDataTable>
+</BbDataGrid>
 
 @code {
     [Parameter] public IEnumerable<UserSearchRecord> Users { get; set; } = [];

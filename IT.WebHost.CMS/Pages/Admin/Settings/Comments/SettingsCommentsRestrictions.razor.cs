@@ -10,10 +10,16 @@ public partial class SettingsCommentsRestrictions
     [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] private SettingsClient SettingsClient { get; set; } = null!;
 
+    private bool _isEditing = false;
     private CommentRestrictionMinimumEnum _minimum = CommentRestrictionMinimumEnum.Anonymous;
     private float _level;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
     {
         var data = await PublicSettingsClient.PublicData;
         var r = data.Comments?.DefaultRestriction;
@@ -21,6 +27,14 @@ public partial class SettingsCommentsRestrictions
 
         _minimum = r.Minimum;
         _level = r.Level;
+    }
+
+    private void StartEdit() => _isEditing = true;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await LoadAsync();
     }
 
     private async Task HandleSubmit()
@@ -32,5 +46,6 @@ public partial class SettingsCommentsRestrictions
         record.DefaultRestriction.Level = _level;
 
         await SettingsClient.ModifyCommentsPublicSettings(new ModifyCommentsPublicDataRequest { Data = record });
+        _isEditing = false;
     }
 }

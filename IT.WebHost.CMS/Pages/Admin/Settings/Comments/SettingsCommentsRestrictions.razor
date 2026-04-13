@@ -1,17 +1,22 @@
 @page "/admin/settings/comments/restrictions"
 @layout AdminLayout
 @using IT.WebServices.Fragments.Comment
+@using IT.WebHost.Components.Forms
 
 <PageTitle>Comments - Restrictions</PageTitle>
 
 <div class="space-y-4">
-    <h1 class="text-2xl font-bold">Restrictions</h1>
+    <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">Restrictions</h1>
+        <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="StartEdit" Disabled="_isEditing">Edit</BbButton>
+    </div>
 
     <BbFormSection Title="Default Restriction"
                    Description="The minimum requirement for a user to post comments">
         <BbFormFieldSelect TValue="CommentRestrictionMinimumEnum"
                            @bind-Value="_minimum"
                            Label="Minimum"
+                           Disabled="!_isEditing"
                            HelperText="The lowest access level allowed to comment"
                            DisplayTextSelector="@(v => v switch {
                                CommentRestrictionMinimumEnum.Anonymous         => "Anonymous",
@@ -31,10 +36,9 @@
         <BbFormFieldNumericInput TValue="float"
                                  @bind-Value="_level"
                                  Label="Level"
+                                 Disabled="!_isEditing"
                                  HelperText="Minimum subscription level required (0 = any)" />
     </BbFormSection>
 
-    <div class="flex justify-end">
-        <BbButton OnClick="@(_ => HandleSubmit())">Save Changes</BbButton>
-    </div>
+    <SaveChangesBar IsShown="_isEditing" OnDiscard="CancelEdit" OnSave="HandleSubmit" />
 </div>

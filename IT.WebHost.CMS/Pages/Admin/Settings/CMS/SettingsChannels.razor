@@ -1,25 +1,43 @@
 @page "/admin/settings/cms/channels"
 @layout AdminLayout
+@using IT.WebHost.Components.Forms
+
 <PageTitle>Channels</PageTitle>
 
-<div class="space-y-4">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Channels</h1>
-        @if (channels.Any())
-        {
-            <FormSheet TriggerText="Add Channel"
-                       Title="Create a Channel"
-                       Description="Fill in the details below to create a new channel.">
-                <Body>
-                    <CreateChannelForm ParentChannels="@channels"
-                                       OnSubmit="SaveChannelAsync" />
-                </Body>
-            </FormSheet>
-        }
+<div class="space-y-6">
+
+    @* Header *@
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold">Channels</h1>
+            <p class="text-sm text-muted-foreground mt-0.5">Manage your content channels</p>
+        </div>
+        <div class="flex items-center gap-2">
+            @if (_isEditing && channels.Any())
+            {
+                <FormSheet TriggerText="Add Channel"
+                           Title="Create a Channel"
+                           Description="Fill in the details below to create a new channel.">
+                    <Body>
+                        <CreateChannelForm ParentChannels="@channels"
+                                           OnSubmit="SaveChannelAsync" />
+                    </Body>
+                </FormSheet>
+            }
+            @if (!_isEditing)
+            {
+                <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="StartEdit">
+                    <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
+                    Edit
+                </BbButton>
+            }
+        </div>
     </div>
+
+    @* Channel list *@
     @if (channels.Any())
     {
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 @(!_isEditing ? "pointer-events-none opacity-60" : "")">
             @foreach (var channel in channels)
             {
                 <CMSChannel Channel="@channel" />
@@ -28,7 +46,14 @@
     }
     else
     {
-        <EmptyChannelList OnSubmit="SaveChannelAsync" />
+        <div class="@(!_isEditing ? "pointer-events-none opacity-60" : "")">
+            <EmptyChannelList OnSubmit="SaveChannelAsync" />
+        </div>
     }
+
 </div>
 
+<SaveChangesBar IsShown="@_isEditing"
+                OnDiscard="CancelEdit"
+                OnSave="HandleSave"
+                SaveButtonLabel="Done" />

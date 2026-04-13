@@ -1,0 +1,111 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+@using IT.WebHost.Components.Validation
+@using IT.WebServices.Fragments.Authentication
+
+<EditForm EditContext="editContext">
+    <DataAnnotationsValidator />
+    @* <ProtoValidateValidator TMessage="AdminCreateUserRequest" MessageFactory="@BuildRequest" /> *@
+            <div class="space-y-4 max-w-md">
+            <BbFormFieldInput TValue="string"
+                              Label="Username"
+                              @bind-Value="model.UserName"
+                              HelperText="At least 3 characters"
+                              Placeholder="johndoe" />
+            <BbFormFieldInput TValue="string"
+                              Label="Email"
+                              @bind-Value="model.Email"
+                              Placeholder="you@example.com" />
+            <BbFormFieldInput TValue="string"
+                              Label="Password"
+                              Type="InputType.Password"
+                              @bind-Value="model.Password"
+                              HelperText="At least 6 characters" />
+            <BbFormFieldInput TValue="string"
+                              Label="Confirm Password"
+                              Type="InputType.Password"
+                              @bind-Value="model.ConfirmPassword" />
+            <BbFormFieldInput TValue="string"
+                              Label="First Name"
+                              @bind-Value="model.FirstName"
+                              Placeholder="Jane" />
+            <BbFormFieldInput TValue="string"
+                              Label="Last Name"
+                              @bind-Value="model.LastName"
+                              Placeholder="Doe" />
+            <BbFormFieldInput TValue="string"
+                              Label="Display Name"
+                              @bind-Value="model.DisplayName"
+                              HelperText="Public-facing name (optional)"
+                              Placeholder="Jane Doe" />
+            <BbField Label="Bio">
+                <BbTextarea @bind-Value="model.Bio"
+                            Placeholder="Tell us about yourself..." />
+            </BbField>
+            <BbFormFieldInput TValue="string"
+                              Label="Postal / Zip Code"
+                              @bind-Value="model.PostalCode"
+                              Placeholder="12345" />
+            <RoleSelect selected="@selectedRoles" />
+            <BbButton Variant="ButtonVariant.Default">Create User</BbButton>
+    </div>
+</EditForm>
+
+@code {
+    private RegistrationModel model = new();
+    private EditContext editContext = null!;
+    private List<string> selectedRoles { get; set; } = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(model);
+    }
+
+    // private string GetError<T>(Expression<Func<T>> accessor)
+    // {
+    //     var fi = FieldIdentifier.Create(accessor);
+    //     return editContext.GetValidationMessages(fi).FirstOrDefault() ?? string.Empty;
+    // }
+
+    private class RegistrationModel
+    {
+        public string UserName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Please confirm your password")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = "";
+
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string? DisplayName { get; set; }
+        public string? Bio { get; set; }
+        public string PostalCode { get; set; } = "";
+    }
+
+    private AdminCreateUserRequest BuildRequest()
+    {
+        var req = new AdminCreateUserRequest()
+        {
+            UserName = model.UserName ?? "",
+            Email = model.Email ?? "",
+            Password = model.Password ?? "",
+            FirstName = model.FirstName ?? "",
+            LastName = model.LastName ?? "",
+            DisplayName = model.DisplayName ?? "",
+            Bio = model.Bio ?? "",
+            PostalCode = model.PostalCode ?? "",
+        };
+
+        if (selectedRoles.Count > 0)
+        {
+            req.Roles.AddRange(selectedRoles);
+        }
+
+        return req;
+    }
+
+    private void HandleSubmit() { /* Save registration */ }
+}

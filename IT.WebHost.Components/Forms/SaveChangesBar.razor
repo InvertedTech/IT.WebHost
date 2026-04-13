@@ -1,0 +1,31 @@
+﻿@namespace IT.WebHost.Components.Forms
+
+@if (IsShown)
+{
+    <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-sm shadow-lg">
+        <div class="container flex items-center justify-between gap-4 py-3 px-6">
+            <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                <LucideIcon Name="pencil" class="h-4 w-4 text-primary" />
+                <span>You have unsaved changes</span>
+            </div>
+            <div class="flex gap-2">
+                <BbButton Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="OnDiscard">
+                    <LucideIcon Name="x" class="h-4 w-4 mr-1.5" />
+                    @DiscardButtonLabel
+                </BbButton>
+                <BbButton Variant="ButtonVariant.Default" Size="ButtonSize.Small" OnClick="OnSave">
+                    <LucideIcon Name="save" class="h-4 w-4 mr-1.5" />
+                    @SaveButtonLabel
+                </BbButton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsShown { get; set; } = false;
+    [Parameter] public string DiscardButtonLabel { get; set; } = "Discard";
+    [Parameter] public EventCallback<MouseEventArgs> OnDiscard { get; set; }
+    [Parameter] public string SaveButtonLabel { get; set; } = "Save Changes";
+    [Parameter] public EventCallback<MouseEventArgs> OnSave { get; set; }
+}
