@@ -1,0 +1,20 @@
+﻿@page "/admin/assets/create/image"
+@layout AdminLayout
+
+<PageTitle>New Image Asset</PageTitle>
+
+<BbCard Class="mx-auto">
+    <BbCardContent>
+        <BbCardHeader>
+            <BbCardTitle>New Image</BbCardTitle>
+        </BbCardHeader>
+        <ImageAssetForm @bind-createAssetRequest="@createAssetRequest"/>
+        <BbCardFooter>
+            <BbButton Variant="ButtonVariant.Outline" OnClick="() => OnSubmit()">Create</BbButton>
+        </BbCardFooter>
+    </BbCardContent>
+</BbCard>
+
+@code {
+
+}

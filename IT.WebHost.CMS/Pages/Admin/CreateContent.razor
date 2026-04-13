@@ -1,4 +1,6 @@
-﻿@page "/admin/content/create"
+@page "/admin/content/create"
+@using IT.WebHost.Components.Content
+@using IT.WebHost.Components.Forms.Fields
 @using IT.WebServices.Fragments.Content
 @layout AdminLayout
 
@@ -6,56 +8,60 @@
 
 <BbFormWizard OnComplete="HandleComplete">
     <BbWizardStep Title="Post Type" Icon="file">
-
         <ContentTypeCardField Label="What Kind Of Post Is This?"
-                SelectedType="Type"              
-                SelectedTypeChanged="OnContentTypeSelected"
-                              />
+                              SelectedType="Type"
+                              SelectedTypeChanged="OnContentTypeSelected" />
     </BbWizardStep>
     <BbWizardStep Title="Title & Details" Icon="id-card">
         <div class="space-y-4 max-w-sm">
             <BbFormFieldInput TValue="string"
-                    @bind-Value="ContentPublicData.Title"
-                    Label="Title"
-                    HelperText="The Title Of Your Post" />
+                              @bind-Value="ContentPublicData.Title"
+                              Label="Title"
+                              HelperText="The title of your post" />
             <BbFormFieldInput TValue="string"
                               Value="UrlStub"
-                              Label="Url"
+                              Label="URL"
                               Disabled="true"
-                              HelperText="The URL Slug Of Your Post (Based On Title)" />
+                              HelperText="The URL slug of your post (based on title)" />
             <BbFormFieldInput TValue="string"
                               @bind-Value="ContentPublicData.Author"
                               Label="Author"
-                              HelperText="The Author Of Your Post" />
+                              HelperText="The author of your post" />
             <BbFormFieldInput TValue="string"
                               @bind-Value="ContentPublicData.Description"
                               Label="Description"
-                              HelperText="A Short Description Of Your Post" />
-                              @* // TODO: Add Image Gallery Select *@
-            <BbFormFieldInput TValue="string"
-                              @bind-Value="ContentPublicData.Author"
-                              Label="Author"
-                              HelperText="The Post Author" />
+                              HelperText="A short description of your post" />
+            <ImageSelectField Label="Featured Image"
+                              HelperText="The featured image for your post"
+                              @bind-SelectedAssetId="ContentPublicData.FeaturedImageAssetID" />
             <SubscriptionLevelSelect @bind-SelectedLevel="ContentPublicData.SubscriptionLevel"
                                      Label="Required Subscription Level" />
             <ChannelSelect @bind-SelectedChannel="SelectedChannelId" />
             <CategorySelect @bind-SelectedCategory="SelectedCategoryId" />
-            <BbFormFieldTagInput @bind-Tags="SelectedTags" Label="Tags"/>
+            <BbFormFieldTagInput @bind-Tags="SelectedTags" Label="Tags" />
         </div>
     </BbWizardStep>
     <BbWizardStep Title="Content" Icon="file">
         <div class="space-y-4 max-w-sm">
             @switch (Type)
             {
-                case  ContentType.ContentWritten:
-                    <ContentWrittenDataSection HtmlBody="ContentPublicData.Written.HtmlBody"
-                        HtmlBodyChanged="OnHtmlBodyChanged"/>
+                case ContentType.ContentWritten:
+                    <ContentWrittenDataSection @bind-HtmlBody="ContentPublicData.Written.HtmlBody" />
                     break;
                 case ContentType.ContentVideo:
-                    <ContentVideoDataSection HtmlBody="@ContentPublicData.Video.HtmlBody"
-                                            IsLiveStream="@ContentPublicData.Video.IsLiveStream"
-                                            YoutubeVideoId="@ContentPublicData.Video.YoutubeVideoId"
-                                            RumbleVideoId="@ContentPublicData.Video.RumbleVideoId" />
+                    <ContentVideoDataSection @bind-HtmlBody="ContentPublicData.Video.HtmlBody"
+                                            @bind-IsLiveStream="ContentPublicData.Video.IsLiveStream"
+                                            @bind-YoutubeVideoId="ContentPublicData.Video.YoutubeVideoId"
+                                            @bind-RumbleVideoId="ContentPublicData.Video.RumbleVideoId" />
+                    break;
+                case ContentType.ContentPicture:
+                    <ContentPictureDataSection @bind-HtmlBody="ContentPublicData.Picture.HtmlBody"
+                                              ImageAssetIDs="@_pictureImageIds"
+                                              ImageAssetIDsChanged="OnPictureImagesChanged" />
+                    break;
+                case ContentType.ContentAudio:
+                    <ContentAudioDataSection @bind-HtmlBody="ContentPublicData.Audio.HtmlBody"
+                                            @bind-AudioAssetID="ContentPublicData.Audio.AudioAssetID" />
                     break;
             }
         </div>

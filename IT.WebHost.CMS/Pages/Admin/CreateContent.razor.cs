@@ -14,6 +14,7 @@ namespace IT.WebHost.CMS.Pages.Admin
         private string SelectedChannelId { get; set; } = string.Empty;
         private string SelectedCategoryId { get; set; } = string.Empty;
         private IReadOnlyList<string> SelectedTags { get; set; } = new List<string>();
+        private IReadOnlyList<string> _pictureImageIds = [];
         private string UrlStub => GetStub();
         private void HandleComplete()
         {
@@ -36,6 +37,16 @@ namespace IT.WebHost.CMS.Pages.Admin
                     return $"/read/{ContentPublicData.Title ?? string.Empty}";
                 default:
                     return string.Empty;
+            }
+        }
+
+        private void OnPictureImagesChanged(IReadOnlyList<string> ids)
+        {
+            _pictureImageIds = ids;
+            if (ContentPublicData.Picture != null)
+            {
+                ContentPublicData.Picture.ImageAssetIDs.Clear();
+                ContentPublicData.Picture.ImageAssetIDs.AddRange(ids);
             }
         }
 

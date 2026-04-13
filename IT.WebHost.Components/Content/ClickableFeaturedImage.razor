@@ -1,0 +1,52 @@
+@namespace IT.WebHost.Components.Content
+
+<div class="rounded-lg overflow-hidden cursor-pointer @(IsSelected ? "ring-2 ring-primary" : "")"
+     @onclick="() => OnClick.InvokeAsync(AssetId)">
+    @if (_imageError || string.IsNullOrEmpty(AssetId))
+    {
+        <div class="w-full h-28 bg-muted flex items-center justify-center rounded-lg">
+            <span class="text-muted-foreground text-sm">No image</span>
+        </div>
+    }
+    else
+    {
+        <div class="relative w-full">
+            @if (_imageLoading)
+            {
+                <BbSkeleton class="w-full h-28 rounded-lg" />
+            }
+            <img src="@($"http://localhost:8001/api/cms/asset/{AssetId}/data")"
+                 alt="@Alt"
+                 class="w-full object-cover h-28 rounded-lg @(_imageLoading ? "invisible absolute inset-0" : "")"
+                 @onload="() => _imageLoading = false"
+                 @onerror="OnImageError" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? AssetId { get; set; }
+    [Parameter] public string Alt { get; set; } = string.Empty;
+    [Parameter] public bool IsSelected { get; set; } = false;
+    [Parameter] public EventCallback<string?> OnClick { get; set; }
+
+    private bool _imageLoading = true;
+    private bool _imageError = false;
+    private string? _loadedAssetId;
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedAssetId != AssetId)
+        {
+            _imageLoading = true;
+            _imageError = false;
+            _loadedAssetId = AssetId;
+        }
+    }
+
+    private void OnImageError()
+    {
+        _imageError = true;
+        _imageLoading = false;
+    }
+}

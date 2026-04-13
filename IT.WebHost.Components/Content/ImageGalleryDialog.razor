@@ -1,0 +1,67 @@
+@using IT.WebHost.Components.Forms
+@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Content
+
+<BbDialog @bind-Open="IsDialogOpen">
+    <BbDialogContent class="max-w-3xl">
+        <BbDialogHeader>
+            <BbDialogTitle>Assets</BbDialogTitle>
+        </BbDialogHeader>
+
+        <BbTabs DefaultValue="gallery">
+            <BbTabsList >
+                        <BbTabsTrigger Value="gallery">Gallery</BbTabsTrigger>
+                        <BbTabsTrigger Value="upload">Upload</BbTabsTrigger>
+            </BbTabsList>
+            <BbTabsContent Value="gallery">
+                <div class="grid grid-cols-5 gap-3 py-2">
+                    @foreach (var asset in AssetRecords)
+                    {
+                        switch (asset.AssetType)
+                        {
+                            case AssetType.AssetImage:
+                                <ClickableFeaturedImage AssetId="@asset.AssetID"
+                                                        Alt="@asset.Title"
+                                                        IsSelected="@IsAssetSelected(asset.AssetID)"
+                                                        OnClick="ToggleSelection" />
+                                break;
+                            case AssetType.AssetNone:
+                                break;
+                        }
+                    }
+                </div>
+
+                <BbDialogFooter>
+                    <div class="flex justify-between w-full">
+                        <BbButton Variant="ButtonVariant.Outline" @onclick="() => IsDialogOpen = false">Close</BbButton>
+                        <div class="flex flex-row justify-center">
+                            <BbButton Variant="ButtonVariant.Outline"
+                                      Disabled="@(PageOffset == 0)"
+                                      @onclick="async () => { PageOffset -= PageSize; await LoadAssets(); }">Previous</BbButton>
+                            <BbButton Variant="ButtonVariant.Outline"
+                                      @onclick="async () => { PageOffset += PageSize; await LoadAssets(); }">Next</BbButton>
+                        </div>
+                        <div class="flex gap-2">
+
+                            <BbButton @onclick="Confirm">Save</BbButton>
+                        </div>
+                    </div>
+                </BbDialogFooter>
+            </BbTabsContent>
+            <BbTabsContent Value="upload">
+                @* // TODO: Wire This Up To Create The Asset And Select It On Success *@
+                <ImageAssetForm />
+                <BbDialogFooter>
+                    <div class="flex justify-between w-full">
+                        <BbButton Variant="ButtonVariant.Outline" @onclick="() => IsDialogOpen = false">Close</BbButton>
+                        <div class="flex gap-2">
+                            <BbButton>Create</BbButton>
+                        </div>
+                    </div>
+                </BbDialogFooter>
+            </BbTabsContent>
+        </BbTabs>
+
+        
+    </BbDialogContent>
+</BbDialog>

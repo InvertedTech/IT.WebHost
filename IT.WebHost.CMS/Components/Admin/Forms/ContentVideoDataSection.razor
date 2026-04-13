@@ -1,23 +1,27 @@
-﻿<BbFormSection Title="Video">
-  <div class="space-y-4 max-w-sm">
-    <BbFormFieldSwitch Label="Live Stream"
-                       HelperText="Toggle if this video is a live stream."
-                       @bind-Checked="IsLiveStream" />
-    <BbFormFieldInput TValue="string"
-                      @bind-Value="YoutubeVideoId"
-                      Label="Youtube Video Id"
-                      HelperText="The Youtube Video Id Of Your Post" />
-    <BbFormFieldInput TValue="string"
-                      @bind-Value="RumbleVideoId"
-                      Label="Rumble Video Id"
-                          HelperText="The Rumble Video Id Of Your Post" />
+<BbFormSection Title="Video">
+    <div class="space-y-4 max-w-sm">
+        <BbFormFieldSwitch Label="Live Stream"
+                           HelperText="Toggle if this video is a live stream."
+                           @bind-Checked="IsLiveStream" />
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="YoutubeVideoId"
+                          Label="Youtube Video ID"
+                          HelperText="The YouTube video ID of your post" />
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="RumbleVideoId"
+                          Label="Rumble Video ID"
+                          HelperText="The Rumble video ID of your post" />
         <BbRichTextEditor @bind-Value="HtmlBody" Toolbar="ToolbarPreset.Full" Placeholder="All formatting options..." />
- </div>
+    </div>
 </BbFormSection>
 
 @code {
     [Parameter] public string HtmlBody { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> HtmlBodyChanged { get; set; }
     [Parameter] public bool IsLiveStream { get; set; } = false;
-    [Parameter] public string? YoutubeVideoId { get; set; }
-    [Parameter] public string? RumbleVideoId { get; set; }
+    [Parameter] public EventCallback<bool> IsLiveStreamChanged { get; set; }
+    [Parameter] public string YoutubeVideoId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> YoutubeVideoIdChanged { get; set; }
+    [Parameter] public string RumbleVideoId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> RumbleVideoIdChanged { get; set; }
 }

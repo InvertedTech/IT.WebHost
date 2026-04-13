@@ -1,0 +1,47 @@
+﻿@using IT.WebServices.Fragments.Content
+@namespace IT.WebHost.Components.Forms
+<BbFormFieldInput Label="Title"
+                  @bind-Value="CreateAssetRequest.Image.Public.Title"
+                  HelperText="What You Want To Call This Asset"
+                  TValue="string" />
+<BbFormFieldInput Label="Caption"
+                  @bind-Value="CreateAssetRequest.Image.Public.Caption"
+                  HelperText="A Short Description"
+                  TValue="string" />
+<BbFormFieldInput Label="URL"
+                  Disabled
+                  @bind-Value="CreateAssetRequest.Image.Public.URL"
+                  HelperText="URL Stub For The Asset i.e. /cms/asset/**"
+                  TValue="string" />
+<BbFormFieldFileUpload Files="files"
+                       FilesChanged="OnFilesChanged"
+                       Label="Upload An Image"
+                       HelperText="Select Or Drop The Image To Upload Here"
+                       Multiple="false"
+                       MaxFileCount="MaxFileCount" />
+@code {
+    [Parameter] public int MaxFileCount { get; set; } = 1;
+    [Parameter] public CreateAssetRequest CreateAssetRequest { get; set; } = new()
+    {
+        Image = new()
+        {
+            Public = new(),
+            Private = new()
+        }
+    };
+    [Parameter] public EventCallback<CreateAssetRequest> CreateAssetRequestChanged { get; set; }
+
+    private IReadOnlyList<FileUploadItem>? files { get; set; }
+
+
+    private async Task OnFilesChanged(IReadOnlyList<FileUploadItem> fileList)
+    {
+        if (fileList.Count > 0)
+        {
+            var img = fileList[0];
+            CreateAssetRequest.Image.Public.MimeType = img.ContentType;
+            await using var stream = img.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            CreateAssetRequest.Image.Public.Data = await Google.Protobuf.ByteString.FromStreamAsync(stream);
+        }
+    }
+}

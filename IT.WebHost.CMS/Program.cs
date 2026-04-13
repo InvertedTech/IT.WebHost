@@ -7,7 +7,10 @@ using IT.WebServices.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents().AddHubOptions(options =>
+    {
+        options.MaximumReceiveMessageSize = 4000000;
+    });
 builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddGrpcClientClasses();
 builder.Services.AddCoreServices();

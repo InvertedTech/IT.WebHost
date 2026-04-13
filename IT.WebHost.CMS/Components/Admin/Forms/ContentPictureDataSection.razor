@@ -1,0 +1,30 @@
+@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+
+<BbFormSection Title="Picture">
+    <div class="space-y-4">
+        <ImageGalleryDialog @bind-IsDialogOpen="_galleryOpen"
+                            MultiSelect="true"
+                            SelectedAssetIds="@ImageAssetIDs"
+                            SelectedAssetIdsChanged="OnImagesSelected" />
+        <BbButton Variant="ButtonVariant.Outline" @onclick="() => _galleryOpen = true">
+            @(ImageAssetIDs.Count == 0 ? "Select Images" : $"{ImageAssetIDs.Count} Image(s) Selected — Change")
+        </BbButton>
+        <BbRichTextEditor @bind-Value="HtmlBody" Toolbar="ToolbarPreset.Full" Placeholder="Caption or body text..." />
+    </div>
+</BbFormSection>
+
+@code {
+    [Parameter] public string HtmlBody { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> HtmlBodyChanged { get; set; }
+    [Parameter] public IReadOnlyList<string> ImageAssetIDs { get; set; } = [];
+    [Parameter] public EventCallback<IReadOnlyList<string>> ImageAssetIDsChanged { get; set; }
+
+    private bool _galleryOpen = false;
+
+    private async Task OnImagesSelected(IReadOnlyList<string> ids)
+    {
+        ImageAssetIDs = ids;
+        await ImageAssetIDsChanged.InvokeAsync(ids);
+    }
+}

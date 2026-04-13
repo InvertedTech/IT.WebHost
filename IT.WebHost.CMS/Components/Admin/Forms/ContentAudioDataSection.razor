@@ -1,0 +1,16 @@
+<BbFormSection Title="Audio">
+    <div class="space-y-4">
+        <BbFormFieldInput TValue="string"
+                          @bind-Value="AudioAssetID"
+                          Label="Audio Asset ID"
+                          HelperText="The ID of the uploaded audio asset" />
+        <BbRichTextEditor @bind-Value="HtmlBody" Toolbar="ToolbarPreset.Full" Placeholder="Episode description or show notes..." />
+    </div>
+</BbFormSection>
+
+@code {
+    [Parameter] public string HtmlBody { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> HtmlBodyChanged { get; set; }
+    [Parameter] public string AudioAssetID { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> AudioAssetIDChanged { get; set; }
+}

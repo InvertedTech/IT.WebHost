@@ -1,0 +1,59 @@
+@using IT.WebHost.Components.Content
+@namespace IT.WebHost.Components.Forms.Fields
+
+<BbField>
+    <BbFieldLabel>@Label</BbFieldLabel>
+    <div class="flex flex-col gap-1">
+    <div class="flex items-center gap-2">
+        <div class="flex h-9 flex-1 cursor-pointer items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm hover:bg-accent transition-colors"
+             @onclick="() => _open = true">
+            @if (!string.IsNullOrEmpty(SelectedAssetId))
+            {
+                <img src="@($"http://localhost:8001/api/cms/asset/{SelectedAssetId}/data")"
+                     alt="Selected image"
+                     class="h-6 w-6 rounded object-cover shrink-0" />
+                <span class="truncate text-foreground">Image selected</span>
+            }
+            else
+            {
+                <LucideIcon Name="image" class="h-4 w-4 text-muted-foreground shrink-0" />
+                <span class="text-muted-foreground">Select an image...</span>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(SelectedAssetId))
+        {
+            <BbButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="Clear">
+                <LucideIcon Name="x" class="h-4 w-4" />
+            </BbButton>
+        }
+    </div>
+    </div>
+    @if (!string.IsNullOrEmpty(HelperText))
+    {
+        <BbFieldDescription>@HelperText</BbFieldDescription>
+    }
+    <ImageGalleryDialog @bind-IsDialogOpen="_open"
+                        SelectedAssetId="@SelectedAssetId"
+                        SelectedAssetIdChanged="OnSelected" />
+</BbField>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Image";
+    [Parameter] public string? HelperText { get; set; }
+    [Parameter] public string SelectedAssetId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAssetIdChanged { get; set; }
+
+    private bool _open = false;
+
+    private async Task OnSelected(string assetId)
+    {
+        SelectedAssetId = assetId;
+        await SelectedAssetIdChanged.InvokeAsync(assetId);
+    }
+
+    private async Task Clear()
+    {
+        SelectedAssetId = string.Empty;
+        await SelectedAssetIdChanged.InvokeAsync(string.Empty);
+    }
+}
