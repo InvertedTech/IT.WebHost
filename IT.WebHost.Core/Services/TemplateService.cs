@@ -11,10 +11,12 @@ namespace IT.WebHost.Core.Services
             { BaseFiles.Reef, "reef" },
             { BaseFiles.Wildfire, "wildfire" },
             { BaseFiles.CyberPunkGemma, "cyberpunk-gemma" },
+            { BaseFiles.CyberPunkGemma2, "cyberpunk-gemma2" },
+            { BaseFiles.CyberPunkGemma3, "cyberpunk-gemma3" },
             { BaseFiles.CyberPunkQwen, "cyberpunk-qwen" },
         };
         // todo: load this from settings service
-        public string TemplateFile { get; set; } = "cyberpunk-gemma";
+        public string TemplateFile { get; set; } = "test";
     }
 
     public enum BaseFiles
@@ -26,6 +28,8 @@ namespace IT.WebHost.Core.Services
         Wildfire,
         Reef,
         CyberPunkGemma,
+        CyberPunkGemma2,
+        CyberPunkGemma3,
         CyberPunkQwen,
     }
 }

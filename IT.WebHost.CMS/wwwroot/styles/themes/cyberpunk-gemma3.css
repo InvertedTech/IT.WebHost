@@ -1,0 +1,123 @@
+:root {
+    /* Cyberpunk Color Palette */
+    --background: oklch(0.05 0.1 280); /* Deep space dark blue */
+    --foreground: oklch(0.95 0.05 250); /* Electric Cyan */
+
+    --card: oklch(0.1 0.05 280);
+    --card-foreground: oklch(0.95 0.05 250);
+    --popover: oklch(0.1 0.05 280);
+    --popover-foreground: oklch(0.95 0.05 250);
+    --primary: oklch(0.85 0.2 300); /* Neon Magenta/Pink */
+    --primary-foreground: oklch(0.05 0.05 280);
+    --secondary: oklch(0.2 0.1 250); /* Dark Blue Accent */
+    --secondary-foreground: oklch(0.95 0.05 250);
+    --muted: oklch(0.15 0.05 280);
+    --muted-foreground: oklch(0.4 0.1 250);
+    --accent: oklch(0.5 0.3 300); /* Bright Neon Glow */
+    --accent-foreground: oklch(0.05 0.05 280);
+    --destructive: oklch(0.5 0.2 27);
+    --destructive-foreground: oklch(0.95 0.05 250);
+    --border: oklch(0.2 0.1 280);
+    --input: oklch(0.2 0.1 280);
+    --ring: oklch(0.85 0.2 300);
+    --radius: 0.75rem;
+    /* Chart colors adjusted for neon contrast */
+    --chart-1: oklch(0.7 0.15 250);
+    --chart-2: oklch(0.4 0.3 300);
+    --chart-3: oklch(0.6 0.2 300);
+    --chart-4: oklch(0.5 0.15 280);
+    --chart-5: oklch(0.3 0.4 300);
+    /* Sidebar variables */
+    --sidebar-background: oklch(0.08 0.1 280);
+    --sidebar-foreground: oklch(0.95 0.05 250);
+    --sidebar-primary: oklch(0.85 0.2 300);
+    --sidebar-primary-foreground: oklch(0.05 0.05 280);
+    --sidebar-accent: oklch(0.5 0.3 300);
+    --sidebar-accent-foreground: oklch(0.05 0.05 280);
+    --sidebar-border: oklch(0.2 0.1 280);
+    --sidebar-ring: oklch(0.85 0.2 300);
+    /* Alert colors (Adjusted for neon glow) */
+    --alert-success: oklch(0.6 0.2 142);
+    --alert-success-foreground: oklch(0.95 0.05 250);
+    --alert-success-bg: oklch(0.1 0.05 280);
+    --alert-info: oklch(0.55 0.18 255);
+    --alert-info-foreground: oklch(0.95 0.05 250);
+    --alert-info-bg: oklch(0.1 0.05 280);
+    --alert-warning: oklch(0.65 0.16 55);
+    --alert-warning-foreground: oklch(0.95 0.05 250);
+    --alert-warning-bg: oklch(0.15 0.05 280);
+    --alert-danger: oklch(0.55 0.22 27);
+    --alert-danger-foreground: oklch(0.95 0.05 250);
+    --alert-danger-bg: oklch(0.15 0.05 280);
+}
+
+.dark {
+    /* Dark Mode - Enhanced Cyberpunk */
+    --background: oklch(0.03 0.01 280);
+    --foreground: oklch(0.95 0.05 250);
+    --card: oklch(0.03 0.01 280);
+    --card-foreground: oklch(0.95 0.05 250);
+    --popover: oklch(0.03 0.01 280);
+    --popover-foreground: oklch(0.95 0.05 250);
+    --primary: oklch(0.9 0.25 300); /* Brighter Neon */
+    --primary-foreground: oklch(0.03 0.01 280);
+    --secondary: oklch(0.1 0.1 280);
+    --secondary-foreground: oklch(0.95 0.05 250);
+    --muted: oklch(0.15 0.05 280);
+    --muted-foreground: oklch(0.4 0.1 250);
+    --accent: oklch(0.55 0.3 300);
+    --accent-foreground: oklch(0.03 0.01 280);
+    --destructive: oklch(0.6 0.2 27);
+    --destructive-foreground: oklch(0.95 0.05 250);
+    --border: oklch(0.1 0.1 280);
+    --input: oklch(0.1 0.1 280);
+    --ring: oklch(0.9 0.25 300);
+    --chart-1: oklch(0.75 0.2 250);
+    --chart-2: oklch(0.45 0.3 300);
+    --chart-3: oklch(0.65 0.2 300);
+    --chart-4: oklch(0.55 0.15 280);
+    --chart-5: oklch(0.35 0.4 300);
+    /* Sidebar variables */
+    --sidebar-background: oklch(0.05 0.01 280);
+    --sidebar-foreground: oklch(0.95 0.05 250);
+    --sidebar-primary: oklch(0.9 0.25 300);
+    --sidebar-primary-foreground: oklch(0.05 0.05 280);
+    --sidebar-accent: oklch(0.55 0.3 300);
+    --sidebar-accent-foreground: oklch(0.05 0.05 280);
+    --sidebar-border: oklch(0.1 0.1 280);
+    --sidebar-ring: oklch(0.9 0.25 300);
+    /* Alert colors */
+    --alert-success: oklch(0.65 0.2 142);
+    --alert-success-foreground: oklch(0.95 0.05 250);
+    --alert-success-bg: oklch(0.03 0.01 280);
+    --alert-info: oklch(0.55 0.18 255);
+    --alert-info-foreground: oklch(0.95 0.05 250);
+    --alert-info-bg: oklch(0.03 0.01 280);
+    --alert-warning: oklch(0.68 0.18 55);
+    --alert-warning-foreground: oklch(0.95 0.05 250);
+    --alert-warning-bg: oklch(0.15 0.05 280);
+    --alert-danger: oklch(0.55 0.2 27);
+    --alert-danger-foreground: oklch(0.95 0.05 250);
+    --alert-danger-bg: oklch(0.03 0.01 280);
+}
+
+/* Neon Text Effect (Halo around words) */
+.neon-text {
+    color: var(--foreground);
+    text-shadow: 0 0 5px var(--primary), 0 0 15px var(--primary), 0 0 30px var(--primary), 0 0 60px rgba(255, 0, 255, 0.5); /* Magenta Glow */
+    font-weight: 700;
+}
+
+/* Soft Neon Halo Accent on Hover for DIVs */
+div:hover {
+    /* Soft blue/cyan glow effect for interactive elements */
+    box-shadow: 0 0 10px rgba(128, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.3);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Optional: Enhance primary button hover effect */
+button:hover {
+    background-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary), 0 0 30px rgba(255, 0, 255, 0.8);
+    color: var(--primary-foreground);
+}
