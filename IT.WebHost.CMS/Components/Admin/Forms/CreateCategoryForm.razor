@@ -1,0 +1,41 @@
+@namespace IT.WebHost.CMS.Components.Admin.Forms
+@using IT.WebServices.Fragments.Settings
+
+<div class="space-y-4 max-w-lg">
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="displayName"
+                      Label="Display Name"
+                      Placeholder="e.g. Politics" />
+
+    <BbFormFieldInput TValue="string"
+                      @bind-Value="urlStub"
+                      Label="URL Stub"
+                      Placeholder="e.g. politics" />
+
+    @if (ParentCategories.Any())
+    {
+        <BbField Label="Parent Category">
+            <select class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                    @bind="parentCategoryId">
+                <option value="">— None —</option>
+                @foreach (var category in ParentCategories)
+                {
+                    <option value="@category.CategoryId">@category.DisplayName</option>
+                }
+            </select>
+        </BbField>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="text-sm text-destructive">@errorMessage</p>
+    }
+
+    <div class="flex gap-2">
+        <BbButton OnClick="HandleSubmit">Create Category</BbButton>
+        @if (OnCancel.HasDelegate)
+        {
+            <BbButton Variant="ButtonVariant.Outline" OnClick="() => OnCancel.InvokeAsync()">Cancel</BbButton>
+        }
+    </div>
+</div>

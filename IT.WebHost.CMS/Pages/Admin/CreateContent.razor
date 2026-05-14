@@ -7,7 +7,7 @@
 <PageTitle>Create Content</PageTitle>
 
 <BbFormWizard OnComplete="HandleComplete">
-    <BbWizardStep Title="Post Type" Icon="file">
+    <BbWizardStep Title="Post Type" Icon="file" Validator="ValidateTypeStep">
         <ContentTypeCardField Label="What Kind Of Post Is This?"
                               SelectedType="Type"
                               SelectedTypeChanged="OnContentTypeSelected" />
@@ -23,10 +23,8 @@
                               Label="URL"
                               Disabled="true"
                               HelperText="The URL slug of your post (based on title)" />
-            <BbFormFieldInput TValue="string"
-                              @bind-Value="ContentPublicData.Author"
-                              Label="Author"
-                              HelperText="The author of your post" />
+            <AuthorSelect @bind-SelectedAuthorId="SelectedAuthorId"
+                          @bind-SelectedAuthor="ContentPublicData.Author" />
             <BbFormFieldInput TValue="string"
                               @bind-Value="ContentPublicData.Description"
                               Label="Description"
@@ -46,21 +44,25 @@
             @switch (Type)
             {
                 case ContentType.ContentWritten:
-                    <ContentWrittenDataSection @bind-HtmlBody="ContentPublicData.Written.HtmlBody" />
+                    <ContentWrittenDataSection HtmlBody="@(ContentPublicData.Written?.HtmlBody ?? string.Empty)"
+                                              HtmlBodyChanged="OnHtmlBodyChanged" />
                     break;
                 case ContentType.ContentVideo:
-                    <ContentVideoDataSection @bind-HtmlBody="ContentPublicData.Video.HtmlBody"
+                    <ContentVideoDataSection HtmlBody="@(ContentPublicData.Video?.HtmlBody ?? string.Empty)"
+                                            HtmlBodyChanged="OnHtmlBodyChanged"
                                             @bind-IsLiveStream="ContentPublicData.Video.IsLiveStream"
                                             @bind-YoutubeVideoId="ContentPublicData.Video.YoutubeVideoId"
                                             @bind-RumbleVideoId="ContentPublicData.Video.RumbleVideoId" />
                     break;
                 case ContentType.ContentPicture:
-                    <ContentPictureDataSection @bind-HtmlBody="ContentPublicData.Picture.HtmlBody"
+                    <ContentPictureDataSection HtmlBody="@(ContentPublicData.Picture?.HtmlBody ?? string.Empty)"
+                                              HtmlBodyChanged="OnHtmlBodyChanged"
                                               ImageAssetIDs="@_pictureImageIds"
                                               ImageAssetIDsChanged="OnPictureImagesChanged" />
                     break;
                 case ContentType.ContentAudio:
-                    <ContentAudioDataSection @bind-HtmlBody="ContentPublicData.Audio.HtmlBody"
+                    <ContentAudioDataSection HtmlBody="@(ContentPublicData.Audio?.HtmlBody ?? string.Empty)"
+                                            HtmlBodyChanged="OnHtmlBodyChanged"
                                             @bind-AudioAssetID="ContentPublicData.Audio.AudioAssetID" />
                     break;
             }
@@ -68,5 +70,12 @@
     </BbWizardStep>
     <BbWizardStep Title="Done" Icon="circle-check">
         <p class="text-muted-foreground">All set! Click Complete to finish.</p>
+        @if (_errorMessage is not null)
+        {
+            <BbAlert Variant="AlertVariant.Danger" class="mt-4">
+                <BbAlertTitle>Submission Failed</BbAlertTitle>
+                <BbAlertDescription>@_errorMessage</BbAlertDescription>
+            </BbAlert>
+        }
     </BbWizardStep>
 </BbFormWizard>

@@ -21,6 +21,15 @@
         <span class="text-muted-foreground mt-1 shrink-0">@(IsExpanded ? "∧" : "∨")</span>
     </button>
 
+    <!-- Active subscription actions -->
+    @if (Record.SubscriptionRecord.Status == SubscriptionStatus.SubscriptionActive)
+    {
+        <div class="border-t border-border px-4 py-3 flex gap-2">
+            <BbButton Variant="ButtonVariant.Outline" @onclick="() => OnUpdate.InvokeAsync(Record)">Update</BbButton>
+            <BbButton Variant="ButtonVariant.Destructive" @onclick="() => OnCancel.InvokeAsync(Record)">Cancel</BbButton>
+        </div>
+    }
+
     <!-- Expandable content -->
     @if (IsExpanded)
     {
@@ -62,6 +71,8 @@
 
 @code {
     [Parameter] public GenericSubscriptionFullRecord Record { get; set; } = new();
+    [Parameter] public EventCallback<GenericSubscriptionFullRecord> OnCancel { get; set; }
+    [Parameter] public EventCallback<GenericSubscriptionFullRecord> OnUpdate { get; set; }
 
     private bool IsExpanded { get; set; } = false;
 

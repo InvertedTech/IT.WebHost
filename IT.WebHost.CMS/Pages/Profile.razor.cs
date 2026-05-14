@@ -1,4 +1,5 @@
 ﻿using IT.WebServices.Authentication;
+using IT.WebServices.Clients.Payment;
 using IT.WebServices.Fragments.Authentication;
 using IT.WebServices.Fragments.Authorization.Payment;
 using Microsoft.AspNetCore.Components;
@@ -8,7 +9,8 @@ namespace IT.WebHost.CMS.Pages
     public partial class Profile
     {
         [Inject] private UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
-        [Inject] private PaymentInterface.PaymentInterfaceClient PaymentClient { get; set; } = null!;
+        // [Inject] private PaymentInterface.PaymentInterfaceClient PaymentClient { get; set; } = null!;
+        [Inject] private PaymentClient PaymentClient { get; set; } = null!;
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
 
         private ONUser? User => UserHelper.MyUser;
@@ -43,13 +45,13 @@ namespace IT.WebHost.CMS.Pages
             }
         }
 
-        private async Task LoadSubs()
+        private async Task LoadSubs(CancellationToken cancellationToken = default)
         {
             try
             {
-                var res = await PaymentClient.GetOwnSubscriptionRecordsAsync(new GetOwnSubscriptionRecordsRequest
+                var res = await PaymentClient.GetOwnSubscriptions(new GetOwnSubscriptionRecordsRequest
                 {
-                }, UserHelper.GetGrpcCallOptions());
+                }, cancellationToken);
 
                 if (res is null)
                 {
@@ -63,6 +65,41 @@ namespace IT.WebHost.CMS.Pages
             {
                 Console.WriteLine(ex.Message, ex);
                 return;
+            }
+        }
+
+        private async Task HandleModifyOwnUser(ModifyOwnUserRequest req)
+        {
+            await ModifyOwnUser(req);
+            await LoadUser();
+        }
+
+        private async Task HandleCancel(GenericSubscriptionFullRecord record)
+        {
+            await HandleCancelSubscription(new CancelOwnSubscriptionRequest
+            {
+                InternalSubscriptionID = record.SubscriptionRecord.InternalSubscriptionID,
+            });
+        }
+
+        private async Task HandleCancelSubscription(CancelOwnSubscriptionRequest req)
+        {
+            await PaymentClient.CancelSubscription(req);
+            await LoadSubs();
+            StateHasChanged();
+        }
+
+        private async Task<ModifyOwnUserResponse> ModifyOwnUser(ModifyOwnUserRequest req, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var res = await UserClient.ModifyOwnUserAsync(req, UserHelper.GetGrpcCallOptions(cancellationToken));
+                StateHasChanged();
+                return res;
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex);
+                return new();
             }
         }
     }

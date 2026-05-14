@@ -1,5 +1,8 @@
 ﻿using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.WellKnownTypes;
 using IT.WebServices.Authentication;
+using IT.WebServices.Clients.CMS;
+using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Components;
 
@@ -8,7 +11,7 @@ namespace IT.WebHost.CMS.Pages.Admin
     public partial class ModifyContent
     {
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
-        [Inject] private ContentInterface.ContentInterfaceClient ContentClient { get; set; } = null!;
+        [Inject] private ContentClient ContentClient { get; set; } = null!;
 
         [Parameter] public string ContentId { get; set; } = null!;
 
@@ -18,6 +21,7 @@ namespace IT.WebHost.CMS.Pages.Admin
         private bool _isEditing = false;
         private IReadOnlyList<string> _editTags = [];
         private DateTime? _publishDate;
+        private string _htmlBody = string.Empty;
 
         protected override async Task OnInitializedAsync()
         {
@@ -33,16 +37,24 @@ namespace IT.WebHost.CMS.Pages.Admin
                 ContentID = ContentId,
             };
 
-            var res = await ContentClient.GetContentAdminAsync(req, UserHelper.GetGrpcCallOptions());
+            var res = await ContentClient.GetContentAdmin(req);
 
             if (res != null)
             {
                 Public = res.Record.Public;
                 Private = res.Record.Private;
                 _editTags = Public?.Data?.Tags?.ToList() ?? [];
+                _htmlBody = Public?.Data?.Written?.HtmlBody ?? string.Empty;
                 var raw = Public?.PublishOnUTC?.ToDateTime();
                 _publishDate = raw is { } dt && dt != default ? dt.ToLocalTime() : null;
             }
+        }
+
+        private void OnHtmlBodyChanged(string value)
+        {
+            _htmlBody = value;
+            if (Public?.Data?.Written != null)
+                Public.Data.Written.HtmlBody = value;
         }
 
         private void StartEdit() => _isEditing = true;
@@ -53,22 +65,39 @@ namespace IT.WebHost.CMS.Pages.Admin
             await LoadContent();
         }
 
-        private Task SaveContent()
+        private async Task SaveContent()
         {
-            if (Public?.Data != null)
+            if (Public?.Data == null) return;
+
+            Public.Data.Tags.Clear();
+            Public.Data.Tags.AddRange(_editTags);
+            Public.PublishOnUTC = _publishDate.HasValue
+                ? Timestamp.FromDateTime(_publishDate.Value.ToUniversalTime())
+                : null;
+
+            var modifyRes = await ContentClient.ModifyContent(new ModifyContentRequest
             {
-                Public.Data.Tags.Clear();
-                Public.Data.Tags.AddRange(_editTags.ToList());
+                ContentID = Public.ContentID,
+                Public    = Public.Data,
+                Private   = Private?.Data ?? new(),
+            });
+
+            if (modifyRes?.Error is { Reason: not APIErrorReason.ErrorReasonNoError } err)
+            {
+                Console.WriteLine($"Save failed: {err.Message}");
+                return;
             }
-            if (Public != null)
+
+            await ContentClient.PublishContent(new PublishContentRequest
             {
-                Public.PublishOnUTC = _publishDate.HasValue
+                ContentID   = Public.ContentID,
+                PublishOnUTC = _publishDate.HasValue
                     ? Timestamp.FromDateTime(_publishDate.Value.ToUniversalTime())
-                    : null;
-            }
+                    : null,
+            });
+
             _isEditing = false;
-            // TODO: wire up gRPC save call
-            return Task.CompletedTask;
+            await LoadContent();
         }
     }
 }

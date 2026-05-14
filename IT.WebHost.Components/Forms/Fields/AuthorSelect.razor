@@ -1,0 +1,68 @@
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authentication
+@namespace IT.WebHost.Components.Forms.Fields
+@inject UserInterface.UserInterfaceClient UserClient
+@inject IT.WebServices.Authentication.ONUserHelper UserHelper
+
+<BbFormFieldCombobox TValue="string"
+                     Label="Author"
+                     Placeholder="Select an author..."
+                     SearchPlaceholder="Search authors..."
+                     Options="@_options"
+                     IsLoading="@_isLoading"
+                     MatchTriggerWidth="true"
+                     Disabled="@Disabled"
+                     Value="@SelectedAuthorId"
+                     ValueChanged="OnAuthorSelected" />
+
+@code {
+    [Parameter] public string SelectedAuthorId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAuthorIdChanged { get; set; }
+    [Parameter] public string SelectedAuthor { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAuthorChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private List<SelectOption<string>> _options = [];
+    private List<UserSearchRecord> _users = [];
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var req = new SearchUsersAdminRequest
+                {
+                    PageSize = 500,
+                    PageOffset = 0,
+                    IncludeDeleted = false,
+                };
+            var roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT.Split(',');
+            req.Roles.AddRange(roles);
+            // TODO: Make an Actual UserClient with The Authors As A Lazy
+            var res = await UserClient.SearchUsersAdminAsync(req, UserHelper.GetGrpcCallOptions());
+
+            _users = res.Records.ToList();
+
+            _options = _users
+                .Select(u => new SelectOption<string>(u.UserID, u.DisplayName ?? u.UserName ?? u.UserID))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"AuthorSelect load failed: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnAuthorSelected(string userId)
+    {
+        var user = _users.FirstOrDefault(u => u.UserID == userId);
+        var name = user is not null ? (user.DisplayName ?? user.UserName ?? userId) : userId;
+
+        await SelectedAuthorIdChanged.InvokeAsync(userId);
+        await SelectedAuthorChanged.InvokeAsync(name);
+    }
+}

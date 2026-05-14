@@ -1,6 +1,7 @@
 @page "/admin/content/{ContentId}"
 @layout AdminLayout
 @using IT.WebHost.Components.Forms
+@using IT.WebHost.Components.Forms.Fields
 @using IT.WebServices.Fragments.Content
 @using IT.WebHost.Components.Content
 
@@ -137,10 +138,9 @@ else
                                       Label="Title"
                                       @bind-Value="Public.Data.Title"
                                       Disabled="!_isEditing" />
-                    <BbFormFieldInput TValue="string"
-                                      Label="Author"
-                                      @bind-Value="Public.Data.Author"
-                                      Disabled="!_isEditing" />
+                    <AuthorSelect @bind-SelectedAuthorId="Public.Data.AuthorID"
+                                  @bind-SelectedAuthor="Public.Data.Author"
+                                  Disabled="!_isEditing" />
                 </div>
                 <BbFormFieldInput TValue="string"
                                   Label="Description"
@@ -223,11 +223,18 @@ else
                         <p class="text-sm text-muted-foreground italic">No images attached.</p>
                     }
                 }
-                else if (isWritten && Public.Data?.Written is { } written)
+                else if (isWritten)
                 {
-                    <BbRichTextEditor @bind-Value="written.HtmlBody"
-                                      Toolbar="ToolbarPreset.Full"
-                                      ReadOnly="!_isEditing" />
+                    @if (_isEditing)
+                    {
+                        <BbRichTextEditor Value="@_htmlBody"
+                                          ValueChanged="OnHtmlBodyChanged"
+                                          Toolbar="ToolbarPreset.Full" />
+                    }
+                    else
+                    {
+                        <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)_htmlBody)</div>
+                    }
                 }
             </BbCardContent>
         </BbCard>
@@ -260,6 +267,5 @@ else
 
     </div>
 
-    // TODO: Bind Actions
-    <SaveChangesBar IsShown="@_isEditing" />
+    <SaveChangesBar IsShown="@_isEditing" OnSave="SaveContent" OnDiscard="CancelEdit" />
 }

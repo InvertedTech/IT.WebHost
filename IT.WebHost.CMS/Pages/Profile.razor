@@ -1,7 +1,44 @@
 ﻿@page "/profile"
+@using IT.WebHost.Components.Forms
+@using IT.WebHost.Components.Payments
 @using IT.WebHost.Components.Profile
 <div class="container max-w-3xl py-12 mx-auto">
     <ProfileHeader User="UserRecord" />
-    <ProfileTabs User="UserRecord" SubscriptionRecords="SubscriptionRecords" />
+    @if (UserRecord?.Public?.Data is not null && UserRecord?.Private?.Data is not null)
+    {
+        <BbTabs DefaultValue="account" class="w-full">
+            <BbTabsList>
+                <BbTabsTrigger Value="account">Account</BbTabsTrigger>
+                <BbTabsTrigger Value="subscription">Subscription</BbTabsTrigger>
+            </BbTabsList>
+            <BbTabsContent Value="account" class="mx-auto">
+                <ModifyOwnUserForm
+                    userId="@(UserRecord.Public.UserID ?? string.Empty)"
+                    displayName="@(UserRecord.Public.Data.DisplayName ?? string.Empty)"
+                    bio="@(UserRecord.Public.Data.Bio ?? string.Empty)"
+                    email="@(UserRecord.Private.Data.Email ?? string.Empty)"
+                    firstName="@(UserRecord.Private.Data.FirstName ?? string.Empty)"
+                    lastName="@(UserRecord.Private.Data.LastName ?? string.Empty)"
+                    postalCode="@(UserRecord.Private.Data.PostalCode ?? string.Empty)"
+                    OnSubmit="HandleModifyOwnUser"
+                />
+            </BbTabsContent>
+            <BbTabsContent Value="subscription">
+                @if (SubscriptionRecords is null || !SubscriptionRecords.Any())
+                {
+                    <p class="text-sm text-muted-foreground py-4">No subscriptions found.</p>
+                }
+                else
+                {
+                    <div class="space-y-3">
+                        @foreach (var sub in SubscriptionRecords)
+                        {
+                            <SubscriptionItem Record="sub" OnCancel="HandleCancel" />
+                        }
+                    </div>
+                }
+            </BbTabsContent>
+        </BbTabs>
+    }
 </div>
 

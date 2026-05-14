@@ -26,6 +26,9 @@
         </BbField>
     }
 
+    <ImageSelectField Label="Channel Image"
+                      @bind-SelectedAssetId="imageAssetId" />
+
     <BbFormFieldInput TValue="string"
                       @bind-Value="youtubeUrl"
                       Label="YouTube URL"

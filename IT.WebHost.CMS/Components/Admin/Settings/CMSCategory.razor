@@ -1,19 +1,19 @@
-@namespace IT.WebHost.CMS.Components.Admin.Settings
+﻿@namespace IT.WebHost.CMS.Components.Admin.Settings
 @using IT.WebServices.Fragments.Settings
 
 <BbItem AsChild="button" OnClick="HandleClick" Variant="ItemVariant.Outline">
     <BbItemMedia>
-        <BbAvatar>
+@*         <BbAvatar>
             <BbAvatarImage Source="@($"http://localhost:8001/api/cms/asset/{Channel.ImageAssetId}/data")" Alt="@Channel.DisplayName" />
             <BbAvatarFallback>@Channel.DisplayName[..Math.Min(2, Channel.DisplayName.Length)]</BbAvatarFallback>
-        </BbAvatar>
+        </BbAvatar> *@
     </BbItemMedia>
     <BbItemContent>
-        <BbItemTitle>@Channel.DisplayName</BbItemTitle>
+        <BbItemTitle>@Category.DisplayName</BbItemTitle>
     </BbItemContent>
     <LucideIcon Name="chevron-right" class="h-5 w-5" />
 </BbItem>
 
 @code {
-    [Parameter] public ChannelRecord Channel { get; set; } = null!;
+    [Parameter] public CategoryRecord Category { get; set; } = null!;
 }

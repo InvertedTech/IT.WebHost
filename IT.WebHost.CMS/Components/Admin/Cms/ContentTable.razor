@@ -8,8 +8,8 @@
         <BbDataGridPropertyColumn TData="ContentListRecord" TProp="string" Property="(c => c.Title)" />
         <BbDataGridPropertyColumn TData="ContentListRecord" TProp="string" Property="(c => c.Author)" />
         <BbDataGridPropertyColumn TData="ContentListRecord" TProp="uint" Property="(c => c.SubscriptionLevel)" Title="Level" />
-        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime?" Property="(c => c.PublishOnUTC.ToDateTime())" Title="Publish On" />
-        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime" Property="(c => c.CreatedOnUTC.ToDateTime())" Title="Created On" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime?" Property="(c => c.PublishOnUTC == null ? (DateTime?)null : c.PublishOnUTC.ToDateTime())" Title="Publish On" />
+        <BbDataGridPropertyColumn TData="ContentListRecord" TProp="DateTime?" Property="(c => c.CreatedOnUTC == null ? (DateTime?)null : c.CreatedOnUTC.ToDateTime())" Title="Created On" />
     </Columns>
 </BbDataGrid>
 

@@ -1,5 +1,6 @@
 using IT.WebHost.Core.Services;
 using IT.WebServices.Authentication;
+using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments.Content;
 using IT.WebServices.Fragments.Settings;
 using Microsoft.AspNetCore.Components;
@@ -9,7 +10,7 @@ namespace IT.WebHost.CMS.Pages.Admin;
 
 public partial class Content
 {
-    [Inject] private ContentInterface.ContentInterfaceClient ContentClient { get; set; } = null!;
+    [Inject] private ContentClient ContentClient { get; set; } = null!;
     [Inject] private ONUserHelper UserHelper { get; set; } = null!;
     [Inject] private NavigationManager Nav { get; set; } = null!;
     [Inject] private SiteSettingsService SiteSettings { get; set; } = null!;
@@ -117,7 +118,7 @@ public partial class Content
                 ContentType = ContentTypeParsed,
             };
 
-            var res = await ContentClient.GetAllContentAdminAsync(req, UserHelper.GetGrpcCallOptions());
+            var res = await ContentClient.GetAllContentAdmin(req);
             ContentRecords = res.Records;
             PageTotalItems = res.PageTotalItems;
         }

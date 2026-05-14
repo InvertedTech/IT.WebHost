@@ -1,6 +1,7 @@
 using System.Reflection;
 using BlazorBlueprint.Components;
 using BlazorBlueprint.Primitives.Services;
+using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Components;
 
@@ -8,7 +9,7 @@ namespace IT.WebHost.CMS.Pages;
 
 public partial class Index
 {
-    [Inject] private ContentInterface.ContentInterfaceClient ContentClient { get; set; } = null!;
+    [Inject] private ContentClient ContentClient { get; set; } = null!;
 
     private IEnumerable<ContentListRecord> ContentRecords { get; set; } = new List<ContentListRecord>();
     private LayoutEnum Layout { get; set; } = LayoutEnum.List;
@@ -23,7 +24,7 @@ public partial class Index
 
     private async Task LoadInitialContent()
     {
-        var res = await ContentClient.GetAllContentAsync(new GetAllContentRequest
+        var res = await ContentClient.GetAll(new GetAllContentRequest
         {
             PageSize = PageSize,
             PageOffset = 0,

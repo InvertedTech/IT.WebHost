@@ -12,6 +12,7 @@ public partial class CreateChannelForm
     private string displayName = string.Empty;
     private string urlStub = string.Empty;
     private string parentChannelId = string.Empty;
+    private string imageAssetId = string.Empty;
     private string youtubeUrl = string.Empty;
     private string rumbleUrl = string.Empty;
 
@@ -36,6 +37,7 @@ public partial class CreateChannelForm
             DisplayName     = displayName,
             UrlStub         = urlStub,
             ParentChannelId = parentChannelId,
+            ImageAssetId    = imageAssetId,
             YoutubeUrl      = youtubeUrl,
             RumbleUrl       = rumbleUrl,
         });
@@ -43,6 +45,7 @@ public partial class CreateChannelForm
         displayName     = string.Empty;
         urlStub         = string.Empty;
         parentChannelId = string.Empty;
+        imageAssetId    = string.Empty;
         youtubeUrl      = string.Empty;
         rumbleUrl       = string.Empty;
     }
