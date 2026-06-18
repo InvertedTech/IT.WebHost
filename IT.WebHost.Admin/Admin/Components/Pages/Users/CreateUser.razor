@@ -1,0 +1,72 @@
+﻿@page "/users/create"
+@using Admin.Components.Common.Selects
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@($"{RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER}")">
+    <Authorized>
+        <Field>
+            <FieldLabel For="username">Username</FieldLabel>
+            <FieldContent>
+                <Input Id="username" Type="InputType.Text" Placeholder="Enter a username" @bind-Value="username" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="displayName">Display Name</FieldLabel>
+            <FieldContent>
+                <Input Id="displayName" Type="InputType.Text" Placeholder="Enter a display name" @bind-Value="displayName" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="bio">Bio</FieldLabel>
+            <FieldContent>
+                <Input Id="bio" Type="InputType.Text" Placeholder="Enter a bio" @bind-Value="bio" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="email">Email</FieldLabel>
+            <FieldContent>
+                <Input Id="email" Type="InputType.Email" Placeholder="Enter an email" @bind-Value="email" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="password">Password</FieldLabel>
+            <FieldContent>
+                <Input Id="password" Type="InputType.Password" Placeholder="Enter a password" @bind-Value="password" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="firstName">First Name</FieldLabel>
+            <FieldContent>
+                <Input Id="firstName" Type="InputType.Text" Placeholder="Enter a first name" @bind-Value="firstName" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="lastName">Last Name</FieldLabel>
+            <FieldContent>
+                <Input Id="lastName" Type="InputType.Text" Placeholder="Enter a last name" @bind-Value="lastName" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="postalCode">Postal Code</FieldLabel>
+            <FieldContent>
+                <Input Id="postalCode" Type="InputType.Text" Placeholder="Enter a postal code" @bind-Value="postalCode" />
+            </FieldContent>
+        </Field>
+        <RoleSelect @bind-selected="selectedRoles" />
+        <Button Variant="ButtonVariant.Default">Create User</Button>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    // TODO: Wire up form submission and validation
+    private string? username { get; set; }
+    private string? displayName { get; set; }
+    private string? bio { get; set; }
+    private string? email { get; set; }
+    private string? password { get; set; }
+    private string? firstName { get; set; }
+    private string? lastName { get; set; }
+    private string? postalCode { get; set; }
+    private IEnumerable<string>? selectedRoles { get; set; }
+}

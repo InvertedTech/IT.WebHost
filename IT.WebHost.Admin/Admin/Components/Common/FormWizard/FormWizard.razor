@@ -1,0 +1,102 @@
+﻿<CascadingValue Value="this" IsFixed="true">
+    @* Hidden container ensures steps are registered before evaluating the active content view *@
+    <div style="display: none;">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+<Card Class="w-full max-w-md">
+    <CardHeader>
+        <div class="flex items-center justify-between mb-2">
+            @for (int i = 0; i < Steps.Count; i++)
+            {
+                var stepIndex = i;
+                var stepNum = i + 1;
+                var isActive = CurrentStepIndex == stepIndex;
+                var isDone = CurrentStepIndex > stepIndex;
+                
+                <div class="flex items-center gap-2 flex-1 @(stepNum < Steps.Count ? "relative" : "")">
+                    <div class="size-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 @(isDone || isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")">
+                        @if (isDone)
+                        {
+                            <LucideIcon Name="check" Size="14" />
+                        }
+                        else
+                        {
+                            @stepNum
+                        }
+                    </div>
+                    <span class="text-xs font-medium @(isActive ? "text-foreground" : "text-muted-foreground")">@Steps[stepIndex].Label</span>
+                    @if (stepNum < Steps.Count)
+                    {
+                        <div class="flex-1 h-px bg-border mx-2"></div>
+                    }
+                </div>
+            }
+        </div>
+    </CardHeader>
+    <CardContent Class="space-y-4">
+        @* Render only the active step's inner content *@
+        @if (Steps.Count > 0 && CurrentStepIndex < Steps.Count)
+        {
+            @Steps[CurrentStepIndex].ChildContent
+        }
+
+        <div class="flex justify-between pt-2">
+            <Button Variant="ButtonVariant.Outline" Disabled="CurrentStepIndex == 0" @onclick="PreviousStep">Previous</Button>
+            
+            @if (CurrentStepIndex < Steps.Count - 1)
+            {
+                <Button @onclick="NextStep">Next step</Button>
+            }
+            else
+            {
+                <Button @onclick="Finish">@FinishButtonText</Button>
+            }
+        </div>
+    </CardContent>
+</Card>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string FinishButtonText { get; set; } = "Create account";
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    public List<WizardStep> Steps { get; private set; } = new();
+    public int CurrentStepIndex { get; private set; } = 0;
+
+    public void AddStep(WizardStep step)
+    {
+        Steps.Add(step);
+        StateHasChanged(); // Triggers UI update to redraw the header
+    }
+
+    private void NextStep()
+    {
+        if (CurrentStepIndex < Steps.Count - 1)
+        {
+            CurrentStepIndex++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (CurrentStepIndex > 0)
+        {
+            CurrentStepIndex--;
+        }
+    }
+
+    private async Task Finish()
+    {
+        if (OnFinish.HasDelegate)
+        {
+            await OnFinish.InvokeAsync();
+        }
+    }
+}

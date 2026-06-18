@@ -1,0 +1,271 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+<AppProvider>
+@inject IKeyboardShortcutService KeyboardShortcuts
+
+<PageTitle>Inverted Admin</PageTitle>
+
+<CascadingAuthenticationState>
+    <AuthorizeView Policy="RequireAnyAdminRole">
+            <Authorized>
+                <SidebarProvider DefaultOpen="true">
+                    <Sidebar Collapsible="true" AutoDetectActive="true" Class="duration-500 ease-cubic-in-out [&>aside]:overflow-hidden">
+                        <SidebarHeader>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton Href="" AsChild="@SidebarMenuButtonElement.Anchor" Size="@SidebarMenuButtonSize.Large" class="data-[state=collapsed]:justify-center">
+                                        <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="grid flex-1 text-left text-sm leading-tight">
+                                            <span class="truncate font-semibold">CMS Admin</span>
+                                        </div>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarHeader>
+
+                        <ScrollArea Class="flex-1" EnableScrollShadows="true">
+                            <SidebarContent>
+                                <SidebarGroup>
+                                    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                                    <SidebarMenu>
+                                        @foreach (var item in this.navItems)
+                                        {
+                                            if (item.RequiredRole is not null)
+                                            {
+                                                                                        <AuthorizeView Roles="@item.RequiredRole" Context="navAuth">
+                                                                                            <Authorized>
+                                                                                                <SidebarMenuItem>
+                                                                                                    <SidebarMenuButton Href="@item.Href" AsChild="@SidebarMenuButtonElement.Anchor" Match="NavLinkMatch.All">
+                                                                                                        <LucideIcon Name="@item.Icon" Size="18" />
+                                                                                                        <span>@item.Text</span>
+                                                                                                    </SidebarMenuButton>
+                                                                                                </SidebarMenuItem>
+                                                                                            </Authorized>
+                                                                                        </AuthorizeView>
+                                            }
+                                            else
+                                            {
+                                                <SidebarMenuItem>
+                                                    <SidebarMenuButton Href="@item.Href" AsChild="@SidebarMenuButtonElement.Anchor" Match="NavLinkMatch.All">
+                                                        <LucideIcon Name="@item.Icon" Size="18" />
+                                                        <span>@item.Text</span>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                            }
+                                        }
+                                    </SidebarMenu>
+                                </SidebarGroup>
+                                <SidebarGroup>
+                                    <SidebarGroupLabel>Settings</SidebarGroupLabel>
+                                    <SidebarMenu>
+                                        @foreach (var item in this.settingsNavItems)
+                                        {
+                                            <SidebarMenuItem>
+                                                <SidebarMenuButton Href="@item.Href" AsChild="@SidebarMenuButtonElement.Anchor" Match="NavLinkMatch.All">
+                                                    <LucideIcon Name="@item.Icon" Size="18" />
+                                                    <span>@item.Text</span>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        }
+                                    </SidebarMenu>
+                                </SidebarGroup>
+                            </SidebarContent>
+                        </ScrollArea>
+                        <SidebarFooter>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger AsChild>
+                                            <SidebarMenuButton Size="SidebarMenuButtonSize.Large" Tooltip="@UserDisplayName"
+                                                               Class="hover:bg-sidebar-accent/10 hover:!text-foreground active:bg-sidebar-accent/20 active:!text-foreground data-[state=open]:!bg-sidebar-accent/10 data-[state=open]:!text-foreground">
+                                                <Avatar Class="size-8 rounded-lg">
+                                                    <AvatarFallback Class="rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-[10px]">@UserInitials</AvatarFallback>
+                                                </Avatar>
+                                                <div class="grid flex-1 text-left text-sm leading-tight">
+                                                    <span class="truncate font-semibold">@UserDisplayName</span>
+                                                    @if (!string.IsNullOrWhiteSpace(UserSubtitle))
+                                                    {
+                                                        <span class="truncate text-xs text-muted-foreground">@UserSubtitle</span>
+                                                    }
+                                                </div>
+                                                <LucideIcon Name="chevrons-up-down" Size="16" Class="ml-auto" />
+                                            </SidebarMenuButton>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent Class="w-48" Align="@PopoverAlign.End">
+                                            <DropdownMenuItem>
+                                                <LucideIcon Name="log-out" Size="14" Class="mr-2" />
+                                                <a href="/auth/logout">Log out</a>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarFooter>
+                    </Sidebar>
+
+                    <SidebarInset ResetScrollOnNavigation="true">
+                        <header class="sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4 z-10">
+                            <SidebarTrigger />
+                            <div class="ml-auto flex items-center gap-4">
+                                <Button Variant="ButtonVariant.Outline"
+                                        Size="ButtonSize.Small"
+                                        OnClick="@OpenSpotlight"
+                                        Class="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground w-64 justify-start">
+                                    <LucideIcon Name="search" Size="16" />
+                                    <span>Search...</span>
+                                    <div class="ml-auto flex items-center gap-1">
+                                        <kbd class="px-1.5 py-0.5 text-xs bg-muted/50 border border-border/40 rounded font-mono">@_modifierKey</kbd>
+                                        <kbd class="px-1.5 py-0.5 text-xs bg-muted/50 border border-border/40 rounded font-mono">K</kbd>
+                                    </div>
+                                </Button>
+                                <Button Variant="ButtonVariant.Outline"
+                                        Size="ButtonSize.Icon"
+                                        OnClick="@OpenSpotlight"
+                                        Class="flex sm:!hidden"
+                                        AriaLabel="Search">
+                                    <LucideIcon Name="search" Size="16" />
+                                </Button>
+                                <ThemeSwitcher ShowStyles="true" />
+                                <DarkModeToggle />
+                            </div>
+                        </header>
+                        <ToastProvider Position="ToastPosition.BottomRight">
+                            <div class="flex-1 p-6 md:p-8">
+                                @Body
+                            </div>
+                        </ToastProvider>
+                    </SidebarInset>
+                </SidebarProvider>
+
+            </Authorized>
+            <NotAuthorized>
+                <Card Class="w-full max-w-sm mx-auto my-auto">
+                    <CardHeader Class="space-y-1 pb-4">
+                        <div class="flex items-center justify-center mb-2">
+                            <div class="size-10 rounded-xl bg-foreground flex items-center justify-center">
+                                <LucideIcon Name="layers" Size="18" Class="text-background" />
+                            </div>
+                        </div>
+                        <CardTitle Class="text-xl font-semibold text-center">Welcome back</CardTitle>
+                        <CardDescription Class="text-center">Sign in to your account to continue</CardDescription>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <Alert Variant="AlertVariant.Destructive">
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>@errorMessage</AlertDescription>
+                            </Alert>
+                        }
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        <Field>
+                            <FieldLabel For="email">Username Or Email</FieldLabel>
+                            <FieldContent>
+                                <Input Id="email"
+                                       Type="InputType.Email"
+                                       Placeholder="you@example.com"
+                                       @bind-Value="usernameOrEmail"
+                                       @bind-Value:after="ClearLoginValidation"
+                                       AriaInvalid="@(userNameErrors.Count > 0)" />
+                                <FieldError Errors="userNameErrors" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>
+                                <div class="flex items-center justify-between w-full">
+                                    <span>Password</span>
+                                    @*                     <a href="#" @onclick:preventDefault class="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        Forgot password?
+                    </a> *@
+                                </div>
+                            </FieldLabel>
+                            <FieldContent>
+                                <Input Id="password"
+                                       Type="InputType.Password"
+                                       @bind-Value="password"
+                                       @bind-Value:after="ClearLoginValidation"
+                                       AriaInvalid="@(passwordErrors.Count > 0)" />
+                                <FieldError Errors="passwordErrors" />
+                            </FieldContent>
+                        </Field>
+                        @*         <div class="flex items-center gap-2">
+            <Checkbox Id="remember" />
+            <Label For="remember" Class="text-sm font-normal cursor-pointer">Remember me for 30 days</Label>
+        </div> *@
+                        <Button Class="w-full" OnClick="OnSubmitLogin" Disabled="isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <Spinner Size="SpinnerSize.Small" />
+                                @("Submitting")
+                            }
+                            else
+                            {
+                                @("Sign In")
+                            }
+                        </Button>
+                        @*         <FieldSeparator>Or continue with</FieldSeparator>
+        <div class="grid grid-cols-2 gap-2">
+            <Button Variant="ButtonVariant.Outline" Class="gap-2">
+                <svg class="size-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Google
+            </Button>
+            <Button Variant="ButtonVariant.Outline" Class="gap-2">
+                <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                </svg>
+                Apple
+            </Button>
+        </div>
+        <p class="text-center text-xs text-muted-foreground">
+            Don't have an account?
+            <a href="#" @onclick:preventDefault class="text-foreground font-medium hover:underline underline-offset-2">Sign up</a>
+        </p> *@
+                    </CardContent>
+                </Card>
+            </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+<AppError />
+
+<SpotlightCommandPalette @ref="_spotlightRef" />
+<ToastViewport />
+<DialogHost />
+<ContainerPortalHost />
+<OverlayPortalHost />
+</AppProvider>
+
+@code {
+    private SpotlightCommandPalette? _spotlightRef;
+    private string _modifierKey = "Ctrl";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _modifierKey = await KeyboardShortcuts.GetModifierKeyAsync();
+                StateHasChanged();
+            }
+            catch
+            {
+                _modifierKey = "Ctrl";
+            }
+        }
+    }
+
+    private void OpenSpotlight()
+    {
+        _spotlightRef?.Open();
+    }
+}

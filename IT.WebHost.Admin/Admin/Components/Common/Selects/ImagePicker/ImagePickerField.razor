@@ -1,0 +1,142 @@
+﻿@using Admin.Components.Common.Selects.ImagePicker
+@using NeoUI.Blazor
+@using NeoUI.Icons.Lucide
+@using System.Linq
+
+<Field Label="@Label" HelpText="@HelperText">
+    <FieldContent>
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+
+                <div class="flex h-9 flex-1 cursor-pointer items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm hover:bg-accent transition-colors overflow-hidden"
+                     @onclick="() => _open = true">
+
+                    @if (MultiSelect)
+                    {
+                        @if (SelectedAssetIds.Any())
+                        {
+                            <div class="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto py-0.5">
+                                @foreach (var id in SelectedAssetIds)
+                                {
+                                    <div class="relative group flex-shrink-0">
+                                        <img src="@GetAssetUrl(id)"
+                                             alt="Selected image"
+                                             class="h-6 w-6 rounded object-cover" />
+                                        <Button Variant="ButtonVariant.Ghost"
+                                                Size="ButtonSize.Icon"
+                                                class="absolute -top-1 -right-1 h-4 w-4 bg-background shadow-sm border rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground"
+                                                OnClick="async (e) => { await RemoveAsset(id); }">
+                                            <LucideIcon Name="x" class="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                }
+                            </div>
+                            <span class="text-xs text-muted-foreground ml-2 whitespace-nowrap">(@SelectedAssetIds.Count)</span>
+                        }
+                        else
+                        {
+                            <LucideIcon Name="images" class="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span class="text-muted-foreground">Select images...</span>
+                        }
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(SelectedAssetId))
+                        {
+                            <img src="@GetAssetUrl(SelectedAssetId)"
+                                 alt="Selected image"
+                                 class="h-6 w-6 rounded object-cover shrink-0" />
+                            <span class="truncate text-foreground">Image selected</span>
+                        }
+                        else
+                        {
+                            <LucideIcon Name="image" class="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span class="text-muted-foreground">Select an image...</span>
+                        }
+                    }
+                </div>
+
+                @if (!MultiSelect && !string.IsNullOrEmpty(SelectedAssetId))
+                {
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="Clear">
+                        <LucideIcon Name="x" class="h-4 w-4" />
+                    </Button>
+                }
+                else if (MultiSelect && SelectedAssetIds.Any())
+                {
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="ClearAll">
+                    <LucideIcon Name="trash-2" class="h-4 w-4" />
+                </Button>
+                }
+            </div>
+        </div>
+    </FieldContent>
+    <FieldError Errors="Errors" />
+
+    <ImageGalleryDialog @bind-IsDialogOpen="_open"
+                        MultiSelect="@MultiSelect"
+                        InitialSelectedIds="@GetInitialSelectedIds()"
+                        OnAssetsSelected="HandleAssetsSelected" />
+</Field>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Image";
+    [Parameter] public string? HelperText { get; set; }
+
+    [Parameter] public bool MultiSelect { get; set; } = false;
+
+    [Parameter] public string SelectedAssetId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAssetIdChanged { get; set; }
+
+    [Parameter] public List<string> SelectedAssetIds { get; set; } = new();
+    [Parameter] public EventCallback<List<string>> SelectedAssetIdsChanged { get; set; }
+
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+
+    private bool _open = false;
+
+    private string GetAssetUrl(string assetId)
+        => $"http://localhost:8001/api/cms/asset/{assetId}/data";
+
+    private IEnumerable<string> GetInitialSelectedIds()
+    {
+        return MultiSelect
+            ? SelectedAssetIds
+            : string.IsNullOrEmpty(SelectedAssetId)
+                ? Enumerable.Empty<string>()
+                : new[] { SelectedAssetId };
+    }
+
+    private async Task HandleAssetsSelected(List<string> selectedIds)
+    {
+        if (MultiSelect)
+        {
+            SelectedAssetIds = selectedIds.ToList();
+            await SelectedAssetIdsChanged.InvokeAsync(SelectedAssetIds);
+        }
+        else
+        {
+            var newId = selectedIds.FirstOrDefault() ?? string.Empty;
+            SelectedAssetId = newId;
+            await SelectedAssetIdChanged.InvokeAsync(newId);
+        }
+    }
+
+    private async Task RemoveAsset(string assetId)
+    {
+        SelectedAssetIds = SelectedAssetIds.Where(x => x != assetId).ToList();
+        await SelectedAssetIdsChanged.InvokeAsync(SelectedAssetIds);
+    }
+
+    private async Task ClearAll()
+    {
+        SelectedAssetIds.Clear();
+        await SelectedAssetIdsChanged.InvokeAsync(SelectedAssetIds);
+    }
+
+    private async Task Clear()
+    {
+        SelectedAssetId = string.Empty;
+        await SelectedAssetIdChanged.InvokeAsync(string.Empty);
+    }
+}

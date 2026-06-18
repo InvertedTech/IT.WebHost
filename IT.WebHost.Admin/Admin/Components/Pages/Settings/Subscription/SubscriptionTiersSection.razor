@@ -1,0 +1,160 @@
+@using IT.WebServices.Fragments.Authorization
+@using IT.WebServices.Fragments.Settings
+
+<div class="settings-card subscription-tiers-section">
+    <div class="settings-card-header tiers-header">
+        <div class="settings-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 class="settings-card-title">Subscription Tiers</h3>
+        @if (IsEditing)
+        {
+            <div class="tiers-header-action">
+                <Button Variant="ButtonVariant.Default" OnClick="OnCreateTier">
+                    + Create New Tier
+                </Button>
+            </div>
+        }
+    </div>
+
+    <div class="settings-card-body">
+    <Carousel ShowNavigation="true" Loop="false" EnableDrag="true">
+        @foreach (var page in GetTierPages())
+        {
+            <CarouselItem>
+                <div class="tier-page">
+                    @foreach (var (tier, index) in page)
+                    {
+                        var featuredClass = index == Public.Tiers.Count - 1 ? "tier-card--featured" : "";
+                        var displayName = tier.Label.Contains(" - ")
+                            ? tier.Label.Split(" - ").Last()
+                            : tier.Label;
+
+                        <div class="tier-card @featuredClass">
+                            <div class="tier-card-body">
+                                <div class="tier-level-badge">LEVEL @(index + 1)</div>
+                                <div class="tier-name">@displayName</div>
+                                <div class="tier-price">
+                                    $@((tier.AmountCents / 100m).ToString("0.00"))
+                                    <span class="tier-price-period">/mo</span>
+                                </div>
+                            </div>
+                            <div class="tier-card-footer">
+                                <span class="tier-subscribers-label">Subscribers</span>
+                                <span class="tier-subscribers-count">—</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </CarouselItem>
+        }
+    </Carousel>
+    </div>
+</div>
+
+<style>
+    .subscription-tiers-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .tiers-header {
+        flex: 1;
+    }
+
+    .tiers-header-action {
+        margin-left: auto;
+    }
+
+    .tier-page {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        width: 100%;
+    }
+
+    .tier-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        min-height: 160px;
+        box-sizing: border-box;
+    }
+
+    .tier-card--featured {
+        border-color: var(--primary);
+    }
+
+    .tier-card-body {
+        padding: 1rem 1.25rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .tier-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.65rem 1.25rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .tier-level-badge {
+        display: inline-block;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted-foreground);
+        background: var(--muted);
+        border-radius: calc(var(--radius) * 0.5);
+        padding: 2px 7px;
+        width: fit-content;
+    }
+
+    .tier-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .tier-price {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--foreground);
+        line-height: 1.1;
+    }
+
+    .tier-price-period {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--muted-foreground);
+    }
+
+    .tier-subscribers-label {
+        font-size: 0.8rem;
+        color: var(--muted-foreground);
+    }
+
+    .tier-subscribers-count {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public SubscriptionPublicRecord Public { get; set; } = null!;
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public EventCallback OnCreateTier { get; set; }
+
+    private IEnumerable<List<(SubscriptionTier tier, int index)>> GetTierPages()
+    {
+        var tiers = Public.Tiers.Select((t, i) => (t, i)).ToList();
+        for (int i = 0; i < tiers.Count; i += 3)
+            yield return tiers.Skip(i).Take(3).ToList();
+    }
+}

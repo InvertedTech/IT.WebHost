@@ -1,0 +1,160 @@
+﻿@using IT.WebHost.Components.Content
+@using IT.WebServices.Clients.CMS
+@using IT.WebServices.Fragments.Content
+@using NeoUI.Blazor
+
+<Dialog @bind-Open="IsDialogOpen">
+    <DialogContent Class="max-w-3xl">
+        <DialogHeader>
+            <DialogTitle>Assets</DialogTitle>
+        </DialogHeader>
+
+        <Tabs DefaultValue="gallery">
+            <TabsList>
+                <TabsTrigger Value="gallery">Gallery</TabsTrigger>
+                <TabsTrigger Value="upload">Upload</TabsTrigger>
+            </TabsList>
+            <TabsContent Value="gallery">
+                <div class="grid grid-cols-5 gap-3 py-2">
+                    @foreach (var asset in AssetRecords)
+                    {
+                        switch (asset.AssetType)
+                        {
+                            case AssetType.AssetImage:
+                                <ClickableFeaturedImage AssetId="@asset.AssetID"
+                                                        Alt="@asset.Title"
+                                                        IsSelected="@IsAssetSelected(asset.AssetID)"
+                                                        OnClick="ToggleSelection" />
+                                break;
+                            case AssetType.AssetNone:
+                                break;
+                        }
+                    }
+                </div>
+
+                <DialogFooter>
+                    <div class="flex justify-between w-full">
+                        <Button Variant="ButtonVariant.Outline" OnClick="@(() => IsDialogOpen = false)">Close</Button>
+                        <div class="flex flex-row justify-center">
+                            <Button Variant="ButtonVariant.Outline"
+                                    Disabled="@(PageOffset == 0)"
+                                    OnClick="@(async () => { PageOffset -= PageSize; await LoadAssets(); })">
+                                Previous
+                            </Button>
+                            <Button Variant="ButtonVariant.Outline"
+                                    OnClick="@(async () => { PageOffset += PageSize; await LoadAssets(); })">
+                                Next
+                            </Button>
+                        </div>
+                        @if (MultiSelect)
+                        {
+                            <div class="flex gap-2">
+                                <Button OnClick="Confirm">Save</Button>
+                            </div>
+                        }
+                    </div>
+                </DialogFooter>
+            </TabsContent>
+            <TabsContent Value="upload">
+                @* // TODO: Wire This Up To Create The Asset And Select It On Success *@
+                <ImageAssetForm />
+                <DialogFooter>
+                    <div class="flex justify-between w-full">
+                        <Button Variant="ButtonVariant.Outline" OnClick="@(() => IsDialogOpen = false)">Close</Button>
+                        <div class="flex gap-2">
+                            <Button>Create</Button>
+                        </div>
+                    </div>
+                </DialogFooter>
+            </TabsContent>
+        </Tabs>
+    </DialogContent>
+</Dialog>
+
+@code {
+    [Inject] private AssetClient AssetClient { get; set; } = null!;
+
+    [Parameter] public bool IsDialogOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsDialogOpenChanged { get; set; }
+
+    [Parameter] public bool MultiSelect { get; set; } = true; 
+
+    [Parameter] public IEnumerable<string>? InitialSelectedIds { get; set; }
+
+    [Parameter] public EventCallback<List<string>> OnAssetsSelected { get; set; }
+
+    private List<AssetListRecord> AssetRecords = new();
+    private List<string> SelectedAssetIds = new();
+    private int PageOffset = 0;
+    private const int PageSize = 25;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsDialogOpen)
+        {
+            SelectedAssetIds = InitialSelectedIds?.ToList() ?? new List<string>();
+
+            await LoadAssets();
+        }
+    }
+
+    // TODO: LoadAssets calls SearchAsset requiring ROLE_CAN_CREATE_CONTENT_OR_SERVICE; since used inside content edit (which is guarded by can_create), ok, but if standalone wrap parent with AuthorizeView.
+
+    private async Task LoadAssets()
+    {
+        var assetsResponse = await AssetClient.SearchAsset(new SearchAssetRequest()
+        {
+            PageOffset = (uint)PageOffset,
+            PageSize = (uint)PageSize
+        });
+        AssetRecords = assetsResponse.Records.ToList();
+        StateHasChanged();
+    }
+
+    private async Task ToggleSelection(string assetId)
+    {
+        if (MultiSelect)
+        {
+            if (SelectedAssetIds.Contains(assetId))
+            {
+                SelectedAssetIds.Remove(assetId);
+            }
+            else
+            {
+                SelectedAssetIds.Add(assetId);
+            }
+        }
+        else
+        {
+            if (SelectedAssetIds.Contains(assetId))
+            {
+                SelectedAssetIds.Remove(assetId);
+            }
+            else
+            {
+                SelectedAssetIds.Clear();
+                SelectedAssetIds.Add(assetId);
+            }
+        }
+
+        StateHasChanged();
+
+        if (!MultiSelect)
+        {
+            await Confirm();
+        }
+    }
+
+    private bool IsAssetSelected(string assetId) => SelectedAssetIds.Contains(assetId);
+
+    private async Task Confirm()
+    {
+        await OnAssetsSelected.InvokeAsync(SelectedAssetIds);
+
+        IsDialogOpen = false;
+        if (IsDialogOpenChanged.HasDelegate)
+        {
+            await IsDialogOpenChanged.InvokeAsync(false);
+        }
+    }
+}

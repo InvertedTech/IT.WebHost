@@ -1,0 +1,39 @@
+﻿@page "/settings/personalization"
+@*TODO: Add AuthorizeView*@
+@* TODO: Wrap edit/save sections in <AuthorizeView Roles="admin,owner"> (ROLE_IS_ADMIN_OR_OWNER) for ModifyPersonalizationPublic/Private; Owner modify would be "owner". Currently only loads public data (anonymous). *@
+
+<div class="space-y-6">
+    <SectionHeader Title="Personalization" />
+
+    <Card Class="max-w-3xl">
+        <CardHeader>
+            <CardTitle>Site Identity</CardTitle>
+            <CardDescription>Branding and appearance defaults for your site.</CardDescription>
+        </CardHeader>
+        <CardContent Class="space-y-6">
+            <Field>
+                <FieldLabel For="title">Title</FieldLabel>
+                <FieldContent>
+                    <Input Id="title" Type="InputType.Text" Placeholder="Your Site Title" @bind-Value="_personalizationPublicSettings.Title" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="meta-desc">Meta Description</FieldLabel>
+                <FieldContent>
+                    <Input Id="meta-desc" Type="InputType.Text" Placeholder="SEO Description For Your Site" @bind-Value="_personalizationPublicSettings.MetaDescription" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel>Default To Dark Mode</FieldLabel>
+                <FieldContent>
+                    <Switch Checked="@_personalizationPublicSettings.DefaultToDarkMode" />
+                </FieldContent>
+            </Field>
+            @*TODO: Add Images*@
+        </CardContent>
+    </Card>
+</div>
+
+@code {
+
+}

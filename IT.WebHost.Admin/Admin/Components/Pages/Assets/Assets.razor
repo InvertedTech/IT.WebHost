@@ -1,0 +1,29 @@
+﻿@page "/assets"
+@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)">
+    <Authorized>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            @foreach (var asset in AssetList)
+            {
+                switch (asset.AssetType)
+                {
+                    case AssetType.AssetImage:
+                        <div class="rounded-lg overflow-hidden border bg-muted hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                            <ClickableFeaturedImage AssetId="@asset.AssetID" />
+                        </div>
+                        break;
+                }
+            }
+        </div>
+
+        <Paginator baseUrl="/assets"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems" />
+
+    </Authorized>
+</AuthorizeView>

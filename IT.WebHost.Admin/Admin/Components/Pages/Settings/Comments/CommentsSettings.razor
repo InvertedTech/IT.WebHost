@@ -1,0 +1,122 @@
+﻿@page "/settings/comments"
+@using IT.WebServices.Fragments.Comment
+
+@* TODO: Wrap tabs/content in <AuthorizeView Roles="owner"> because Load uses SettingsClient (fetches via GetOwnerData which requires ROLE_IS_OWNER_OR_SERVICE); saves use ModifyComments*Public/Private (admin,owner) or Owner (owner only). Existing switches may need role-based visibility. *@
+<div class="space-y-6">
+    <SectionHeader Title="Comments" />
+
+    @if (isLoading)
+    {
+        <AppLoader />
+    }
+    else
+    {
+        <Tabs DefaultValue="general" Class="space-y-6">
+            <TabsList Class="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger Value="general">General</TabsTrigger>
+                <TabsTrigger Value="blacklist">BlackList</TabsTrigger>
+            </TabsList>
+
+            <TabsContent Value="general" Class="mt-6 space-y-6">
+                <Card Class="max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>General</CardTitle>
+                        <CardDescription>Public comment settings visible to visitors.</CardDescription>
+                    </CardHeader>
+                    <CardContent Class="space-y-6">
+                        <Field>
+                            <FieldLabel>Allow Links</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_publicSettings.AllowLinks" />
+                                <FieldDescription>Permit hyperlinks in comment text.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Allow Explicit Comments</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_publicSettings.ExplicitModeEnabled" />
+                                <FieldDescription>Enable explicit content warnings on comments.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Default Order</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Select TValue="CommentOrder" @bind-Value="_publicSettings.DefaultOrder">
+                                    <SelectTrigger>
+                                        <SelectValue Placeholder="Select default order" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem Value="CommentOrder.Liked">Most Liked</SelectItem>
+                                        <SelectItem Value="CommentOrder.Older">Oldest First</SelectItem>
+                                        <SelectItem Value="CommentOrder.Newest">Newest First</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FieldDescription>Initial sort for comment threads.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Minimum Participation Level</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Select TValue="CommentRestrictionMinimumEnum" @bind-Value="_publicSettings.DefaultRestriction.Minimum">
+                                    <SelectTrigger>
+                                        <SelectValue Placeholder="Select minimum role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem Value="CommentRestrictionMinimumEnum.Anonymous">Anonymous</SelectItem>
+                                        <SelectItem Value="CommentRestrictionMinimumEnum.Subscriber">Subscriber</SelectItem>
+                                        <SelectItem Value="CommentRestrictionMinimumEnum.PaidSubscriber">Paid Subscriber</SelectItem>
+                                        <SelectItem Value="CommentRestrictionMinimumEnum.CommentModerator">Comment Moderator</SelectItem>
+                                        <SelectItem Value="CommentRestrictionMinimumEnum.AdminOnly">Admin Only</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FieldDescription>Minimum role required to post or interact.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="restriction-level">Level</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <NumericInput TValue="float" Id="restriction-level" Class="max-w-xs" @bind-Value="_publicSettings.DefaultRestriction.Level" Min="0" Max="5" Step="0.1" />
+                                <FieldDescription>Optional 0–5 threshold. Use 0 to disable.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                    <CardFooter Class="border-t pt-6">
+                        <Button @onclick="SavePublicSettings">Save</Button>
+                    </CardFooter>
+                </Card>
+            </TabsContent>
+
+            <TabsContent Value="blacklist" Class="mt-6 space-y-6">
+                <Card Class="max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>Blacklist</CardTitle>
+                        <CardDescription>Blocked words or phrases — comments containing these will be rejected.</CardDescription>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        <Field>
+                            <FieldLabel>Moderation Blacklist</FieldLabel>
+                            <FieldContent Class="space-y-3">
+                                @if (_blackList.Count == 0)
+                                {
+                                    <p class="text-sm text-muted-foreground">No entries.</p>
+                                }
+                                @for (var i = 0; i < _blackList.Count; i++)
+                                {
+                                    var index = i;
+                                    <div class="flex items-center gap-3">
+                                        <Input Class="flex-1" Type="InputType.Text" Placeholder="Blocked term" @bind-Value="_blackList[index]" />
+                                        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="() => RemoveBlackListEntry(index)">Remove</Button>
+                                    </div>
+                                }
+                                <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="AddBlackListEntry">Add Entry</Button>
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                    <CardFooter Class="border-t pt-6">
+                        <Button @onclick="SavePrivateSettings">Save</Button>
+                    </CardFooter>
+                </Card>
+            </TabsContent>
+        </Tabs>
+    }
+</div>

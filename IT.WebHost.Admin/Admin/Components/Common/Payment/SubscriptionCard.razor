@@ -1,0 +1,306 @@
+﻿@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Fragments.Authorization.Payment
+@inject NavigationManager Nav
+
+<Card Class="w-full">
+    <CardHeader>
+        <CardTitle>Subscriptions</CardTitle>
+    </CardHeader>
+    <CardContent>
+        @if (subscriptions is null || !subscriptions.Any())
+        {
+            <p class="text-sm text-muted-foreground">No active subscriptions found.</p>
+        }
+        else
+        {
+            <Accordion Type="AccordionType.Single" Collapsible="true" Class="w-full">
+                @foreach (var subscription in subscriptions)
+                {
+                    var record = subscription.SubscriptionRecord;
+                    var payments = (subscription.Payments ?? [])
+                        .OrderByDescending(p => p.PaidOnUTC)
+                        .ToList();
+
+                    var rawSubStatus = System.Enum.GetName(typeof(SubscriptionStatus), record?.Status ?? 0);
+                    var isSubActive = rawSubStatus == "SubscriptionActive";
+                    var isSubPaused = rawSubStatus == "SubscriptionPaused";
+                    var isSubStopped = rawSubStatus == "SubscriptionStopped";
+
+                    var latestPayment = payments.FirstOrDefault();
+                    var rawPaymentStatus = latestPayment is not null
+                        ? System.Enum.GetName(typeof(PaymentStatus), latestPayment.Status)
+                        : null;
+
+                    var hasPaymentFailed = rawPaymentStatus == "PaymentFailed";
+
+                    var paidThruDate = subscription.PaidThruUTC is Timestamp ts
+                        ? (DateTime?)ts.ToDateTime()
+                        : null;
+
+                    var isCoverageExpired = isSubActive && paidThruDate.HasValue && DateTime.UtcNow > paidThruDate.Value;
+                    var displayAsPastDue = isSubActive && (hasPaymentFailed || isCoverageExpired);
+
+                    var total = FormatDollars(record?.TotalCents);
+                    var renewsOn = FormatDate(subscription.RenewsOnUTC);
+                    var lastPaid = FormatDate(subscription.LastPaidUTC);
+
+                    <AccordionItem Value="@(record?.InternalSubscriptionID ?? Guid.NewGuid().ToString())"
+                                   Class="border px-4 rounded-lg bg-card mb-3 last:mb-0">
+                        <AccordionTrigger Class="hover:no-underline py-4">
+                            <div class="flex w-full flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-base capitalize">
+                                            @(record?.ProcessorName ?? "Subscription") Plan
+                                        </span>
+                                        <span class="text-base font-bold text-foreground">
+                                            $@total
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        @if (isSubActive && !displayAsPastDue)
+                                        {
+                                            <span>Renews on @renewsOn</span>
+                                        }
+                                        @if (isSubStopped)
+                                        {
+                                            <span>Access ends/ended on @FormatDate(subscription.PaidThruUTC)</span>
+                                        }
+                                        @if (isSubPaused)
+                                        {
+                                            <span>Subscription is temporarily paused</span>
+                                        }
+                                        @if (displayAsPastDue)
+                                        {
+                                            <span class="text-destructive font-medium flex items-center gap-1 mt-0.5 animate-pulse">
+                                                @(isCoverageExpired
+                                                    ? "Billing overdue — Access expiring soon"
+                                                    : "Payment failed — Update card")
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-2 self-start sm:self-center pr-4">
+                                    @if (displayAsPastDue)
+                                    {
+                                        <Badge Variant="BadgeVariant.Destructive" Class="gap-1 px-2.5 py-0.5">
+                                            Past Due
+                                        </Badge>
+                                    }
+                                    else if (isSubActive)
+                                    {
+                                        <Badge Class="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/20 gap-1 px-2.5 py-0.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Active
+                                        </Badge>
+                                    }
+                                    else if (isSubPaused)
+                                    {
+                                        <Badge Variant="BadgeVariant.Secondary"
+                                               Class="bg-amber-500/10 text-amber-600 border-amber-500/20 gap-1 px-2.5 py-0.5">
+                                            Paused
+                                        </Badge>
+                                    }
+                                    else
+                                    {
+                                        <Badge Variant="BadgeVariant.Secondary"
+                                               Class="text-muted-foreground bg-muted gap-1 px-2.5 py-0.5">
+                                            Canceled
+                                        </Badge>
+                                    }
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+
+                        <AccordionContent Class="pt-2 pb-4 border-t border-dashed mt-1">
+                            <div class="space-y-6">
+                                <p>@System.Enum.GetName(typeof(SubscriptionStatus), record?.Status ?? 0)</p>
+                                @* Past-due action banner *@
+                                @if (displayAsPastDue)
+                                {
+                                    <div class="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div class="text-sm text-destructive font-medium">
+                                            @if (isCoverageExpired)
+                                            {
+                                                @($"Your billing period ended on {FormatDate(subscription.PaidThruUTC)}. Update your payment options.")
+                                            }
+                                            else
+                                            {
+                                                @($"Your last renewal payment of ${total} was declined. Please verify your payment details below.")
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                @* Metadata summary band *@
+                                <div class="flex flex-wrap items-center justify-between gap-3 bg-muted/40 p-3 rounded-lg">
+                                    <div class="text-xs text-muted-foreground space-y-0.5">
+                                        <div><strong>Access Granted Until:</strong> @FormatDate(subscription.PaidThruUTC)</div>
+                                        <div><strong>Last Valid Transaction:</strong> @lastPaid</div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        @if (isSubActive && record?.ProcessorName == "stripe" && ShowUpdate)
+                                        {
+                                            <Button Type="ButtonType.Button"
+                                                    Size="ButtonSize.Small"
+                                                    Variant="ButtonVariant.Outline"
+                                                    Class="gap-1.5"
+                                                    OnClick="() => HandleUpdateStripeCardClick(record?.InternalSubscriptionID)">
+                                                Update Card
+                                            </Button>
+                                        }
+                                        @if (isSubActive)
+                                        {
+                                            <Button Type="ButtonType.Button"
+                                                    Size="ButtonSize.Small"
+                                                    Variant="ButtonVariant.Ghost"
+                                                    Class="text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                                                    Disabled="(cancellingId == record?.InternalSubscriptionID)"
+                                                    OnClick="() => HandleCancelClick(record?.InternalSubscriptionID)">
+                                                @(cancellingId == record?.InternalSubscriptionID ? "Canceling..." : "Cancel Subscription")
+                                            </Button>
+                                        }
+                                    </div>
+                                </div>
+
+                                @if (cancelErrors.TryGetValue(record?.InternalSubscriptionID ?? "", out var err))
+                                {
+                                    <p class="text-sm text-destructive font-medium">@err</p>
+                                }
+
+                                @* Billing History *@
+                                <div class="space-y-2">
+                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Billing History
+                                    </h4>
+                                    <ScrollArea Class="h-48 w-full rounded-md border bg-background">
+                                        <div class="divide-y">
+                                            @if (payments.Count == 0)
+                                            {
+                                                <div class="p-4 text-center text-sm text-muted-foreground">
+                                                    No available billing receipts.
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var payment in payments)
+                                                {
+                                                    var pStatus = payment.Status;
+
+                                                    <div class="p-3 flex items-center justify-between text-sm hover:bg-muted/30 transition-colors">
+                                                        <div class="space-y-0.5">
+                                                            <div class="font-medium flex items-center gap-1.5">
+                                                                $@FormatDollars(payment.TotalCents)
+                                                            </div>
+                                                            <div class="text-xs text-muted-foreground">
+                                                                Processed: @FormatDate(payment.PaidOnUTC)
+                                                                &bull; Access: @FormatDate(payment.PaidOnUTC) to @FormatDate(payment.PaidThruUTC)
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            <span class="@GetPaymentStatusClass(pStatus) text-xs px-2 py-0.5 rounded-full font-medium">
+                                                                @GetPaymentStatusLabel(pStatus)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                }
+            </Accordion>
+        }
+    </CardContent>
+</Card>
+
+@code {
+    [Parameter] public IEnumerable<GenericSubscriptionFullRecord>? subscriptions { get; set; }
+    [Parameter] public bool ShowUpdate { get; set; } = true;
+    private string? cancellingId;
+    private Dictionary<string, string> cancelErrors = new();
+
+    private IEnumerable<GenericSubscriptionFullRecord> sortedSubscriptions =>
+        (subscriptions ?? []).OrderByDescending(s =>
+            s.SubscriptionRecord?.CreatedOnUTC?.ToDateTime() ?? DateTime.MinValue);
+
+    private string defaultExpandedValue =>
+        sortedSubscriptions.FirstOrDefault()?.SubscriptionRecord?.InternalSubscriptionID
+        ?? sortedSubscriptions.FirstOrDefault()?.SubscriptionRecord?.ProcessorSubscriptionID
+        ?? "subscription";
+
+    private void HandleUpdateStripeCardClick(string? id)
+    {
+        if (id is not null)
+            Nav.NavigateTo($"/profile/subscription/stripe/updatecard?txId={id}");
+    }
+
+    private async Task HandleCancelClick(string? id)
+    {
+        if (id is null || cancellingId == id) return;
+        cancelErrors.Remove(id);
+        cancellingId = id;
+        StateHasChanged();
+        try
+        {
+            // await SubscriptionService.CancelAsync(id);
+        }
+        catch
+        {
+            cancelErrors[id] = "Something went wrong. Please try again.";
+        }
+        finally
+        {
+            cancellingId = null;
+            StateHasChanged();
+        }
+    }
+
+    private static (bool isSubActive, bool isSubPaused, bool isSubStopped, bool displayAsPastDue, bool isCoverageExpired)
+        ComputeSubState(GenericSubscriptionFullRecord subscription)
+    {
+        var record = subscription.SubscriptionRecord;
+
+        var isSubActive = record?.Status == SubscriptionStatus.SubscriptionActive;
+        var isSubPaused = record?.Status == SubscriptionStatus.SubscriptionPaused;
+        var isSubStopped = record?.Status == SubscriptionStatus.SubscriptionStopped;
+
+        var latestPayment = (subscription.Payments ?? []).OrderByDescending(p => p.PaidOnUTC).FirstOrDefault();
+        var hasPaymentFailed = latestPayment?.Status == PaymentStatus.PaymentFailed;
+
+        var paidThruDate = subscription.PaidThruUTC?.ToDateTime();
+        var isCoverageExpired = isSubActive && paidThruDate.HasValue && DateTime.UtcNow > paidThruDate.Value;
+        var displayAsPastDue = isSubActive && (hasPaymentFailed || isCoverageExpired);
+
+        return (isSubActive, isSubPaused, isSubStopped, displayAsPastDue, isCoverageExpired);
+    }
+
+    private static string GetPaymentStatusClass(PaymentStatus status) => status switch
+    {
+        PaymentStatus.PaymentComplete => "bg-emerald-500/10 text-emerald-600",
+        PaymentStatus.PaymentFailed => "bg-destructive/10 text-destructive",
+        _ => "bg-muted text-muted-foreground"
+    };
+
+    private static string GetPaymentStatusLabel(PaymentStatus status) => status switch
+    {
+        PaymentStatus.PaymentComplete => "Paid",
+        PaymentStatus.PaymentFailed => "Failed",
+        _ => "Pending"
+    };
+
+    private static string FormatDollars(uint? cents) =>
+        cents.HasValue ? (cents.Value / 100.0).ToString("0.00") : "0.00";
+
+    private static string FormatDollars(uint cents) =>
+        (cents / 100.0).ToString("0.00");
+
+    private static string FormatDate(Google.Protobuf.WellKnownTypes.Timestamp? ts) =>
+        ts is null ? "—" : ts.ToDateTime().ToString("MMM d, yyyy");
+}

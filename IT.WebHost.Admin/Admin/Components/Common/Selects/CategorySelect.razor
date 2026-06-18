@@ -1,0 +1,35 @@
+﻿@using IT.WebServices.Clients.Settings
+@using IT.WebServices.Fragments.Settings
+<Field>
+    <FieldLabel>Categories</FieldLabel>
+    <FieldContent>
+        <MultiSelect Items="@categories"
+                     Values="@selected"
+                     ValuesChanged="OnValuesChanged"
+                     ValueSelector="@(r => r.Value)"
+                     DisplaySelector="@(r => r.Display)"
+                     Placeholder="Select Categories"
+                     Disabled="@Disabled" />
+        <FieldError Errors="Errors" />
+    </FieldContent>
+</Field>
+
+@code {
+    [Inject] private CategoryHelper categoryHelper { get; set; } = null!;
+    private List<CategoryOption> categories = new();
+    private record CategoryOption(string Value, string Display);
+    
+    [Parameter] public List<string> selected { get; set; } = [];
+    [Parameter] public EventCallback<List<string>> selectedChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+    protected override async Task OnInitializedAsync()
+    {
+        categories = categoryHelper.GetAll().Select(c => new CategoryOption(c.CategoryId, c.DisplayName)).ToList();
+    }
+
+    private async Task OnValuesChanged(IEnumerable<string> values)
+    {
+        await selectedChanged.InvokeAsync(values.ToList());
+    }
+}

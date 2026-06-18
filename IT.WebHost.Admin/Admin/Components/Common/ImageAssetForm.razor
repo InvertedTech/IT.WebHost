@@ -1,0 +1,56 @@
+﻿@using IT.WebServices.Fragments.Content
+<Field>
+    <FieldLabel For="title">Title</FieldLabel>
+    <FieldContent>
+        <Input Id="title" Type="InputType.Text" Placeholder="Enter your title" />
+        <FieldDescription>Choose a unique title for your content.</FieldDescription>
+    </FieldContent>
+</Field>
+<Field>
+    <FieldLabel For="caption">Caption</FieldLabel>
+    <FieldContent>
+        <Input Id="caption" Type="InputType.Text" Placeholder="Enter your caption" />
+        <FieldDescription>Choose a unique caption for your content.</FieldDescription>
+    </FieldContent>
+</Field>
+<Field>
+    <FieldLabel For="image">Image</FieldLabel>
+    <FieldContent>
+        <FileUpload Id="image" MaxFileCount="MaxFileCount" OnFilesChanged="OnFilesChanged" />
+    </FieldContent>
+</Field>
+
+@code {
+    [Parameter] public int MaxFileCount { get; set; } = 1;
+    [Parameter]
+    public CreateAssetRequest CreateAssetRequest { get; set; } = new()
+    {
+        Image = new()
+        {
+            Public = new(),
+            Private = new()
+        }
+    };
+    [Parameter] public EventCallback<CreateAssetRequest> CreateAssetRequestChanged { get; set; }
+
+    private IReadOnlyList<IBrowserFile>? files { get; set; }
+
+
+    private async Task OnFilesChanged(IReadOnlyList<IBrowserFile> fileList)
+    {
+        if (fileList.Count == 0)
+            return;
+
+        var img = fileList[0];
+
+        CreateAssetRequest.Image.Public.MimeType = img.ContentType;
+
+        await using var stream = img.OpenReadStream(
+            maxAllowedSize: 10 * 1024 * 1024);
+
+        CreateAssetRequest.Image.Public.Data =
+            await Google.Protobuf.ByteString.FromStreamAsync(stream);
+
+        await CreateAssetRequestChanged.InvokeAsync(CreateAssetRequest);
+    }
+}

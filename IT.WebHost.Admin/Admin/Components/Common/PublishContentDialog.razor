@@ -1,0 +1,104 @@
+﻿@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Fragments.Content
+
+<Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="OpenDialog">
+    <LucideIcon Name="key-round" class="h-4 w-4 mr-1.5" />
+    Publish
+</Button>
+
+<Dialog @bind-Open="isOpen">
+    <DialogContent Class="max-w-sm">
+        <DialogHeader>
+            <DialogTitle>Publish Content</DialogTitle>
+            <DialogDescription>
+                Choose when this content becomes visible to users.
+            </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 py-2">
+            <div class="space-y-1.5">
+                <label class="text-sm font-medium">Date</label>
+                <DatePicker @bind-SelectedDate="selectedDate"
+                            ShowIcon="false"
+                            ShowDropdownIcon="true"
+                            Placeholder="Select date" />
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-sm font-medium">Time</label>
+                <div class="flex items-center gap-2">
+                    <select class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            value="@selectedHour"
+                            @onchange="e => selectedHour = int.Parse(e.Value!.ToString()!)">
+                        @for (int h = 0; h < 24; h++)
+                        {
+                            var hour = h;
+                            var label = $"{hour:D2}:00";
+                            <option value="@hour">@label</option>
+                        }
+                    </select>
+                    <span class="text-muted-foreground">:</span>
+                    <select class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            value="@selectedMinute"
+                            @onchange="e => selectedMinute = int.Parse(e.Value!.ToString()!)">
+                        @foreach (var min in MinuteOptions)
+                        {
+                            <option value="@min">@($"{min:D2}")</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            @if (selectedDate.HasValue)
+            {
+                <p class="text-xs text-muted-foreground">
+                    Publishes on @selectedDate.Value.ToString("MMM d, yyyy") at @($"{selectedHour:D2}:{selectedMinute:D2}") (local time)
+                </p>
+            }
+        </div>
+
+        <DialogFooter>
+            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="CloseDialog">Cancel</Button>
+            <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="Publish" Disabled="!CanPublish">
+                <LucideIcon Name="send" class="h-4 w-4 mr-1.5" />
+                Publish
+            </Button>
+        </DialogFooter>
+    </DialogContent>
+</Dialog>
+
+@code {
+    [Parameter] public string contentId { get; set; } = null!;
+    [Parameter] public EventCallback<Timestamp> OnPublish { get; set; }
+
+    private static readonly int[] MinuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+    private bool isOpen = false;
+    private DateOnly? selectedDate;
+    private int selectedHour = DateTime.Now.Hour;
+    private int selectedMinute = 0;
+
+    private bool CanPublish => selectedDate.HasValue;
+
+    private void OpenDialog()
+    {
+        selectedDate = null;
+        selectedHour = DateTime.Now.Hour;
+        selectedMinute = 0;
+        isOpen = true;
+    }
+
+    private void CloseDialog() => isOpen = false;
+
+    private async Task Publish()
+    {
+        if (!CanPublish) return;
+
+        var localDateTime = selectedDate!.Value.ToDateTime(new TimeOnly(selectedHour, selectedMinute));
+        var utcDateTime = DateTime.SpecifyKind(localDateTime, DateTimeKind.Utc);
+        var timestamp = Timestamp.FromDateTime(utcDateTime);
+
+        CloseDialog();
+        await OnPublish.InvokeAsync(timestamp);
+    }
+}

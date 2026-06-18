@@ -1,0 +1,35 @@
+﻿@page "/content"
+@using IT.WebServices.Fragments.Content
+@using Microsoft.AspNetCore.Components.Authorization
+@using IT.WebServices.Authentication
+@inject NavigationManager Nav
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
+    <Authorized>
+        <h3>Content</h3>
+
+        <DataTable TData="ContentListRecord"
+                   Data="ContentList"
+                   Dense="false"
+                   InitialPageSize="pageSize"
+                   ShowPagination="false"
+                   BodyRowClass="cursor-pointer"
+                   AdditionalRowAttributes="@(row => new Dictionary<string, object>
+                                {
+                                    { "onclick", EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => Nav.NavigateTo($"/content/{row.ContentID}")) }
+                                })"
+                   IsLoading="isLoading">
+            <Columns>
+                <DataTableColumn TData="ContentListRecord" TValue="string" Property="@(p => p.ContentID)" Header="ID" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="ContentListRecord" TValue="string" Property="@(p => p.Title)" Header="Title" Sortable />
+                <DataTableColumn TData="ContentListRecord" TValue="string" Property="@(p => p.Author)" Header="Author" Sortable />
+                <DataTableColumn TData="ContentListRecord" TValue="string" Property="@(p => p.PublishOnUTC != null ? p.PublishOnUTC.ToDateTime().ToString() : "—")" Header="Published On" Sortable Alignment="ColumnAlignment.Right" />
+            </Columns>
+        </DataTable>
+
+        <Paginator baseUrl="/content"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems" />
+    </Authorized>
+</AuthorizeView>

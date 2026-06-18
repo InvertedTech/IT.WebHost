@@ -1,0 +1,511 @@
+@page "/settings/cms"
+@using IT.WebServices.Clients.Settings
+@using IT.WebServices.Fragments.Settings
+@using IT.WebServices.Fragments.Content
+@rendermode InteractiveServer
+
+<div class="cms-page">
+
+    <SettingsPageHeader Title="CMS Configuration" Description="Define the default layout and manage delivery channels and content categories." />
+
+    @* Default Global Layout *@
+    <div class="cms-card">
+        <div class="cms-card-header">
+            <div class="cms-card-header-left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <div>
+                    <div class="cms-card-title">Default Global Layout</div>
+                    <div class="cms-card-subtitle">Select the primary viewing experience for anonymous visitors.</div>
+                </div>
+            </div>
+            <Button Variant="ButtonVariant.Outline" OnClick="SaveLayoutAsync">Apply Globally</Button>
+        </div>
+
+        <div class="layout-picker">
+            <div class="layout-option @(_selectedLayout == LayoutEnum.List ? "layout-option--active" : "")"
+                 @onclick="() => _selectedLayout = LayoutEnum.List">
+                <div class="layout-option-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </div>
+                <div class="layout-option-label">List</div>
+                <div class="layout-option-desc">Compact, text-heavy directory.</div>
+                @if (_selectedLayout == LayoutEnum.List)
+                {
+                    <div class="layout-option-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                }
+            </div>
+
+            <div class="layout-option @(_selectedLayout == LayoutEnum.Grid ? "layout-option--active" : "")"
+                 @onclick="() => _selectedLayout = LayoutEnum.Grid">
+                <div class="layout-option-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="layout-option-label">Grid</div>
+                <div class="layout-option-desc">Visual-first discovery grid.</div>
+                @if (_selectedLayout == LayoutEnum.Grid)
+                {
+                    <div class="layout-option-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                }
+            </div>
+
+            <div class="layout-option @(_selectedLayout == LayoutEnum.Masonry ? "layout-option--active" : "")"
+                 @onclick="() => _selectedLayout = LayoutEnum.Masonry">
+                <div class="layout-option-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="11" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="18" width="7" height="3" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <div class="layout-option-label">Masonry</div>
+                <div class="layout-option-desc">Variable-height Pinterest-style tiles.</div>
+                @if (_selectedLayout == LayoutEnum.Masonry)
+                {
+                    <div class="layout-option-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                }
+            </div>
+
+            <div class="layout-option @(_selectedLayout == LayoutEnum.Showcase ? "layout-option--active" : "")"
+                 @onclick="() => _selectedLayout = LayoutEnum.Showcase">
+                <div class="layout-option-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="11" rx="1"/><rect x="3" y="17" width="5" height="4" rx="1"/><rect x="10" y="17" width="5" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
+                </div>
+                <div class="layout-option-label">Showcase</div>
+                <div class="layout-option-desc">Hero-first featured content layout.</div>
+                @if (_selectedLayout == LayoutEnum.Showcase)
+                {
+                    <div class="layout-option-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="cms-bottom-grid">
+
+        @* Channels *@
+        <div class="cms-card">
+            <div class="cms-card-header">
+                <div class="cms-card-header-left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="2"/></svg>
+                    <div class="cms-card-title">Channels</div>
+                </div>
+                <Button Variant="ButtonVariant.Default" OnClick="OpenChannelSheet">+ New Channel</Button>
+            </div>
+
+            @if (_cms.Channels.Count == 0)
+            {
+                <div class="cms-empty">No channels configured.</div>
+            }
+            else
+            {
+                <div class="channel-table-head">
+                    <span>Name</span>
+                    <span>URL Stub</span>
+                    <span></span>
+                </div>
+                <ScrollArea Class="channel-scroll" Type="ScrollAreaType.Hover" EnableScrollShadows="true">
+                    <div class="channel-table">
+                        @foreach (var ch in _cms.Channels)
+                        {
+                            <div class="channel-row">
+                                <div class="channel-name">@ch.DisplayName</div>
+                                <div class="channel-slug">/@ch.UrlStub</div>
+                                <div>
+                                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="() => OpenChannelEditSheet(ch)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </Button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </ScrollArea>
+            }
+        </div>
+
+        @* Content Categories *@
+        <div class="cms-card">
+            <div class="cms-card-header">
+                <div class="cms-card-header-left">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <div class="cms-card-title">Content Categories</div>
+                </div>
+                <Button Variant="ButtonVariant.Default" OnClick="OpenCategorySheet">+ New Category</Button>
+            </div>
+
+            @if (_cms.Categories.Count == 0)
+            {
+                <div class="cms-empty">No categories configured.</div>
+            }
+            else
+            {
+                <ScrollArea Class="category-scroll" Type="ScrollAreaType.Hover" EnableScrollShadows="true">
+                    <div class="category-list">
+                        @foreach (var cat in _cms.Categories)
+                        {
+                            <div class="category-row" @onclick="() => OpenCategoryEditSheet(cat)">
+                                <div class="category-info">
+                                    <div class="category-name">@cat.DisplayName</div>
+                                    <div class="category-slug">/@cat.UrlStub</div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="category-chevron"><polyline points="9 18 15 12 9 6"/></svg>
+                            </div>
+                        }
+                    </div>
+                </ScrollArea>
+            }
+        </div>
+
+    </div>
+</div>
+
+@* Channel Sheet *@
+<Sheet @bind-Open="_channelSheetOpen">
+    <SheetContent Class="flex flex-col gap-6">
+        <SheetHeader>
+            <SheetTitle>@(_editingChannel == null ? "New Channel" : "Edit Channel")</SheetTitle>
+        </SheetHeader>
+        <div class="space-y-4">
+            <Field>
+                <FieldLabel For="ch-name">Display Name</FieldLabel>
+                <FieldContent>
+                    <Input Id="ch-name" Type="InputType.Text" Placeholder="Main Creator Hub" @bind-Value="_newChannelName" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="ch-slug">URL Stub</FieldLabel>
+                <FieldContent>
+                    <Input Id="ch-slug" Type="InputType.Text" Placeholder="creator-hub" @bind-Value="_newChannelSlug" />
+                </FieldContent>
+            </Field>
+            @if (_cms.Channels.Count > 0)
+            {
+                <Field>
+                    <FieldLabel>Parent Channel (optional)</FieldLabel>
+                    <FieldContent>
+                        <Select TValue="string" @bind-Value="_newChannelParentId">
+                            <SelectTrigger>
+                                <SelectValue Placeholder="— None —" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem Value="@("")">— None —</SelectItem>
+                                @foreach (var ch in _cms.Channels.Where(c => c.ChannelId != _editingChannel?.ChannelId))
+                                {
+                                    <SelectItem Value="@ch.ChannelId">@ch.DisplayName</SelectItem>
+                                }
+                            </SelectContent>
+                        </Select>
+                    </FieldContent>
+                </Field>
+            }
+            <Field>
+                <FieldLabel For="ch-yt">YouTube URL (optional)</FieldLabel>
+                <FieldContent>
+                    <Input Id="ch-yt" Type="InputType.Text" Placeholder="https://youtube.com/..." @bind-Value="_newChannelYoutubeUrl" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="ch-rumble">Rumble URL (optional)</FieldLabel>
+                <FieldContent>
+                    <Input Id="ch-rumble" Type="InputType.Text" Placeholder="https://rumble.com/..." @bind-Value="_newChannelRumbleUrl" />
+                </FieldContent>
+            </Field>
+            @if (_channelError != null)
+            {
+                <p class="sheet-error">@_channelError</p>
+            }
+        </div>
+        <SheetFooter Class="gap-2 sm:justify-end">
+            <Button Variant="ButtonVariant.Outline" @onclick="() => _channelSheetOpen = false">Cancel</Button>
+            <Button @onclick="SaveChannelAsync">@(_editingChannel == null ? "Create" : "Save")</Button>
+        </SheetFooter>
+    </SheetContent>
+</Sheet>
+
+@* Category Sheet *@
+<Sheet @bind-Open="_categorySheetOpen">
+    <SheetContent Class="flex flex-col gap-6">
+        <SheetHeader>
+            <SheetTitle>@(_editingCategory == null ? "New Category" : "Edit Category")</SheetTitle>
+        </SheetHeader>
+        <div class="space-y-4">
+            <Field>
+                <FieldLabel For="cat-name">Display Name</FieldLabel>
+                <FieldContent>
+                    <Input Id="cat-name" Type="InputType.Text" Placeholder="Technology" @bind-Value="_newCategoryName" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="cat-slug">URL Stub</FieldLabel>
+                <FieldContent>
+                    <Input Id="cat-slug" Type="InputType.Text" Placeholder="technology" @bind-Value="_newCategorySlug" />
+                </FieldContent>
+            </Field>
+            @if (_cms.Categories.Count > 0)
+            {
+                <Field>
+                    <FieldLabel>Parent Category (optional)</FieldLabel>
+                    <FieldContent>
+                        <Select TValue="string" @bind-Value="_newCategoryParentId">
+                            <SelectTrigger>
+                                <SelectValue Placeholder="— None —" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem Value="@("")">— None —</SelectItem>
+                                @foreach (var cat in _cms.Categories.Where(c => c.CategoryId != _editingCategory?.CategoryId))
+                                {
+                                    <SelectItem Value="@cat.CategoryId">@cat.DisplayName</SelectItem>
+                                }
+                            </SelectContent>
+                        </Select>
+                    </FieldContent>
+                </Field>
+            }
+            @if (_categoryError != null)
+            {
+                <p class="sheet-error">@_categoryError</p>
+            }
+        </div>
+        <SheetFooter Class="gap-2 sm:justify-end">
+            <Button Variant="ButtonVariant.Outline" @onclick="() => _categorySheetOpen = false">Cancel</Button>
+            <Button @onclick="SaveCategoryAsync">@(_editingCategory == null ? "Create" : "Save")</Button>
+        </SheetFooter>
+    </SheetContent>
+</Sheet>
+
+<style>
+    .cms-page { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .cms-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); overflow: hidden; }
+
+    .cms-card-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .cms-card-header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .cms-card-title { font-size: 0.95rem; font-weight: 600; }
+    .cms-card-subtitle { font-size: 0.78rem; color: var(--muted-foreground); margin-top: 0.1rem; }
+
+    .layout-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; padding: 1.25rem; }
+    .layout-option { position: relative; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; cursor: pointer; transition: border-color 0.15s; }
+    .layout-option:hover { border-color: var(--primary); }
+    .layout-option--active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+    .layout-option-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--radius); background: var(--muted); margin-bottom: 0.6rem; color: var(--muted-foreground); }
+    .layout-option--active .layout-option-icon { color: var(--primary); }
+    .layout-option-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .layout-option-desc { font-size: 0.72rem; color: var(--muted-foreground); }
+    .layout-option-check { position: absolute; top: 0.5rem; right: 0.5rem; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); display: flex; align-items: center; justify-content: center; }
+
+    .cms-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+
+    .cms-empty { padding: 2rem 1.25rem; text-align: center; font-size: 0.85rem; color: var(--muted-foreground); }
+
+    .channel-scroll { height: 320px; }
+    .channel-table-head { display: grid; grid-template-columns: 1fr 1fr 40px; padding: 0.6rem 1.25rem; font-size: 0.75rem; font-weight: 600; color: var(--muted-foreground); border-bottom: 1px solid var(--border); }
+    .channel-table { display: flex; flex-direction: column; }
+    .channel-row { display: grid; grid-template-columns: 1fr 1fr 40px; align-items: center; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); }
+    .channel-row:last-child { border-bottom: none; }
+    .channel-name { font-size: 0.875rem; font-weight: 600; }
+    .channel-slug { font-size: 0.78rem; color: var(--muted-foreground); }
+
+    .category-scroll { height: 320px; }
+    .category-list { display: flex; flex-direction: column; }
+    .category-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .category-row:last-child { border-bottom: none; }
+    .category-row:hover { background: var(--muted); }
+    .category-info { flex: 1; }
+    .category-name { font-size: 0.875rem; font-weight: 600; }
+    .category-slug { font-size: 0.72rem; color: var(--muted-foreground); margin-top: 0.1rem; }
+    .category-chevron { color: var(--muted-foreground); flex-shrink: 0; }
+
+    .sheet-error { font-size: 0.8rem; color: var(--destructive); margin: 0; }
+</style>
+
+@code {
+    [Inject] private PublicSettingsClient PublicSettingsClient { get; set; } = null!;
+    [Inject] private SettingsClient SettingsClient { get; set; } = null!;
+
+    private CMSPublicRecord _cms = new();
+    private LayoutEnum _selectedLayout = LayoutEnum.List;
+
+    // Channel sheet
+    private bool _channelSheetOpen = false;
+    private ChannelRecord? _editingChannel = null;
+    private string _newChannelName = "";
+    private string _newChannelSlug = "";
+    private string _newChannelParentId = "";
+    private string _newChannelYoutubeUrl = "";
+    private string _newChannelRumbleUrl = "";
+    private string? _channelError;
+
+    // Category sheet
+    private bool _categorySheetOpen = false;
+    private CategoryRecord? _editingCategory = null;
+    private string _newCategoryName = "";
+    private string _newCategorySlug = "";
+    private string _newCategoryParentId = "";
+    private string? _categoryError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var pub = await PublicSettingsClient.PublicData;
+        _cms = pub.CMS?.Clone() ?? new CMSPublicRecord();
+        _selectedLayout = _cms.DefaultLayout;
+    }
+
+    private void OpenChannelSheet()
+    {
+        _editingChannel = null;
+        ResetChannelForm();
+        _channelSheetOpen = true;
+    }
+
+    private void OpenChannelEditSheet(ChannelRecord ch)
+    {
+        _editingChannel = ch;
+        _newChannelName = ch.DisplayName;
+        _newChannelSlug = ch.UrlStub;
+        _newChannelParentId = ch.ParentChannelId;
+        _newChannelYoutubeUrl = ch.YoutubeUrl;
+        _newChannelRumbleUrl = ch.RumbleUrl;
+        _channelError = null;
+        _channelSheetOpen = true;
+    }
+
+    private void OpenCategorySheet()
+    {
+        _editingCategory = null;
+        ResetCategoryForm();
+        _categorySheetOpen = true;
+    }
+
+    private void OpenCategoryEditSheet(CategoryRecord cat)
+    {
+        _editingCategory = cat;
+        _newCategoryName = cat.DisplayName;
+        _newCategorySlug = cat.UrlStub;
+        _newCategoryParentId = cat.ParentCategoryId;
+        _categoryError = null;
+        _categorySheetOpen = true;
+    }
+
+    private async Task SaveLayoutAsync()
+    {
+        var record = _cms.Clone();
+        record.DefaultLayout = _selectedLayout;
+        await SettingsClient.ModifyCMSPublicSettings(new ModifyCMSPublicDataRequest { Data = record });
+        PublicSettingsClient.InvalidateCache();
+        await LoadAsync();
+    }
+
+    private async Task SaveChannelAsync()
+    {
+        _channelError = null;
+        _newChannelName = _newChannelName.Trim();
+        _newChannelSlug = _newChannelSlug.Trim();
+
+        if (string.IsNullOrEmpty(_newChannelName) || string.IsNullOrEmpty(_newChannelSlug))
+        {
+            _channelError = "Display Name and URL Stub are required.";
+            return;
+        }
+
+        var record = _cms.Clone();
+
+        if (_editingChannel != null)
+        {
+            var existing = record.Channels.FirstOrDefault(c => c.ChannelId == _editingChannel.ChannelId);
+            if (existing != null)
+            {
+                existing.DisplayName = _newChannelName;
+                existing.UrlStub = _newChannelSlug;
+                existing.ParentChannelId = _newChannelParentId;
+                existing.YoutubeUrl = _newChannelYoutubeUrl;
+                existing.RumbleUrl = _newChannelRumbleUrl;
+            }
+        }
+        else
+        {
+            record.Channels.Add(new ChannelRecord
+            {
+                ChannelId = Guid.NewGuid().ToString(),
+                DisplayName = _newChannelName,
+                UrlStub = _newChannelSlug,
+                ParentChannelId = _newChannelParentId,
+                YoutubeUrl = _newChannelYoutubeUrl,
+                RumbleUrl = _newChannelRumbleUrl,
+            });
+        }
+
+        await SettingsClient.ModifyCMSPublicSettings(new ModifyCMSPublicDataRequest { Data = record });
+        PublicSettingsClient.InvalidateCache();
+        _channelSheetOpen = false;
+        ResetChannelForm();
+        await LoadAsync();
+    }
+
+    private async Task SaveCategoryAsync()
+    {
+        _categoryError = null;
+        _newCategoryName = _newCategoryName.Trim();
+        _newCategorySlug = _newCategorySlug.Trim();
+
+        if (string.IsNullOrEmpty(_newCategoryName) || string.IsNullOrEmpty(_newCategorySlug))
+        {
+            _categoryError = "Display Name and URL Stub are required.";
+            return;
+        }
+
+        var record = _cms.Clone();
+
+        if (_editingCategory != null)
+        {
+            var existing = record.Categories.FirstOrDefault(c => c.CategoryId == _editingCategory.CategoryId);
+            if (existing != null)
+            {
+                existing.DisplayName = _newCategoryName;
+                existing.UrlStub = _newCategorySlug;
+                existing.ParentCategoryId = _newCategoryParentId;
+            }
+        }
+        else
+        {
+            record.Categories.Add(new CategoryRecord
+            {
+                CategoryId = Guid.NewGuid().ToString(),
+                DisplayName = _newCategoryName,
+                UrlStub = _newCategorySlug,
+                ParentCategoryId = _newCategoryParentId,
+            });
+        }
+
+        await SettingsClient.ModifyCMSPublicSettings(new ModifyCMSPublicDataRequest { Data = record });
+        PublicSettingsClient.InvalidateCache();
+        _categorySheetOpen = false;
+        ResetCategoryForm();
+        await LoadAsync();
+    }
+
+    private void ResetChannelForm()
+    {
+        _newChannelName = "";
+        _newChannelSlug = "";
+        _newChannelParentId = "";
+        _newChannelYoutubeUrl = "";
+        _newChannelRumbleUrl = "";
+        _channelError = null;
+    }
+
+    private void ResetCategoryForm()
+    {
+        _newCategoryName = "";
+        _newCategorySlug = "";
+        _newCategoryParentId = "";
+        _categoryError = null;
+    }
+}

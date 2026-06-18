@@ -1,0 +1,58 @@
+﻿@using Admin.Components.Common.Selects
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authentication
+
+<Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="OpenDialog">
+    <LucideIcon Name="key-round" class="h-4 w-4 mr-1.5" />
+    Edit Roles
+</Button>
+
+<Dialog @bind-Open="isOpen">
+    <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Edit Roles</DialogTitle>
+            <DialogDescription>
+                Modify Another User's Roles
+            </DialogDescription>
+        </DialogHeader>
+        <RoleSelect selected="@selected" />
+        <DialogFooter>
+            <button>Cancel</button>
+            <button>Save</button>
+        </DialogFooter>
+    </DialogContent>
+</Dialog>
+
+@code {
+    // TODO: Pass Injects As Params
+    [Inject] public UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
+    [Inject] public ONUserHelper UserHelper { get; set; } = null!;
+    [Parameter] public string userId { get; set; } = null!;
+    [Parameter] public List<string> selected { get; set; } = new List<string>();
+    private bool isOpen { get; set; } = false;
+
+    private async Task GrantRoles()
+    {
+        var req = new ModifyOtherUserRolesRequest
+        {
+            UserID = userId,
+        };
+
+        req.Roles.AddRange(selected);
+
+        var res = await UserClient.ModifyOtherUserRolesAsync(req, UserHelper.GetGrpcCallOptions());
+
+        // TODO: Handle Response
+        // TODO: Close
+    }
+
+    private void OpenDialog()
+    {
+        isOpen = true;
+    }
+
+    private void CloseDialog()
+    {
+        isOpen = false;
+    }
+}

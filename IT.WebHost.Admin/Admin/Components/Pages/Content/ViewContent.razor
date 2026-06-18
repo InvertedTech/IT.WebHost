@@ -1,0 +1,350 @@
+﻿@page "/content/{id}"
+@using Admin.Components.Common
+@using Admin.Components.Common.Selects
+@using Admin.Components.Common.Selects.ImagePicker
+@using Admin.Models
+@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+@* TODO: Wrap view/edit sections with appropriate AuthorizeView: basic view/ModifyContent needs "con_writer,con_publisher,admin,owner" (ROLE_CAN_CREATE_CONTENT); publish/unpublish/delete actions need "admin,owner,con_publisher" (ROLE_CAN_PUBLISH). Consider nested or multiple views or policy for edit vs publish buttons. *@
+<AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
+    <Authorized>
+        <PageTitle>@(EditContent is not null ? $"{EditContent.Title} — Content" : "Content")</PageTitle>
+
+        @if (IsLoading)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                    <LucideIcon Name="loader-circle" class="h-8 w-8 animate-spin" />
+                    <span class="text-sm">Loading content…</span>
+                </div>
+            </div>
+        }
+        else if (EditContent is null)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <Empty>
+                    <EmptyTitle>Content not found</EmptyTitle>
+                    <EmptyDescription>This item may have been deleted or the ID is invalid.</EmptyDescription>
+                </Empty>
+            </div>
+        }
+        else
+        {
+            var content = EditContent;
+            var typeLabel = GetTypeLabel(content.ContentType);
+            var typeIcon = GetTypeIcon(content.ContentType);
+            var publishUtc = content.PublishDate?.ToDateTime(TimeOnly.MinValue, DateTimeKind.Local).ToUniversalTime();
+            var isPublished = publishUtc.HasValue && publishUtc.Value <= DateTime.UtcNow;
+            var isScheduled = publishUtc.HasValue && publishUtc.Value > DateTime.UtcNow;
+            var isDeleted = content?.DeletedOnUtc.HasValue ?? false;
+
+            <div class="space-y-6">
+                <Card Class="overflow-hidden">
+                    @if (!string.IsNullOrWhiteSpace(content.FeaturedImageAssetId))
+                    {
+                        <div class="border-b">
+                            <img src="@GetAssetUrl(content.FeaturedImageAssetId)"
+                                 alt="@content.Title"
+                                 class="h-36 w-full object-cover" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex h-36 items-center justify-center bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30">
+                            <LucideIcon Name="@typeIcon" class="h-16 w-16 text-primary-foreground/40" />
+                        </div>
+                    }
+                    <CardContent Class="px-6 pb-5 pt-4">
+                        <div class="mb-4 space-y-1.5">
+                            <h1 class="text-2xl font-bold leading-tight">
+                                @(string.IsNullOrWhiteSpace(content.Title) ? "Untitled" : content.Title)
+                            </h1>
+                            @if (!string.IsNullOrWhiteSpace(content.Description))
+                            {
+                                <p class="max-w-prose text-sm text-muted-foreground">@content.Description</p>
+                            }
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <Badge Variant="BadgeVariant.Outline">
+                                    <LucideIcon Name="@typeIcon" class="mr-1 h-3 w-3" />
+                                    @typeLabel
+                                </Badge>
+                                @if (isPublished)
+                                {
+                                    <Badge Variant="BadgeVariant.Default">Published</Badge>
+                                }
+                                else if (isScheduled)
+                                {
+                                    <Badge Variant="BadgeVariant.Secondary">Scheduled</Badge>
+                                }
+                                else
+                                {
+                                    <Badge Variant="BadgeVariant.Secondary">Draft</Badge>
+                                }
+                                @if (content.SubscriptionLevel > 0)
+                                {
+                                    <Badge Variant="BadgeVariant.Default">Members Only</Badge>
+                                }
+                                else
+                                {
+                                    <Badge Variant="BadgeVariant.Secondary">Free</Badge>
+                                }
+                                @if (isDeleted)
+                                {
+                                    <Badge Variant="BadgeVariant.Destructive">Deleted</Badge>
+                                }
+                            </div>
+                            <div class="flex shrink-0 gap-2">
+                                @if (!isPublished)
+                                {
+                                    <PublishContentDialog contentId="@content.ContentId" OnPublish="HandlePublish" />
+                                }
+                                else
+                                {
+                                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="HandleUnpublish">
+                                        <LucideIcon Name="eye-off" class="mr-1.5 h-4 w-4" />
+                                        Unpublish
+                                    </Button>
+                                }
+                                <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
+                                    <LucideIcon Name="pencil" class="mr-1.5 h-4 w-4" />
+                                    Edit
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="info" class="mr-2 inline-block h-4 w-4" />
+                            Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Content ID</p>
+                                <p class="break-all font-mono text-sm">@content.ContentId</p>
+                            </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</p>
+                                <p class="text-sm">@typeLabel</p>
+                            </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Created</p>
+                                <p class="text-sm">@(content.CreatedOnUtc?.ToLocalTime().ToString("yyyy-MM-dd") ?? "—")</p>
+                            </div>
+                            <Field>
+                                <FieldLabel>Publish Date</FieldLabel>
+                                <FieldContent>
+                                    <DatePicker @bind-SelectedDate="content.PublishDate"
+                                                Placeholder="Not scheduled"
+                                                Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                        </div>
+
+                        <Separator />
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field>
+                                <FieldLabel For="title">Title</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="title" Type="InputType.Text" @bind-Value="content.Title" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <AuthorSelect @bind-SelectedAuthorId="content.AuthorId"
+                                          @bind-SelectedAuthor="content.Author"
+                                          Disabled="!IsEditing" />
+                        </div>
+                        <Field>
+                            <FieldLabel For="description">Description</FieldLabel>
+                            <FieldContent>
+                                <Input Id="description" Type="InputType.Text" @bind-Value="content.Description" Disabled="!IsEditing" />
+                            </FieldContent>
+                        </Field>
+                        <div class="@(!IsEditing ? "pointer-events-none opacity-60" : "")">
+                            <ImagePickerField Label="Featured Image"
+                                              @bind-SelectedAssetId="content.FeaturedImageAssetId" />
+                        </div>
+                        <div class="@(!IsEditing ? "pointer-events-none opacity-60" : "")">
+                            <SubscriptionLevelSelect @bind-SelectedSubscriptionLevel="content.SubscriptionLevel"
+                                                     Disabled="!IsEditing" />
+                        </div>
+                        <ChannelSelect @bind-selected="content.ChannelIds" Disabled="!IsEditing" />
+                        <CategorySelect @bind-selected="content.CategoryIds" Disabled="!IsEditing" />
+                        <Field>
+                            <FieldLabel>Tags</FieldLabel>
+                            <FieldContent>
+                                <TagInput Tags="content.Tags"
+                                          TagsChanged="tags => content.Tags = tags.ToList()"
+                                          Placeholder="Add a tag…"
+                                          Disabled="!IsEditing" />
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="@typeIcon" class="mr-2 inline-block h-4 w-4" />
+                            @typeLabel Content
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        @if (content.ContentType == ContentType.ContentVideo)
+                        {
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <Field>
+                                    <FieldLabel For="youtube-video-id">YouTube Video ID</FieldLabel>
+                                    <FieldContent>
+                                        <Input Id="youtube-video-id" Type="InputType.Text" @bind-Value="content.YoutubeVideoId" Disabled="!IsEditing" />
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="rumble-video-id">Rumble Video ID</FieldLabel>
+                                    <FieldContent>
+                                        <Input Id="rumble-video-id" Type="InputType.Text" @bind-Value="content.RumbleVideoId" Disabled="!IsEditing" />
+                                    </FieldContent>
+                                </Field>
+                            </div>
+                            <Field>
+                                <FieldLabel>Live Stream</FieldLabel>
+                                <FieldContent>
+                                    <Switch @bind-Checked="content.IsLiveStream" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            @if (IsEditing)
+                            {
+                                <Field>
+                                    <FieldLabel>Body</FieldLabel>
+                                    <FieldContent>
+                                        <RichTextEditor Placeholder="Start typing here…" @bind-Value="content.HtmlBody" />
+                                    </FieldContent>
+                                </Field>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(content.HtmlBody))
+                            {
+                                <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)content.HtmlBody)</div>
+                            }
+                        }
+                        else if (content.ContentType == ContentType.ContentAudio)
+                        {
+                            <Field>
+                                <FieldLabel For="audio-asset-id">Audio Asset ID</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="audio-asset-id" Type="InputType.Text" @bind-Value="content.AudioAssetId" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            @if (IsEditing)
+                            {
+                                <Field>
+                                    <FieldLabel>Body</FieldLabel>
+                                    <FieldContent>
+                                        <RichTextEditor Placeholder="Start typing here…" @bind-Value="content.HtmlBody" />
+                                    </FieldContent>
+                                </Field>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(content.HtmlBody))
+                            {
+                                <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)content.HtmlBody)</div>
+                            }
+                        }
+                        else if (content.ContentType == ContentType.ContentPicture)
+                        {
+                            @if (IsEditing)
+                            {
+                                <div class="@(!IsEditing ? "pointer-events-none opacity-60" : "")">
+                                    <ImagePickerField Label="Gallery Images"
+                                                      MultiSelect="true"
+                                                      @bind-SelectedAssetIds="content.ImageAssetIds" />
+                                </div>
+                            }
+                            else if (content.ImageAssetIds.Count > 0)
+                            {
+                                <ScrollArea Class="max-h-[400px] w-full">
+                                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                        @foreach (var assetId in content.ImageAssetIds)
+                                        {
+                                            <ClickableFeaturedImage AssetId="@assetId" Alt="Gallery image" />
+                                        }
+                                    </div>
+                                </ScrollArea>
+                            }
+                            else
+                            {
+                                <p class="text-sm italic text-muted-foreground">No images attached.</p>
+                            }
+                            @if (IsEditing)
+                            {
+                                <Field>
+                                    <FieldLabel>Body</FieldLabel>
+                                    <FieldContent>
+                                        <RichTextEditor Placeholder="Start typing here…" @bind-Value="content.HtmlBody" />
+                                    </FieldContent>
+                                </Field>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(content.HtmlBody))
+                            {
+                                <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)content.HtmlBody)</div>
+                            }
+                        }
+                        else if (content.ContentType == ContentType.ContentWritten)
+                        {
+                            @if (IsEditing)
+                            {
+                                <Field>
+                                    <FieldLabel>Body</FieldLabel>
+                                    <FieldContent>
+                                        <RichTextEditor Placeholder="Start typing here…" @bind-Value="content.HtmlBody" />
+                                    </FieldContent>
+                                </Field>
+                            }
+                            else
+                            {
+                                <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)content.HtmlBody)</div>
+                            }
+                        }
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle Class="text-destructive">
+                            <LucideIcon Name="triangle-alert" class="mr-2 inline-block h-4 w-4" />
+                            Danger Zone
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-3">
+                        <p class="text-sm text-muted-foreground">These actions affect the published content and cannot be undone.</p>
+                        <div class="flex flex-wrap gap-2">
+                            @if (isDeleted)
+                            {
+                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleUnDelete">
+                                    <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
+                                    Undelete Content
+                                </Button>
+                            }
+                            else
+                            {
+                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleDelete">
+                                    <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
+                                    Delete Content
+                                </Button>
+                            }
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveContent" />
+        }
+    </Authorized>
+</AuthorizeView>

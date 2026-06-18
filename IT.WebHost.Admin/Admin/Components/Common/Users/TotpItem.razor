@@ -1,0 +1,21 @@
+﻿@using IT.WebServices.Fragments.Authentication
+
+<Item Variant="ItemVariant.Outline" Class="mb-3 last:mb-0">
+    <ItemContent Class="flex w-full items-center justify-between gap-4">
+        <div class="space-y-1">
+            <ItemTitle>@TOTPDevice.DeviceName</ItemTitle>
+            <ItemDescription>Created @TOTPDevice.CreatedOnUTC.ToDateTime().ToLocalTime().ToString("MMM d, yyyy")</ItemDescription>
+        </div>
+        <ItemActions>
+            <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="OnClick">
+                <LucideIcon Name="trash-2" class="h-4 w-4 mr-1.5" />
+                Delete
+            </Button>
+        </ItemActions>
+    </ItemContent>
+</Item>
+
+@code {
+    [Parameter] public TOTPDeviceLimited TOTPDevice { get; set; } = null!;
+    [Parameter] public EventCallback OnClick { get; set; }
+}

@@ -1,0 +1,29 @@
+﻿@using IT.WebServices.Clients.Settings;
+
+<Field>
+    <FieldLabel>@(Title ?? "Subscription Level") </FieldLabel>
+    <FieldContent>
+        <Select TValue="uint" @bind-Value="SelectedSubscriptionLevel" Disabled="@Disabled">
+            <SelectTrigger>
+                <SelectValue Placeholder="Select a subscription level" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem Value="@(0u)">Free</SelectItem>
+                @foreach (var subscriptionTier in SubscriptionTierHelper.GetAll())
+                {
+                    <SelectItem Value="@subscriptionTier.AmountCents">@subscriptionTier.Name</SelectItem>
+                }
+            </SelectContent>
+        </Select>
+        <FieldError Errors="Errors" />
+    </FieldContent>
+</Field>
+
+@code {
+    [Inject] private SubscriptionTierHelper SubscriptionTierHelper { get; set; } = null!;
+    [Parameter] public uint SelectedSubscriptionLevel { get; set; }
+    [Parameter] public EventCallback<uint> SelectedSubscriptionLevelChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+}

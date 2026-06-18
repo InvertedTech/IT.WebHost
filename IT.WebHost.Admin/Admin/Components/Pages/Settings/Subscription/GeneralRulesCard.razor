@@ -1,0 +1,43 @@
+@using IT.WebServices.Fragments.Settings
+
+<div class="settings-card">
+    <div class="settings-card-header">
+        <div class="settings-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+        </div>
+        <h3 class="settings-card-title">General Rules</h3>
+    </div>
+
+    <div class="settings-card-body">
+        <div class="settings-section-label">Comment Restrictions</div>
+
+        <div class="settings-row-2col">
+            <Field Label="Minimum Subscription (Days)">
+                <Input Value="@Public.MinimumAllowed.ToString()" Placeholder="30" Disabled="@(!IsEditing)" />
+            </Field>
+            <Field Label="Max Consecutive Comments">
+                <Input Value="@Public.MaximumAllowed.ToString()" Placeholder="5" Disabled="@(!IsEditing)" />
+            </Field>
+        </div>
+
+        <Separator Class="settings-separator" />
+
+        <div class="settings-toggle-row">
+            <div class="settings-toggle-text">
+                <span class="settings-toggle-label">Allow Other Tiers</span>
+                <span class="settings-toggle-description">Permit users to see hidden "legacy" subscription options</span>
+            </div>
+            <Switch Checked="@Public.AllowOther" Disabled="@(!IsEditing)" />
+        </div>
+
+        <div class="settings-info-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-info-icon"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+            <p class="settings-info-text">General rules are applied globally across all subscription tiers. Changing these will instantly update the user experience for all existing subscribers.</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SubscriptionPublicRecord Public { get; set; } = null!;
+    [Parameter] public bool IsEditing { get; set; }
+}

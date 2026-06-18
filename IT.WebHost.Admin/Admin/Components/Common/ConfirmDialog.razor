@@ -1,0 +1,37 @@
+﻿<AlertDialog @bind-Open="isOpen" CloseOnEscape="true">
+    <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>@Title</AlertDialogTitle>
+            <AlertDialogDescription>@Description</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+            <AlertDialogCancel @onclick="Cancel">@CancelText</AlertDialogCancel>
+            <AlertDialogAction @onclick="Confirm">@ConfirmText</AlertDialogAction>
+        </AlertDialogFooter>
+    </AlertDialogContent>
+</AlertDialog>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Are you sure?";
+    [Parameter] public string Description { get; set; } = "This action cannot be undone.";
+    [Parameter] public string ConfirmText { get; set; } = "Continue";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private bool isOpen = false;
+
+    public void Open() => isOpen = true;
+
+    private async Task Confirm()
+    {
+        isOpen = false;
+        await OnConfirm.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        isOpen = false;
+        await OnCancel.InvokeAsync();
+    }
+}

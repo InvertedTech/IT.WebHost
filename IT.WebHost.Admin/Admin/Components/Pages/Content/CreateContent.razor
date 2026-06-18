@@ -1,0 +1,219 @@
+﻿@page "/content/create"
+@using Admin.Components.Common.FormWizard
+@using Admin.Components.Common.Selects
+@using Admin.Components.Common.Selects.ImagePicker
+@using IT.WebServices.Fragments.Content
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+@*TODO: Wire Up*@
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
+    <Authorized>
+        <FormWizard OnFinish="HandleFinish" FinishButtonText="Create Content">
+            <WizardStep Label="Headings">
+                <Field>
+                    <FieldLabel For="title">Title</FieldLabel>
+                    <FieldContent>
+                        <Input Id="title" Type="InputType.Text" Placeholder="Enter your title" @bind-Value="title" AriaInvalid="@(titleErrors.Count > 0)" @bind-Value:after="ClearTitleErrors" />
+                        <FieldDescription>Choose a unique title for your content.</FieldDescription>
+                        <FieldError Errors="titleErrors" />
+                    </FieldContent>
+                </Field>
+                <AuthorSelect @bind-SelectedAuthorId="authorId" @bind-SelectedAuthorId:after="ClearAuthorErrors" Errors="authorErrors" />
+                <ImagePickerField @bind-SelectedAssetId="featuredImageAssetId" @bind-SelectedAssetId:after="ClearFeaturedImageErrors" Errors="featuredImageErrors" />
+                <Field>
+                    <FieldLabel For="description">Description</FieldLabel>
+                    <FieldContent>
+                        <Input Id="description" Type="InputType.Text" Placeholder="Enter your description" @bind-Value="description" AriaInvalid="@(descriptionErrors.Count > 0)" @bind-Value:after="ClearDescriptionErrors" />
+                        <FieldDescription>Add an optional description</FieldDescription>
+                        <FieldError Errors="descriptionErrors" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="contentType">Content Type</FieldLabel>
+                    <FieldContent>
+                        <Select TValue="ContentType" @bind-Value="contentType">
+                            <SelectTrigger>
+                                <SelectValue Placeholder="Select a content type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem Value="ContentType.ContentWritten">Article</SelectItem>
+                                <SelectItem Value="ContentType.ContentVideo">Video</SelectItem>
+                                @*                         <SelectItem Value="ContentType.ContentPicture">Images</SelectItem>
+                        <SelectItem Value="ContentType.ContentAudio">Audio</SelectItem>  *@
+                            </SelectContent>
+                        </Select>
+                        <FieldDescription>Select the type of content you want to create.</FieldDescription>
+                    </FieldContent>
+                </Field>
+                <ChannelSelect @bind-selected="channels" @bind-selected:after="ClearChannelErrors" Errors="channelErrors" />
+                <CategorySelect @bind-selected="categories" @bind-selected:after="ClearCategoryErrors" Errors="categoryErrors" />
+                <Field>
+                    <FieldLabel>Tags</FieldLabel>
+                    <FieldContent>
+                        <TagInput @bind-Tags="tags" Placeholder="Add a tag…" @bind-Tags:after="ClearTagsErrors" />
+                        <FieldError Errors="tagsErrors" />
+                    </FieldContent>
+                </Field>
+                <SubscriptionLevelSelect @bind-SelectedSubscriptionLevel="subscriptionLevel" @bind-SelectedSubscriptionLevel:after="ClearSubscriptionErrors" Errors="subscriptionLevelErrors" />
+            </WizardStep>
+            <WizardStep Label="Content">
+                @if (contentType == ContentType.ContentWritten)
+                {
+                    <Field>
+                        <FieldLabel>Body</FieldLabel>
+                        <FieldContent>
+                            <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" @bind-Value:after="ClearHtmlBodyErrors" />
+                            <FieldError Errors="htmlBodyErrors" />
+                        </FieldContent>
+                    </Field>
+                }
+                else if (contentType == ContentType.ContentVideo)
+                {
+                    <Field>
+                        <FieldLabel>Live Stream?</FieldLabel>
+                        <FieldContent>
+                            <Switch @bind-Checked="isLiveStream" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Live?</FieldLabel>
+                        <FieldContent>
+                            <Switch @bind-Checked="isLive" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="rumbleVideoId">Rumble Video ID</FieldLabel>
+                        <FieldContent>
+                            <Input Id="rumbleVideoId" Type="InputType.Text" Placeholder="Enter rumbleVideoId" @bind-Value="rumbleVideoId" AriaInvalid="@(rumbleVideoIdErrors.Count > 0)" @bind-Value:after="ClearRumbleErrors" />
+                            <FieldDescription>Enter the Rumble Video ID for your content.</FieldDescription>
+                            <FieldError Errors="rumbleVideoIdErrors" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="youtubeVideoId">Youtube Video ID</FieldLabel>
+                        <FieldContent>
+                            <Input Id="youtubeVideoId" Type="InputType.Text" Placeholder="Enter youtubeVideoId" @bind-Value="youtubeVideoId" AriaInvalid="@(youtubeVideoIdErrors.Count > 0)" @bind-Value:after="ClearYoutubeErrors" />
+                            <FieldDescription>Enter the Youtube Video ID for your content.</FieldDescription>
+                            <FieldError Errors="youtubeVideoIdErrors" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Body</FieldLabel>
+                        <FieldContent>
+                            <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" @bind-Value:after="ClearHtmlBodyErrors" />
+                            <FieldError Errors="htmlBodyErrors" />
+                        </FieldContent>
+                    </Field>
+                }
+                @*         else if (contentType == ContentType.ContentPicture)
+        {
+            <Field>
+                <FieldLabel>Body</FieldLabel>
+                <FieldContent>
+                    <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" />
+                </FieldContent>
+            </Field>
+        }
+        else if (contentType == ContentType.ContentAudio)
+        {
+            <Field>
+                <FieldLabel>Body</FieldLabel>
+                <FieldContent>
+                    <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" />
+                </FieldContent>
+            </Field>
+        } *@
+            </WizardStep>
+            <WizardStep Label="Finish">
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-base font-semibold">Review your content</div>
+                        <div class="text-sm text-muted-foreground">Review the fields below. Validation runs when you click Create Content.</div>
+                    </div>
+
+                    @if (lastValidation != null)
+                    {
+                        <div>
+                            <div class="text-sm font-medium mb-1">Validation result:</div>
+                            @if (lastValidation.IsSuccess)
+                            {
+                                <div class="text-sm text-green-600 dark:text-green-400">✓ Passed (no errors)</div>
+                            }
+                            else
+                            {
+                                var allErrs = GetAllValidationErrors();
+                                <div class="text-sm text-destructive">✗ Failed (@allErrs.Count error(s))</div>
+                                @if (allErrs.Count > 0)
+                                {
+                                    <FieldError Errors="allErrs" />
+                                }
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-sm text-muted-foreground">Submit to run validation and create.</div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(overallError))
+                    {
+                        <div class="rounded border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
+                            @overallError
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(createdContentId))
+                    {
+                        <div class="rounded border border-green-500/50 bg-green-500/10 p-2 text-sm">
+                            Created successfully. Content ID: <span class="font-mono">@createdContentId</span>
+                        </div>
+                    }
+
+                    <div>
+                        <div class="text-sm font-medium mb-1 mt-2">Field values:</div>
+                        <div class="text-xs bg-muted/50 rounded p-2 space-y-0.5 font-mono break-all">
+                            <div><span class="text-muted-foreground">title:</span> @(title ?? "(empty)")</div>
+                            <div><span class="text-muted-foreground">description:</span> @(description ?? "(empty)")</div>
+                            <div><span class="text-muted-foreground">authorId:</span> @(authorId ?? "(empty)")</div>
+                            <div><span class="text-muted-foreground">contentType:</span> @contentType</div>
+                            <div><span class="text-muted-foreground">channels:</span> @(channels is { Count: > 0 } ? string.Join(", ", channels) : "(none)")</div>
+                            <div><span class="text-muted-foreground">categories:</span> @(categories is { Count: > 0 } ? string.Join(", ", categories) : "(none)")</div>
+                            <div><span class="text-muted-foreground">tags:</span> @(tags is { Count: > 0 } ? string.Join(", ", tags) : "(none)")</div>
+                            <div><span class="text-muted-foreground">subscriptionLevel:</span> @subscriptionLevel</div>
+                            <div><span class="text-muted-foreground">featuredImageAssetId:</span> @(featuredImageAssetId ?? "(empty)")</div>
+                            @if (contentType == ContentType.ContentVideo)
+                            {
+                                <div><span class="text-muted-foreground">rumbleVideoId:</span> @(rumbleVideoId ?? "(empty)")</div>
+                                <div><span class="text-muted-foreground">youtubeVideoId:</span> @(youtubeVideoId ?? "(empty)")</div>
+                                <div><span class="text-muted-foreground">isLiveStream:</span> @isLiveStream</div>
+                                <div><span class="text-muted-foreground">isLive:</span> @isLive</div>
+                            }
+                            <div><span class="text-muted-foreground">htmlBody:</span> @((htmlBody?.Length ?? 0)) chars</div>
+                        </div>
+                    </div>
+                </div>
+            </WizardStep>
+        </FormWizard>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private string? title{ get; set; }
+    private string? description { get; set; }
+    private string? authorId { get; set; }
+    private ContentType contentType { get; set; }
+    private string? channelId { get; set; }
+    private List<string>? channels { get; set; }
+    private List<string>? categories { get; set; }
+    private string? categoryId { get; set; }
+    private IReadOnlyList<string>? tags { get; set; }
+    private string? featuredImageAssetId { get; set; }
+    private uint subscriptionLevel { get; set; }
+    private string? htmlBody { get; set; }
+    private string? rumbleVideoId { get; set; }
+    private string? youtubeVideoId { get; set; }
+    private bool isLive { get; set; } = false;
+    private bool isLiveStream { get; set; } = false;
+}

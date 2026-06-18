@@ -1,0 +1,36 @@
+﻿@page "/users"
+@using IT.WebServices.Fragments.Authentication
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)">
+    <Authorized>
+        <SectionHeader Title="Users" />
+
+        <DataTable TData="UserNormalRecord"
+                   Data="UserList"
+                   Dense="false"
+                   IsLoading="IsLoading"
+                   InitialPageSize="pageSize"
+                   ShowPagination="false"
+                   BodyRowClass="cursor-pointer"
+                   AdditionalRowAttributes="@(row => new Dictionary<string, object>
+                         {
+                             { "onclick", EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => Nav.NavigateTo($"/users/{row.Public.UserID}")) }
+                         })">
+            <Columns>
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.UserID)" Header="ID" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.FirstName)" Header="First Name" Sortable />
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.LastName)" Header="Last Name" Sortable />
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.Data.UserName)" Header="Username" Sortable />
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.Email)" Header="Email" Sortable />
+                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.CreatedOnUTC.ToString())" Header="Registered On" Sortable Alignment="ColumnAlignment.Right" />
+            </Columns>
+        </DataTable>
+        <Paginator baseUrl="/users"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems" />
+    </Authorized>
+</AuthorizeView>

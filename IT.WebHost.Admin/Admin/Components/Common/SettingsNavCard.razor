@@ -1,0 +1,25 @@
+﻿@namespace Project1.Components.Common
+
+<Card Class="flex h-full flex-col">
+    <CardHeader Class="space-y-1.5">
+        <CardTitle>@Title</CardTitle>
+        <CardDescription>@Description</CardDescription>
+    </CardHeader>
+    @if (Body is not null)
+    {
+        <CardContent Class="flex-1">
+            @Body
+        </CardContent>
+    }
+    <CardFooter Class="border-t pt-4">
+        <a class="text-sm font-medium text-primary hover:underline" href="@Link">View settings</a>
+    </CardFooter>
+</Card>
+
+@code {
+    [Parameter] public string? Link { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Body { get; set; } = null;
+}
+

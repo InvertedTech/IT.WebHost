@@ -1,0 +1,239 @@
+﻿@page "/users/{id}"
+@using Admin.Components.Common.Payment
+@using IT.WebServices.Authentication
+@using Admin.Components.Common.Users
+@using Admin.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)">
+    <Authorized>
+        <PageTitle>@(User is not null ? $"{User.Public?.Data?.DisplayName} — Profile" : "User Profile")</PageTitle>
+
+        @if (IsLoading)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                    <LucideIcon Name="loader-circle" class="h-8 w-8 animate-spin" />
+                    <span class="text-sm">Loading profile…</span>
+                </div>
+            </div>
+        }
+        else if (User is null || EditProfile is null)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <Empty>
+                    <EmptyTitle>User not found</EmptyTitle>
+                    <EmptyDescription>This user may have been deleted or the ID is invalid.</EmptyDescription>
+                </Empty>
+            </div>
+        }
+        else
+        {
+            var profile = EditProfile;
+
+            <div class="space-y-6">
+                <Card Class="overflow-hidden">
+                    <div class="h-28 bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30" />
+                    <CardContent Class="relative px-6 pb-6 pt-0">
+                        <div class="mb-4 flex items-end justify-between -mt-12">
+                            <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-muted text-2xl font-bold shadow-md">
+                                @if (profile.ProfileImagePNG is { Length: > 0 })
+                                {
+                                    <img src="@($"data:image/png;base64,{Convert.ToBase64String(profile.ProfileImagePNG)}")"
+                                         alt="@profile.DisplayName"
+                                         class="h-full w-full object-cover" />
+                                }
+                                else
+                                {
+                                    @GetInitials(profile.DisplayName)
+                                }
+                            </div>
+                            <div class="flex gap-2 pb-1">
+                                <ResetPasswordDialog userId="@User.Public.UserID" />
+                                <GrantRolesDialog userId="@User.Public.UserID" selected="@User.Private.Roles.ToList()" />
+                                <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
+                                    <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
+                                    Edit
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <h1 class="text-2xl font-bold leading-tight">@profile.DisplayName</h1>
+                            <p class="text-sm text-muted-foreground">@($"@{profile.UserName}")</p>
+                            @if (profile.Roles.Count > 0)
+                            {
+                                <div class="flex flex-wrap gap-1.5 pt-0.5">
+                                    @foreach (var role in profile.Roles)
+                                    {
+                                        <Badge Variant="BadgeVariant.Secondary">@role</Badge>
+                                    }
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(profile.Bio))
+                            {
+                                <p class="max-w-prose pt-0.5 text-sm text-foreground/80">@profile.Bio</p>
+                            }
+                        </div>
+
+                        <Separator Class="my-4" />
+
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                            <span class="flex items-center gap-1.5">
+                                <LucideIcon Name="mail" class="h-4 w-4" />
+                                @profile.Email
+                            </span>
+                            @if (!string.IsNullOrWhiteSpace(profile.FirstName))
+                            {
+                                <span class="flex items-center gap-1.5">
+                                    <LucideIcon Name="user" class="h-4 w-4" />
+                                    @profile.FirstName @profile.LastName
+                                </span>
+                            }
+                            @if (profile.CreatedOnUTC.HasValue)
+                            {
+                                <span class="flex items-center gap-1.5">
+                                    <LucideIcon Name="calendar" class="h-4 w-4" />
+                                    Member since @profile.CreatedOnUTC.Value.ToLocalTime().ToString("MMMM yyyy")
+                                </span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(profile.PostalCode))
+                            {
+                                <span class="flex items-center gap-1.5">
+                                    <LucideIcon Name="map-pin" class="h-4 w-4" />
+                                    @profile.PostalCode
+                                </span>
+                            }
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="user-round" class="mr-2 inline-block h-4 w-4" />
+                            Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">User ID</p>
+                                <p class="break-all font-mono text-sm">@profile.UserId</p>
+                            </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Username</p>
+                                <p class="text-sm">@profile.UserName</p>
+                            </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Member Since</p>
+                                <p class="text-sm">@(profile.CreatedOnUTC?.ToLocalTime().ToString("yyyy-MM-dd") ?? "—")</p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field>
+                                <FieldLabel For="display-name">Display Name</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="display-name" Type="InputType.Text" @bind-Value="profile.DisplayName" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="email">Email</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="email" Type="InputType.Email" @bind-Value="profile.Email" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="username">Username</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="username" Type="InputType.Text" @bind-Value="profile.UserName" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="first-name">First Name</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="first-name" Type="InputType.Text" @bind-Value="profile.FirstName" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="last-name">Last Name</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="last-name" Type="InputType.Text" @bind-Value="profile.LastName" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="postal-code">Postal Code</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="postal-code" Type="InputType.Text" @bind-Value="profile.PostalCode" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                        </div>
+                        <Field>
+                            <FieldLabel For="bio">Bio</FieldLabel>
+                            <FieldContent>
+                                <Textarea Id="bio" @bind-Value="profile.Bio" Placeholder="No bio set." Disabled="!IsEditing" />
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                </Card>
+
+                <SubscriptionCard subscriptions="@SubscriptionRecords" ShowUpdate="false" />
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="smartphone" class="mr-2 inline-block h-4 w-4" />
+                            MFA Devices
+                            @if (TOTPDevices.Any())
+                            {
+                                <Badge Variant="BadgeVariant.Secondary" Class="ml-2">@TOTPDevices.Count()</Badge>
+                            }
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        @if (TOTPDevices.Any())
+                        {
+                            <ScrollArea Class="max-h-[400px] w-full">
+                                @foreach (var device in TOTPDevices)
+                                {
+                                    var capturedDevice = device;
+                                    <TotpItem TOTPDevice="@capturedDevice" OnClick="@(() => DisableTotp(capturedDevice))" />
+                                }
+                            </ScrollArea>
+                        }
+                        else
+                        {
+                            <Empty>
+                                <EmptyTitle>No MFA devices</EmptyTitle>
+                                <EmptyDescription>This user has not enrolled any authenticator devices.</EmptyDescription>
+                            </Empty>
+                        }
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle Class="text-destructive">
+                            <LucideIcon Name="triangle-alert" class="mr-2 inline-block h-4 w-4" />
+                            Danger Zone
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-3">
+                        <p class="text-sm text-muted-foreground">These actions affect the user's account and cannot be undone.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small">
+                                <LucideIcon Name="user-x" class="h-4 w-4 mr-1.5" />
+                                Disable Account
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveUser" />
+        }
+    </Authorized>
+</AuthorizeView>

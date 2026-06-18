@@ -1,0 +1,33 @@
+﻿<div class="form-group">
+    <label>Roles</label>
+    <MultiSelect Items="@roles"
+                 @bind-Values="@selected"
+                 ValueSelector="@(r => r.Value)"
+                 DisplaySelector="@(r => r.Display)"
+                 Placeholder="Select Roles" />
+</div>
+
+@code {
+    [Parameter] public IEnumerable<string> selected { get; set; } = new List<string>();
+    [Parameter] public EventCallback<IEnumerable<string>> selectedChanged { get; set; }
+
+    private record RoleOption(string Value, string Display);
+
+    private IEnumerable<RoleOption> roles = new List<RoleOption>()
+    {
+        new RoleOption("owner", "Owner"),
+        new RoleOption("admin", "Admin"),
+        new RoleOption("backup", "Backup"),
+        new RoleOption("ops", "Ops"),
+        new RoleOption("service", "Service"),
+        new RoleOption("con_publisher", "Content Publisher"),
+        new RoleOption("con_writer", "Conten Writer"),
+        new RoleOption("com_mod", "Comment Moderator"),
+        new RoleOption("com_appellate", "Comment Judge"),
+        new RoleOption("bot_verification", "Bot Verification"),
+        new RoleOption("evt_manager", "Event Manager"),
+        new RoleOption("evt_tkt_manager", "Event Ticket Manager"),
+        new RoleOption("member_manager", "Member Manager"),
+        new RoleOption("sub_manager", "Subscription Manager"),
+    };
+}

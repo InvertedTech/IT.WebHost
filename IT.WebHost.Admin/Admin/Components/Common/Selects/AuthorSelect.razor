@@ -1,0 +1,67 @@
+﻿@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authentication
+
+<Field>
+    <FieldLabel>Author</FieldLabel>
+    <FieldContent>
+        <Combobox TItem="AuthorOption"
+                  Items="_users"
+                  Value="@SelectedAuthorId"
+                  ValueChanged="OnAuthorSelected"
+                  ValueSelector="@(u => u.id)"
+                  DisplaySelector="@(u => u.name)"
+                  Placeholder="Select Author..."
+                  SearchPlaceholder="Search author..."
+                  EmptyMessage="No authors found."
+                  PopoverWidth="w-[200px]"
+                  Disabled="@Disabled" />
+        <FieldError Errors="Errors" />
+    </FieldContent>
+</Field>
+
+@code {
+    [Inject] UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
+    [Inject] ONUserHelper UserHelper { get; set; } = null!;
+
+    [Parameter] public string SelectedAuthorId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAuthorIdChanged { get; set; }
+    [Parameter] public string SelectedAuthor { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAuthorChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+
+    private List<AuthorOption> _users = [];
+    private bool _isLoading = true;
+
+    // TODO: Set Current User As Author By Default
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        var req = new SearchUsersAdminRequest
+        {
+            PageSize = 500,
+            PageOffset = 0,
+            IncludeDeleted = false,
+        };
+        var roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT.Split(',');
+        req.Roles.AddRange(roles);
+        // TODO: Make an Actual UserClient with The Authors As A Lazy
+        var res = await UserClient.SearchUsersAdminAsync(req, UserHelper.GetGrpcCallOptions());
+        _users = res.Records.Select(u => new AuthorOption(u.UserID, u.DisplayName)).ToList();
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    // TODO: This component assumes parent page (create/edit content) has already guarded with ROLE_CAN_CREATE_CONTENT (since it calls SearchUsersAdmin which requires ROLE_IS_MEMBER_MANAGER_OR_HIGHER? wait no, but in context of content writers); if used elsewhere add AuthorizeView wrapper.
+
+    private async Task OnAuthorSelected(string userId)
+    {
+        var user = _users.FirstOrDefault(u => u.id == userId);
+        var name = user is not null ? (user.name ?? userId) : userId;
+
+        await SelectedAuthorIdChanged.InvokeAsync(userId);
+        await SelectedAuthorChanged.InvokeAsync(name);
+    }
+
+    private record AuthorOption(string id, string name);
+}

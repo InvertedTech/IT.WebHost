@@ -1,0 +1,35 @@
+﻿@using IT.WebServices.Clients.Settings
+@using IT.WebServices.Fragments.Settings
+<Field>
+    <FieldLabel>Channels</FieldLabel>
+    <FieldContent>
+        <MultiSelect Items="@channels"
+                     Values="@selected"
+                     ValuesChanged="OnValuesChanged"
+                     ValueSelector="@(r => r.Value)"
+                     DisplaySelector="@(r => r.Display)"
+                     Placeholder="Select Channels"
+                     Disabled="@Disabled" />
+        <FieldError Errors="Errors" />
+    </FieldContent>
+</Field>
+
+@code {
+    [Inject] private ChannelHelper channelHelper { get; set; } = null!;
+    private List<ChannelOption> channels = new();
+    private record ChannelOption(string Value, string Display);
+    
+    [Parameter] public List<string> selected { get; set; } = [];
+    [Parameter] public EventCallback<List<string>> selectedChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+    protected override async Task OnInitializedAsync()
+    {
+        channels = channelHelper.GetAll().Select(c => new ChannelOption(c.ChannelId, c.DisplayName)).ToList();
+    }
+
+    private async Task OnValuesChanged(IEnumerable<string> values)
+    {
+        await selectedChanged.InvokeAsync(values.ToList());
+    }
+}

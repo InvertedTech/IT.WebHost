@@ -1,0 +1,202 @@
+@page "/settings/subscription"
+@using IT.WebServices.Authentication
+@using IT.WebServices.Clients.Settings
+@using IT.WebServices.Fragments.Settings
+@using IT.WebServices.Fragments.Authorization
+@rendermode InteractiveServer
+
+<SettingsPageHeader Title="Subscription Settings" Description="Configure payment processing, subscription tiers, and processor credentials.">
+    <Actions>
+        <Button Variant="@(_isEditing ? ButtonVariant.Default : ButtonVariant.Outline)" Size="ButtonSize.Small" OnClick="ToggleEdit">
+            <LucideIcon Name="@(_isEditing ? "lock-open" : "lock")" class="h-4 w-4 mr-1.5" />
+            @(_isEditing ? "Editing" : "Edit")
+        </Button>
+    </Actions>
+</SettingsPageHeader>
+
+<SubscriptionTiersSection Public="_public" IsEditing="_isEditing" OnCreateTier="OnCreateTier" />
+
+<div class="settings-grid">
+    <GeneralRulesCard Public="_public" IsEditing="_isEditing" />
+    <PaymentProcessorsCard Public="_public" IsEditing="_isEditing"
+        OnStripeSettings="OnStripeSettings"
+        OnPaypalSettings="OnPaypalSettings"
+        OnFortisSettings="OnFortisSettings"
+        OnCryptoSettings="OnCryptoSettings" />
+</div>
+
+<div style="margin-top: 1.5rem;">
+    <ProcessorCredentialsCard Owner="_owner" IsEditing="_isEditing" />
+</div>
+
+<SaveChangesBar IsShown="_isEditing" OnDiscard="CancelEdit" OnSave="HandleSave" />
+
+<style>
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .settings-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        overflow: hidden;
+    }
+
+    .settings-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .settings-card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius);
+        background: var(--muted);
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .settings-card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--foreground);
+        margin: 0;
+    }
+
+    .settings-card-body {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .settings-section-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .settings-row-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .settings-separator {
+        margin: 0.25rem 0;
+    }
+
+    .settings-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .settings-toggle-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .settings-toggle-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .settings-toggle-description {
+        font-size: 0.78rem;
+        color: var(--muted-foreground);
+    }
+
+    .settings-info-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--muted);
+    }
+
+    .settings-info-icon {
+        color: var(--muted-foreground);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .settings-info-text {
+        font-size: 0.78rem;
+        color: var(--muted-foreground);
+        margin: 0;
+        line-height: 1.5;
+    }
+</style>
+
+@code {
+    [Inject] public PublicSettingsClient publicSettings { get; set; } = null!;
+    [Inject] public SettingsInterface.SettingsInterfaceClient settingsClient { get; set; } = null!;
+    [Inject] public ONUserHelper userHelper { get; set; } = null!;
+
+    private SubscriptionPublicRecord _public { get; set; } = new()
+    {
+        Manual = new(),
+        Fortis = new(),
+        Crypto = new(),
+        Stripe = new(),
+        Paypal = new()
+    };
+
+    private SubscriptionOwnerRecord _owner { get; set; } = new()
+    {
+        Stripe = new(),
+        Paypal = new(),
+        Fortis = new()
+    };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var pubSettings = await publicSettings.PublicData;
+        _public = pubSettings.Subscription;
+
+        var ownerSettings = await settingsClient.GetOwnerDataAsync(new GetOwnerDataRequest(), userHelper.GetGrpcCallOptions());
+        _owner = ownerSettings.Owner.Subscription;
+    }
+
+    private bool _isEditing = false;
+
+    private void ToggleEdit() => _isEditing = !_isEditing;
+
+    private async Task CancelEdit()
+    {
+        _isEditing = false;
+        await OnInitializedAsync();
+    }
+
+    private async Task HandleSave()
+    {
+        // TODO: persist changes via settingsClient
+        _isEditing = false;
+    }
+
+    private void OnCreateTier() { }
+
+    private void OnStripeSettings() => OnProcessorSettings("stripe");
+    private void OnPaypalSettings() => OnProcessorSettings("paypal");
+    private void OnFortisSettings() => OnProcessorSettings("fortis");
+    private void OnCryptoSettings() => OnProcessorSettings("crypto");
+
+    private void OnProcessorSettings(string processor) { }
+}

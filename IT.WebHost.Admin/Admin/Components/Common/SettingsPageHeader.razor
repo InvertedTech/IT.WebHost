@@ -1,0 +1,46 @@
+<div class="settings-page-header">
+    <div>
+        <h1 class="settings-page-title">@Title</h1>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="settings-page-subtitle">@Description</p>
+        }
+    </div>
+    @if (Actions != null)
+    {
+        <div class="settings-page-actions">@Actions</div>
+    }
+</div>
+
+<style>
+    .settings-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 0.2rem;
+        color: var(--foreground);
+    }
+
+    .settings-page-subtitle {
+        font-size: 0.85rem;
+        color: var(--muted-foreground);
+        margin: 0;
+    }
+
+    .settings-page-actions {
+        flex-shrink: 0;
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

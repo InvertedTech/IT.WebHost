@@ -1,0 +1,21 @@
+﻿@code {
+    [CascadingParameter]
+    public FormWizard Parent { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Parent == null)
+        {
+            throw new InvalidOperationException("WizardStep must be a child of a FormWizard component.");
+        }
+
+        // Register this step with the parent wizard
+        Parent.AddStep(this);
+    }
+}

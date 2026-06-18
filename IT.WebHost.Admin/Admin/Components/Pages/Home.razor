@@ -1,0 +1,257 @@
+@page "/"
+@using NeoUI.Blazor.Charts
+
+@* TODO: Wrap main dashboard content (KPIs and charts) in <AuthorizeView Roles="admin,owner"> (or full: "admin,owner,service,bot_verification" per RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT from service) to guard Dashboard GetKpis route *@
+<PageTitle>Dashboard</PageTitle>
+
+<div class="space-y-8">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p class="text-sm text-muted-foreground">Overview of users, subscriptions, and content performance.</p>
+        </div>
+        @if (_asOfUtc is not null)
+        {
+            <p class="text-sm text-muted-foreground">As of @_asOfUtc.Value.ToLocalTime().ToString("f")</p>
+        }
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            @for (var i = 0; i < 8; i++)
+            {
+                <Card>
+                    <CardContent Class="p-6">
+                        <div class="h-4 w-24 animate-pulse rounded bg-muted"></div>
+                        <div class="mt-4 h-8 w-20 animate-pulse rounded bg-muted"></div>
+                        <div class="mt-2 h-4 w-16 animate-pulse rounded bg-muted"></div>
+                    </CardContent>
+                </Card>
+            }
+        </div>
+        <div class="grid gap-6 lg:grid-cols-2">
+            <ChartSkeleton Height="320" />
+            <ChartSkeleton Height="320" />
+            <ChartSkeleton Height="320" />
+            <ChartSkeleton Height="320" />
+        </div>
+    }
+    else
+    {
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Total Users</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCount(_userKpis.TotalUsers.CurrentCount)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_userKpis.TotalUsers.PercentageChange) text-sm font-medium">
+                        @FormatChange(_userKpis.TotalUsers.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>New Users</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCount(_userKpis.NewUsers.CurrentCount)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_userKpis.NewUsers.PercentageChange) text-sm font-medium">
+                        @FormatChange(_userKpis.NewUsers.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Active Subscriptions</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCount(_subscriptionKpis.ActiveSubscriptions.CurrentCount)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_subscriptionKpis.ActiveSubscriptions.PercentageChange) text-sm font-medium">
+                        @FormatChange(_subscriptionKpis.ActiveSubscriptions.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Total Subscription Revenue</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCurrencyFromCents(_subscriptionKpis.TotalSubscriptionRevenue.CurrentCents)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_subscriptionKpis.TotalSubscriptionRevenue.PercentageChange) text-sm font-medium">
+                        @FormatChange(_subscriptionKpis.TotalSubscriptionRevenue.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Unique Viewers</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCount(_contentKpis.UniqueViewers.CurrentCount)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_contentKpis.UniqueViewers.PercentageChange) text-sm font-medium">
+                        @FormatChange(_contentKpis.UniqueViewers.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Completion Rate</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatPercent(_contentKpis.CompletionRate.CurrentRatio)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_contentKpis.CompletionRate.PercentageChange) text-sm font-medium">
+                        @FormatChange(_contentKpis.CompletionRate.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>Churn Rate</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatPercent(_userKpis.ChurnRate.CurrentRatio)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(-_userKpis.ChurnRate.PercentageChange) text-sm font-medium">
+                        @FormatChange(_userKpis.ChurnRate.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader Class="pb-2">
+                    <CardDescription>New Subscription Revenue</CardDescription>
+                    <CardTitle Class="text-3xl">@FormatCurrencyFromCents(_subscriptionKpis.NewSubscriptionRevenue.CurrentCents)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p class="@GetChangeClass(_subscriptionKpis.NewSubscriptionRevenue.PercentageChange) text-sm font-medium">
+                        @FormatChange(_subscriptionKpis.NewSubscriptionRevenue.PercentageChange) vs previous
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Subscription Activity</CardTitle>
+                    <CardDescription>New and canceled subscriptions over time.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    @if (_subscriptionActivity.Count == 0)
+                    {
+                        <ChartEmptyState Height="320" Title="No subscription activity" Description="Series data will appear once subscriptions are recorded." />
+                    }
+                    else
+                    {
+                        <ChartContainer Height="320" Class="w-full">
+                            <ComposedChart TData="SubscriptionActivityPoint" Data="@_subscriptionActivity">
+                                <Grid />
+                                <XAxis DataKey="Label" />
+                                <YAxis />
+                                <ChartTooltip />
+                                <Legend />
+                                <Bar DataKey="NewSubscriptions" Name="New" />
+                                <Bar DataKey="CanceledSubscriptions" Name="Canceled" />
+                            </ComposedChart>
+                        </ChartContainer>
+                    }
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Revenue Trend</CardTitle>
+                    <CardDescription>Total subscription revenue by period.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    @if (_revenueSeries.Count == 0)
+                    {
+                        <ChartEmptyState Height="320" Title="No revenue data" Description="Revenue series will appear once billing data is available." />
+                    }
+                    else
+                    {
+                        <ChartContainer Height="320" Class="w-full">
+                            <AreaChart TData="RevenueSeriesPoint" Data="@_revenueSeries">
+                                <Grid />
+                                <XAxis DataKey="Label" />
+                                <YAxis />
+                                <ChartTooltip />
+                                <Area DataKey="Revenue" Name="Revenue" />
+                            </AreaChart>
+                        </ChartContainer>
+                    }
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top Plans by Revenue</CardTitle>
+                    <CardDescription>Highest earning subscription plans.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    @if (_topPlansChart.Count == 0)
+                    {
+                        <ChartEmptyState Height="320" Title="No plan revenue" Description="Plan breakdown will appear once subscriptions exist." />
+                    }
+                    else
+                    {
+                        <ChartContainer Height="320" Class="w-full">
+                            <BarChart TData="NamedValuePoint" Data="@_topPlansChart">
+                                <Grid />
+                                <XAxis DataKey="Name" />
+                                <YAxis />
+                                <ChartTooltip />
+                                <Bar DataKey="Value" Name="Revenue" />
+                            </BarChart>
+                        </ChartContainer>
+                    }
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top Liked Content</CardTitle>
+                    <CardDescription>Most liked content in the current period.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    @if (_topContentChart.Count == 0)
+                    {
+                        <ChartEmptyState Height="320" Title="No liked content" Description="Content rankings will appear once likes are recorded." />
+                    }
+                    else
+                    {
+                        <ChartContainer Height="320" Class="w-full">
+                            <BarChart TData="NamedValuePoint" Data="@_topContentChart" Layout="BarLayout.Horizontal">
+                                <Grid />
+                                <XAxis />
+                                <YAxis DataKey="Name" />
+                                <ChartTooltip />
+                                <Bar DataKey="Value" Name="Likes" />
+                            </BarChart>
+                        </ChartContainer>
+                    }
+                </CardContent>
+            </Card>
+
+            <Card Class="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>User Metrics Comparison</CardTitle>
+                    <CardDescription>Current period vs previous period.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer Height="320" Class="w-full">
+                        <BarChart TData="UserComparisonPoint" Data="@_userComparison">
+                            <Grid />
+                            <XAxis DataKey="Metric" />
+                            <YAxis />
+                            <ChartTooltip />
+                            <Legend />
+                            <Bar DataKey="Current" Name="Current" />
+                            <Bar DataKey="Previous" Name="Previous" />
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+        </div>
+    }
+</div>
