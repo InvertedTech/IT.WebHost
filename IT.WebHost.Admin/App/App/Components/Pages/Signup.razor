@@ -1,0 +1,136 @@
+﻿@page "/signup"
+<Card Class="w-full max-w-sm">
+    <CardHeader Class="space-y-1 pb-4">
+        <div class="flex items-center justify-center mb-2">
+            <div class="size-10 rounded-xl bg-foreground flex items-center justify-center">
+                <LucideIcon Name="layers" Size="18" Class="text-background" />
+            </div>
+        </div>
+        <CardTitle Class="text-xl font-semibold text-center">Create an account</CardTitle>
+        <CardDescription Class="text-center">Enter your details to get started</CardDescription>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <Alert Variant="AlertVariant.Destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>@errorMessage</AlertDescription>
+            </Alert>
+        }
+    </CardHeader>
+    <CardContent Class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Field>
+                <FieldLabel For="first-name">First name</FieldLabel>
+                <FieldContent>
+                    <Input Id="first-name"
+                           Placeholder="Jane"
+                           @bind-Value="signupRequest.FirstName"
+                           @bind-Value:after="ClearValidation"
+                           AriaInvalid="@(firstNameErrors.Count > 0)" />
+                    <FieldError Errors="firstNameErrors" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="last-name">Last name</FieldLabel>
+                <FieldContent>
+                    <Input Id="last-name"
+                           Placeholder="Doe"
+                           @bind-Value="signupRequest.LastName"
+                           @bind-Value:after="ClearValidation"
+                           AriaInvalid="@(lastNameErrors.Count > 0)" />
+                    <FieldError Errors="lastNameErrors" />
+                </FieldContent>
+            </Field>
+        </div>
+        <Field>
+            <FieldLabel For="username">Username</FieldLabel>
+            <FieldContent>
+                <Input Id="username"
+                       Type="InputType.Text"
+                       Placeholder="janedoe"
+                       @bind-Value="signupRequest.UserName"
+                       @bind-Value:after="ClearValidation"
+                       AriaInvalid="@(userNameErrors.Count > 0)" />
+                <FieldError Errors="userNameErrors" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel>
+                <div class="flex items-center justify-between w-full">
+                    <span>Display name</span>
+                    <div class="flex items-center gap-2">
+                        <Label For="use-username" Class="text-xs font-normal text-muted-foreground cursor-pointer">Use username</Label>
+                        <Switch Id="use-username" @bind-Checked="useUsernameAsDisplay" @bind-Checked:after="OnUseUsernameToggled" />
+                    </div>
+                </div>
+            </FieldLabel>
+            <FieldContent>
+                <Input Id="display-name"
+                       Type="InputType.Text"
+                       Placeholder="Jane Doe"
+                       @bind-Value="signupRequest.DisplayName"
+                       @bind-Value:after="ClearValidation"
+                       Disabled="useUsernameAsDisplay" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="email">Email</FieldLabel>
+            <FieldContent>
+                <Input Id="email"
+                       Type="InputType.Email"
+                       Placeholder="you@example.com"
+                       @bind-Value="signupRequest.Email"
+                       @bind-Value:after="ClearValidation"
+                       AriaInvalid="@(emailErrors.Count > 0)" />
+                <FieldError Errors="emailErrors" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="password">Password</FieldLabel>
+            <FieldContent>
+                <Input Id="password"
+                       Type="InputType.Password"
+                       Placeholder="Min. 6 characters"
+                       @bind-Value="signupRequest.Password"
+                       @bind-Value:after="ClearValidation"
+                       AriaInvalid="@(passwordErrors.Count > 0)" />
+                <FieldError Errors="passwordErrors" />
+            </FieldContent>
+        </Field>
+        <Field>
+            <FieldLabel For="postal-code">Postal code</FieldLabel>
+            <FieldContent>
+                <Input Id="postal-code"
+                       Type="InputType.Text"
+                       Placeholder="12345"
+                       @bind-Value="signupRequest.PostalCode"
+                       @bind-Value:after="ClearValidation"
+                       AriaInvalid="@(postalCodeErrors.Count > 0)" />
+                <FieldError Errors="postalCodeErrors" />
+            </FieldContent>
+        </Field>
+@*         <div class="flex items-start gap-2">
+            <Checkbox Id="terms" Class="mt-0.5" />
+            <Label For="terms" Class="text-sm font-normal cursor-pointer leading-snug">
+                I agree to the
+                <a href="#" @onclick:preventDefault class="text-foreground font-medium hover:underline underline-offset-2">Terms of Service</a>
+                and
+                <a href="#" @onclick:preventDefault class="text-foreground font-medium hover:underline underline-offset-2">Privacy Policy</a>
+            </Label>
+        </div> *@
+        <Button Class="w-full" OnClick="OnSignupAsync" Disabled="isSubmitting">
+            @if (isSubmitting)
+            {
+                <Spinner Size="SpinnerSize.Small" />
+                @("Submitting")
+            }
+            else
+            {
+                @("Create account")
+            }
+        </Button>
+        <p class="text-center text-xs text-muted-foreground">
+            Already have an account?
+            <a href="/login" class="text-foreground font-medium hover:underline underline-offset-2">Sign in</a>
+        </p>
+    </CardContent>
+</Card>
