@@ -1,0 +1,206 @@
+@page "/weather"
+
+<PageTitle>Weather</PageTitle>
+
+<div class="space-y-6">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-bold tracking-tight">Weather Forecast</h1>
+        <p class="text-muted-foreground">View the 5-day weather forecast with detailed temperature information</p>
+    </div>
+
+    @if (forecasts == null)
+    {
+        <Card>
+            <CardContent class="p-8">
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground animate-pulse">
+                        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                        <path d="M16 14v6"></path>
+                        <path d="M8 14v6"></path>
+                        <path d="M12 16v6"></path>
+                    </svg>
+                    <p class="text-sm text-muted-foreground">Loading weather data...</p>
+                </div>
+            </CardContent>
+        </Card>
+    }
+    else
+    {
+        <div class="grid gap-4 md:grid-cols-5">
+            @foreach (var forecast in forecasts)
+            {
+                <Card>
+                    <CardHeader class="pb-3">
+                        <CardTitle class="text-base">@forecast.Date.ToString("ddd, MMM dd")</CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-3">
+                        <div class="flex items-center justify-center py-4">
+                            @if (forecast.TemperatureC < 0)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                                    <path d="M2 12h20"></path>
+                                    <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"></path>
+                                    <path d="M6 12V7c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            }
+                            else if (forecast.TemperatureC < 15)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500">
+                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                                    <path d="M16 14v6"></path>
+                                    <path d="M8 14v6"></path>
+                                    <path d="M12 16v6"></path>
+                                </svg>
+                            }
+                            else if (forecast.TemperatureC < 25)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500">
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <path d="M12 2v2"></path>
+                                    <path d="M12 20v2"></path>
+                                    <path d="m4.93 4.93 1.41 1.41"></path>
+                                    <path d="m17.66 17.66 1.41 1.41"></path>
+                                    <path d="M2 12h2"></path>
+                                    <path d="M20 12h2"></path>
+                                    <path d="m6.34 17.66-1.41 1.41"></path>
+                                    <path d="m19.07 4.93-1.41 1.41"></path>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500">
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <path d="M12 2v2"></path>
+                                    <path d="M12 20v2"></path>
+                                    <path d="m4.93 4.93 1.41 1.41"></path>
+                                    <path d="m17.66 17.66 1.41 1.41"></path>
+                                    <path d="M2 12h2"></path>
+                                    <path d="M20 12h2"></path>
+                                    <path d="m6.34 17.66-1.41 1.41"></path>
+                                    <path d="m19.07 4.93-1.41 1.41"></path>
+                                </svg>
+                            }
+                        </div>
+                        <div class="text-center space-y-1">
+                            <p class="text-3xl font-bold">@forecast.TemperatureC°</p>
+                            <p class="text-xs text-muted-foreground">@forecast.TemperatureF°F</p>
+                        </div>
+                        <div class="flex justify-center">
+                            <Badge Variant="@GetBadgeVariant(forecast.Summary)">@forecast.Summary</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+            }
+        </div>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Detailed Forecast Table</CardTitle>
+                <CardDescription>Complete weather information for the next 5 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <DataTable TData="WeatherForecast" Data="@forecasts" ShowPagination="false" ShowToolbar="false">
+                    <Columns>
+                        <DataTableColumn TData="WeatherForecast" TValue="DateOnly" Property="@(f => f.Date)" Header="Date">
+                            <CellTemplate Context="forecast">
+                                @forecast.Date.ToString("dddd, MMMM dd, yyyy")
+                            </CellTemplate>
+                        </DataTableColumn>
+                        <DataTableColumn TData="WeatherForecast" TValue="string" Property="@(f => f.Summary)" Header="Summary">
+                            <CellTemplate Context="forecast">
+                                <Badge Variant="@GetBadgeVariant(forecast.Summary)">@forecast.Summary</Badge>
+                            </CellTemplate>
+                        </DataTableColumn>
+                        <DataTableColumn TData="WeatherForecast" TValue="int" Property="@(f => f.TemperatureC)" Header="Temp. (C)" Sortable>
+                            <CellTemplate Context="forecast">
+                                <span class="tabular-nums">@forecast.TemperatureC°</span>
+                            </CellTemplate>
+                        </DataTableColumn>
+                        <DataTableColumn TData="WeatherForecast" TValue="int" Property="@(f => f.TemperatureF)" Header="Temp. (F)" Sortable>
+                            <CellTemplate Context="forecast">
+                                <span class="tabular-nums">@forecast.TemperatureF°</span>
+                            </CellTemplate>
+                        </DataTableColumn>
+                    </Columns>
+                </DataTable>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Temperature Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div class="grid gap-4 md:grid-cols-3">
+                    <div class="space-y-2">
+                        <p class="text-sm text-muted-foreground">Average Temperature</p>
+                        <p class="text-2xl font-bold">@GetAverageTemp()°C</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-muted-foreground">Highest Temperature</p>
+                        <p class="text-2xl font-bold text-orange-600">@GetMaxTemp()°C</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-muted-foreground">Lowest Temperature</p>
+                        <p class="text-2xl font-bold text-blue-600">@GetMinTemp()°C</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    }
+</div>
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate loading indicator
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        {
+            Date = startDate.AddDays(index),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = summaries[Random.Shared.Next(summaries.Length)]
+        }).ToArray();
+    }
+
+    private BadgeVariant GetBadgeVariant(string? summary)
+    {
+        return summary switch
+        {
+            "Freezing" or "Bracing" => BadgeVariant.Secondary,
+            "Chilly" or "Cool" => BadgeVariant.Outline,
+            "Mild" or "Warm" or "Balmy" => BadgeVariant.Default,
+            "Hot" or "Sweltering" or "Scorching" => BadgeVariant.Destructive,
+            _ => BadgeVariant.Default
+        };
+    }
+
+    private int GetAverageTemp()
+    {
+        return forecasts != null ? (int)forecasts.Average(f => f.TemperatureC) : 0;
+    }
+
+    private int GetMaxTemp()
+    {
+        return forecasts != null ? forecasts.Max(f => f.TemperatureC) : 0;
+    }
+
+    private int GetMinTemp()
+    {
+        return forecasts != null ? forecasts.Min(f => f.TemperatureC) : 0;
+    }
+
+    private class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}

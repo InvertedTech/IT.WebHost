@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/components.css" />
+
+    <!-- Base color themes — in production, include only the one you use -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/zinc.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/slate.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/gray.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/neutral.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/stone.css" />
+
+    <!-- Primary color themes — in production, include only the one you use -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/red.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/rose.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/orange.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/amber.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/yellow.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/lime.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/green.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/emerald.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/teal.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/cyan.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/sky.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/blue.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/indigo.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/violet.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/purple.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/fuchsia.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/primary/pink.css" />
+    <!-- New base colors (v4.0.0): Luma, Mist, Mauve, Taupe, Olive -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/luma.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/mist.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/mauve.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/taupe.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/base/olive.css" />
+
+    <!-- Style variants (v4.0.0) — include for ThemeSwitcher runtime switching -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/vega.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/nova.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/maia.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/lyra.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/mira.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/styles/luma.css" />
+
+    <!-- Radius presets (v4.0.0) -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/radius/none.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/radius/small.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/radius/large.css" />
+
+    <!-- Font presets (v4.0.0) — CSS variable definitions only; load font faces (Google Fonts etc.) separately -->
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/fonts/inter.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/fonts/geist.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/fonts/calsans.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/fonts/dmsans.css" />
+    <link rel="stylesheet" href="_content/NeoUI.Blazor/css/themes/fonts/plusjakarta.css" />
+
+    <!-- Theme management JavaScript -->
+    <script src="_content/NeoUI.Blazor/js/theme.js"></script>
+
+    <script>
+        // Initial theme defaults from dotnet new parameters (--style, --font, --radius, --menuColor, --menuAccent)
+        (function () {
+            if ('Default' !== 'Default' && !localStorage.getItem('styleVariant'))
+                localStorage.setItem('styleVariant', 'Default');
+            if ('System' !== 'System' && !localStorage.getItem('fontPreset'))
+                localStorage.setItem('fontPreset', 'System');
+            if ('Medium' !== 'Medium' && !localStorage.getItem('radiusPreset'))
+                localStorage.setItem('radiusPreset', 'Medium');
+            if ('Default' !== 'Default' && !localStorage.getItem('menuColor'))
+                localStorage.setItem('menuColor', 'Default');
+            if ('Subtle' !== 'Subtle' && !localStorage.getItem('menuAccent'))
+                localStorage.setItem('menuAccent', 'Subtle');
+        })();
+    </script>
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui" class="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none" data-nosnippet role="alert" aria-live="assertive" style="display: none;">
+        <div class="max-w-4xl mx-auto bg-card border border-destructive/50 rounded-lg p-4 shadow-lg pointer-events-auto animate-slide-up">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-destructive">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                        <path d="M12 9v4"></path>
+                        <path d="M12 17h.01"></path>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-sm">An error has occurred</h3>
+                    <p class="text-xs text-muted-foreground mt-0.5">An unhandled error occurred while processing your request</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="." class="reload inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        Reload
+                    </a>
+                    <button class="dismiss inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 w-8" aria-label="Dismiss error">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+@inject NavigationManager NavigationManager
+
+<SidebarGroup>
+    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+    <SidebarMenu>
+        <SidebarMenuItem>
+            <SidebarMenuButton Href="" AsChild="@SidebarMenuButtonElement.Anchor" Match="NavLinkMatch.All" Tooltip="Home">
+                <LucideIcon Name="house" Size="18" />
+                <span>Home</span>
+            </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+            <SidebarMenuButton Href="counter" Tooltip="Counter">
+                <LucideIcon Name="component" Size="18" />
+                <span>Counter</span>
+            </SidebarMenuButton>
+        </SidebarMenuItem>
+
+        <SidebarMenuItem>
+            <SidebarMenuButton Href="weather" Tooltip="Weather">
+                <LucideIcon Name="cloud-rain" Size="18" />
+                <span>Weather</span>
+            </SidebarMenuButton>
+        </SidebarMenuItem>
+    </SidebarMenu>
+</SidebarGroup>
