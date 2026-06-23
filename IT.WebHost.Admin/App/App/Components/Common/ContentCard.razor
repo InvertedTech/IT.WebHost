@@ -1,0 +1,79 @@
+﻿@using IT.WebServices.Fragments.Content;
+@namespace IT.WebHost.Components.Content
+
+
+<Card Class="w-full overflow-hidden">
+    @if (_imageError || string.IsNullOrEmpty(Content?.FeaturedImageAssetID))
+    {
+        <Skeleton Class="aspect-video w-full rounded-none" />
+    }
+    else
+    {
+        <div class="relative aspect-video w-full">
+            @if (_imageLoading)
+            {
+                <Skeleton Class="absolute inset-0 w-full h-full rounded-none" />
+            }
+            <img src="@GetImageUrl()"
+                 alt="@Content.Title"
+                 class="w-full h-full object-cover @(_imageLoading ? "invisible" : "")"
+                 @onload="() => _imageLoading = false"
+                 @onerror="OnImageError" />
+        </div>
+    }
+    <CardHeader>
+        <CardTitle>@Content.Title</CardTitle>
+        <CardDescription>@Content.Description</CardDescription>
+    </CardHeader>
+    <CardContent>
+        <div class="flex items-center gap-4 text-sm text-muted-foreground">
+            <div class="flex items-center gap-1">
+                <LucideIcon Name="calendar" Class="h-3.5 w-3.5" />
+                <span>@Content.PublishOnUTC?.ToDateTime().ToLocalTime().ToString("MMM d, yyyy")</span>
+            </div>
+        </div>
+    </CardContent>
+    <CardFooter Class="flex justify-between items-center">
+        @if (Content.SubscriptionLevel > 0)
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-amber-600">
+                <LucideIcon Name="lock" Class="h-3.5 w-3.5" />
+                <span>Members Only</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center gap-1 text-sm font-medium text-green-600">
+                <LucideIcon Name="lock-open" Class="h-3.5 w-3.5" />
+                <span>Free</span>
+            </div>
+        }
+        @if (Content.SubscriptionLevel == 0)
+        {
+            <Button Href="@($"/content/{Content.URL.TrimStart('/')}")">View</Button>
+        }
+        else
+        {
+            <Button Href="@Url">View</Button>
+        }
+    </CardFooter>
+</Card>
+
+@code {
+    [Parameter] public ContentListRecord Content { get; set; }
+    [Parameter] public string Url { get; set; } = string.Empty;
+
+    private bool _imageError = false;
+    private bool _imageLoading = true;
+
+    private void OnImageError()
+    {
+        _imageError = true;
+        _imageLoading = false;
+    }
+
+    private string GetImageUrl()
+    {
+        return $"http://localhost:8001/api/cms/asset/{Content.FeaturedImageAssetID}/data";
+    }
+}

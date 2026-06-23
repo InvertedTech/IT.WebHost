@@ -1,0 +1,25 @@
+﻿@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+
+@if (!Content.Any())
+{
+    <div class="flex flex-1 items-center justify-center py-12">
+        <Alert Variant="AlertVariant.Warning">
+            <AlertTitle>No Content</AlertTitle>
+            <AlertDescription>No content items to display.</AlertDescription>
+        </Alert>
+    </div>
+}
+else
+{
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        @foreach (var item in Content)
+        {
+            <ContentCard @key="item.ContentID" Content="@item" Url="@($"/content/{item.URL.TrimStart('/')}")" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = [];
+}

@@ -6,22 +6,19 @@ namespace WebApp.Components.Pages
 {
     public partial class Home
     {
-        [Inject] public ContentClient contentCllient { get; set; } = null!;
+        [Inject] public ContentClient contentClient { get; set; } = null!;
+
         [SupplyParameterFromQuery(Name = "size")]
         public string? PageSizeStr { get; set; }
-        private int pageSize
-        {
-            get => int.Parse(PageSizeStr ?? "25");
-        }
+        private int pageSize => int.Parse(PageSizeStr ?? "25");
 
         [SupplyParameterFromQuery(Name = "offset")]
         public string? PageOffsetStr { get; set; }
-        private int pageOffset
-        {
-            get => int.Parse(PageOffsetStr ?? "0");
-        }
+        private int pageOffset => int.Parse(PageOffsetStr ?? "0");
 
         private IEnumerable<ContentListRecord> content { get; set; } = [];
+        private uint pageOffsetEnd;
+        private uint pageTotalItems;
 
         protected override async Task OnParametersSetAsync()
         {
@@ -36,13 +33,11 @@ namespace WebApp.Components.Pages
                 PageOffset = (uint)pageOffset
             };
 
-            var res = await contentCllient.Search(req);
+            var res = await contentClient.Search(req);
 
-            if (res.PageTotalItems > 0)
-            {
-                content = res.Records;
-                StateHasChanged();
-            }
+            content = res.Records;
+            pageOffsetEnd = res.PageOffsetEnd;
+            pageTotalItems = res.PageTotalItems;
         }
     }
 }

@@ -1,0 +1,12 @@
+﻿@using IT.WebHost.Components.Content
+@using IT.WebServices.Fragments.Content
+<div class="mx-auto max-w-3xl space-y-8">
+    @foreach (var record in Content)
+    {
+        <ContentCard @key="record.ContentID" Content="@record" Url="@($"/content/{record.URL.TrimStart('/')}")" />
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<ContentListRecord> Content { get; set; } = [];
+}

@@ -1,164 +1,29 @@
 @page "/"
+@using IT.WebServices.Fragments.Content
 
-<PageTitle>Home - NeoUI Basic Template</PageTitle>
+<PageTitle>Home</PageTitle>
 
-<div class="space-y-8 max-w-6xl">
-    <div class="space-y-3">
-        <h1 class="text-4xl font-bold tracking-tight">Welcome to NeoUI Basic Template</h1>
-        <p class="text-xl text-muted-foreground">
-            A clean Blazor Web App template powered by NeoUI components.
-        </p>
+<div class="space-y-6 max-w-6xl">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-bold tracking-tight">Content</h1>
+        <p class="text-muted-foreground">Browse and manage published content.</p>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-            <CardHeader>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                        <path d="M17 8h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h4"></path>
-                        <path d="M12 15v5"></path>
-                    </svg>
-                    <CardTitle>Modern UI</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <p class="text-sm text-muted-foreground">
-                    Built with NeoUI components following shadcn/ui design principles for a beautiful, accessible interface.
-                </p>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                        <path d="m13 2-2 2.5h3L12 7"></path>
-                        <path d="M10 14v-3"></path>
-                        <path d="M14 14v-3"></path>
-                        <path d="M11 19c-1.7 0-3-1.3-3-3v-2h8v2c0 1.7-1.3 3-3 3Z"></path>
-                        <path d="M12 22v-3"></path>
-                    </svg>
-                    <CardTitle>Standalone WebAssembly</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <p class="text-sm text-muted-foreground">
-                    Runs entirely in the browser via WebAssembly — no server required. Deploy as static files to GitHub Pages, Azure Static Web Apps, Netlify, and more.
-                </p>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                        <circle cx="12" cy="12" r="4"></circle>
-                        <path d="M12 2v2"></path>
-                        <path d="M12 20v2"></path>
-                        <path d="m4.93 4.93 1.41 1.41"></path>
-                        <path d="m17.66 17.66 1.41 1.41"></path>
-                        <path d="M2 12h2"></path>
-                        <path d="M20 12h2"></path>
-                        <path d="m6.34 17.66-1.41 1.41"></path>
-                        <path d="m19.07 4.93-1.41 1.41"></path>
-                    </svg>
-                    <CardTitle>Dark Mode</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <p class="text-sm text-muted-foreground">
-                    Full dark mode support with ThemeSwitcher and DarkModeToggle components. Multiple color themes available out of the box.
-                </p>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <CardTitle>Tailwind CSS</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <p class="text-sm text-muted-foreground">
-                    Tailwind CSS v4 integration with a fully customizable design system using OKLCH color tokens.
-                </p>
-            </CardContent>
-        </Card>
-    </div>
-
-    <Card>
-        <CardHeader>
-            <CardTitle>Getting Started</CardTitle>
-            <CardDescription>Explore the features and components</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-            <div class="grid gap-4 md:grid-cols-2">
-                <div class="flex items-start gap-3 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 text-primary flex-shrink-0">
-                        <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-                        <path d="M12 8v8"></path>
-                        <path d="M8 12h8"></path>
-                    </svg>
-                    <div class="space-y-1">
-                        <h4 class="font-medium">Try the Counter</h4>
-                        <p class="text-sm text-muted-foreground">See a simple interactive component in action.</p>
-                        <a href="/counter" class="text-sm text-primary hover:underline">View Counter →</a>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3 p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 text-primary flex-shrink-0">
-                        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-                        <path d="M16 14v6"></path>
-                        <path d="M8 14v6"></path>
-                        <path d="M12 16v6"></path>
-                    </svg>
-                    <div class="space-y-1">
-                        <h4 class="font-medium">Check the Weather</h4>
-                        <p class="text-sm text-muted-foreground">View data presentation with modern tables.</p>
-                        <a href="/weather" class="text-sm text-primary hover:underline">View Weather →</a>
-                    </div>
-                </div>
-            </div>
-        </CardContent>
-    </Card>
-
-    <Card>
-        <CardHeader>
-            <CardTitle>Technology Stack</CardTitle>
-            <CardDescription>Built with modern technologies</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <div class="flex items-center gap-2 p-3 border rounded-md">
-                    <div class="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
-                        <span class="text-sm font-bold text-primary">B</span>
-                    </div>
-                    <span class="text-sm font-medium">Blazor</span>
-                </div>
-                <div class="flex items-center gap-2 p-3 border rounded-md">
-                    <div class="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
-                        <span class="text-sm font-bold text-primary">.N</span>
-                    </div>
-                    <span class="text-sm font-medium">.NET 10</span>
-                </div>
-                <div class="flex items-center gap-2 p-3 border rounded-md">
-                    <div class="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
-                        <span class="text-sm font-bold text-primary">TW</span>
-                    </div>
-                    <span class="text-sm font-medium">Tailwind CSS</span>
-                </div>
-                <div class="flex items-center gap-2 p-3 border rounded-md">
-                    <div class="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
-                        <span class="text-sm font-bold text-primary">UI</span>
-                    </div>
-                    <span class="text-sm font-medium">NeoUI</span>
-                </div>
-            </div>
-        </CardContent>
-    </Card>
+    @if (content.Any())
+    {
+        <ContentFeed InitialContent="@content"
+                     NextPageOffset="@pageOffsetEnd"
+                     PageSize="@((uint)pageSize)"
+                     TotalItems="@pageTotalItems"
+                     Layout="LayoutEnum.Grid" />
+    }
+    else
+    {
+        <div class="flex items-center justify-center py-12">
+            <Alert Variant="AlertVariant.Warning">
+                <AlertTitle>No Content</AlertTitle>
+                <AlertDescription>No content items to display.</AlertDescription>
+            </Alert>
+        </div>
+    }
 </div>
