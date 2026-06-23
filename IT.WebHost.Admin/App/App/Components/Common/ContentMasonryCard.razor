@@ -1,5 +1,6 @@
 ﻿@using IT.WebServices.Fragments.Content;
 @namespace IT.WebHost.Components.Content
+@inject NavigationManager Nav
 
 <Card Class="w-full overflow-hidden">
     @if (_imageError || string.IsNullOrEmpty(Content?.FeaturedImageAssetID))
@@ -52,11 +53,11 @@
         }
         @if (Content.SubscriptionLevel == 0)
         {
-            <Button Href="@($"/content/{Content.URL.TrimStart('/')}")">View</Button>
+            <Button OnClick="@(() => Nav.NavigateTo($"/content/{Content.URL.TrimStart('/')}"))">View</Button>
         }
         else
         {
-            <Button Href="@Url">View</Button>
+            <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
         }
     </CardFooter>
 </Card>

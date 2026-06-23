@@ -1,0 +1,51 @@
+﻿@namespace IT.WebHost.Components.Content
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Comment
+@using IT.WebServices.Fragments.Content.Stats
+@inject ONUserHelper userHelper
+@inject StatsLikeInterface.StatsLikeInterfaceClient StatsLikeInterfaceClient
+
+<Button Variant="@(_on ? ButtonVariant.Default : ButtonVariant.Outline)"
+        Size="ButtonSize.Small"
+        Disabled="@Disabled"
+        @onclick="Toggle">
+    <LucideIcon Name="heart" Size="14" Class="@(_on ? "fill-current" : "")" />
+    Like
+</Button>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+    [Parameter] public bool InitialOn { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<bool> OnToggled { get; set; }
+
+    private bool _on;
+
+    protected override void OnParametersSet()
+    {
+        _on = InitialOn;
+    }
+
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        _on = !_on;
+        if (_on)
+            await Like();
+        else
+            await Unlike();
+        await OnToggled.InvokeAsync(_on);
+    }
+
+    private async Task Like()
+    {
+        var req = new LikeContentRequest { ContentID = ContentId };
+        var res = await StatsLikeInterfaceClient.LikeContentAsync(req, userHelper.GetGrpcCallOptions());
+    }
+
+    private async Task Unlike()
+    {
+        var req = new LikeContentRequest { ContentID = ContentId };
+        var res = await StatsLikeInterfaceClient.UnlikeContentAsync(req, userHelper.GetGrpcCallOptions());
+    }
+}

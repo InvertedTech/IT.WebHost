@@ -1,0 +1,51 @@
+﻿@namespace IT.WebHost.Components.Content
+@using Microsoft.JSInterop
+@inject NavigationManager Nav
+
+<Dialog @bind-Open="_open">
+    <DialogTrigger>
+        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+            <LucideIcon Name="share" Size="14" />
+            Share
+        </Button>
+    </DialogTrigger>
+    <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Share</DialogTitle>
+            <DialogDescription>Copy the link to share this video.</DialogDescription>
+        </DialogHeader>
+        <div class="flex items-center gap-2 mt-2">
+            <Input Value="@_url" ReadOnly="true" Class="flex-1 text-sm" />
+            <Button Size="ButtonSize.Small" @onclick="CopyToClipboard">
+                <LucideIcon Name="@(_copied ? "check" : "copy")" Size="14" />
+                @(_copied ? "Copied" : "Copy")
+            </Button>
+        </div>
+        <DialogFooter>
+            <Button Variant="ButtonVariant.Outline" @onclick="Close">Close</Button>
+        </DialogFooter>
+    </DialogContent>
+</Dialog>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = null!;
+
+    private bool _open;
+    private bool _copied;
+    private string _url = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _url = Nav.Uri;
+    }
+
+    private async Task CopyToClipboard()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", _url);
+        _copied = true;
+        await Task.Delay(2000);
+        _copied = false;
+    }
+
+    private void Close() => _open = false;
+}
