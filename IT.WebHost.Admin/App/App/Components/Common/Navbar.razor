@@ -1,4 +1,4 @@
-@*TODO: Add Authorize Views To Show User Menu and Subscribe stuff when needed*@
+@using Microsoft.AspNetCore.Components.Authorization
 
 <div class="flex items-center justify-between h-16 px-4 md:px-6 border-b">
 
@@ -96,9 +96,17 @@
 
         <div class="hidden md:flex items-center gap-2">
 
-            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/login"))">Sign in</Button>
+            <AuthorizeView>
+                @*TODO: Add Authorize Views To Show Subscribe stuff when needed*@
+                <Authorized>
+                    <Button Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/profile"))">Profile</Button>
+             </Authorized>
+             <NotAuthorized>
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/login"))">Login</Button>
 
-            <Button Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/signup"))">Get started</Button>
+                    <Button Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/signup"))">Signup</Button>
+             </NotAuthorized>
+         </AuthorizeView>
 
         </div>
 
