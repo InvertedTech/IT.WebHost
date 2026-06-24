@@ -1,0 +1,67 @@
+﻿<Pagination>
+    <PaginationContent>
+        <PaginationItem>
+            <PaginationPrevious Href="@GetPageUrl(CurrentPage - 1)" class="@(CurrentPage <= 1 ? "pointer-events-none opacity-50" : "")" />
+        </PaginationItem>
+
+        @foreach (var page in GetPageNumbers())
+        {
+            if (page == -1)
+            {
+                <PaginationItem><PaginationEllipsis /></PaginationItem>
+            }
+            else
+            {
+                <PaginationItem>
+                    <PaginationLink Href="@GetPageUrl(page)" IsActive="@(page == CurrentPage)">@(page)</PaginationLink>
+                </PaginationItem>
+            }
+        }
+
+        <PaginationItem>
+            <PaginationNext Href="@GetPageUrl(CurrentPage + 1)" class="@(CurrentPage >= TotalPages ? "pointer-events-none opacity-50" : "")" />
+        </PaginationItem>
+    </PaginationContent>
+</Pagination>
+
+@code {
+    [Inject] public NavigationManager Navigation { get; set; } = null!;
+    [Parameter] public string baseUrl { get; set; } = null!;
+    [Parameter] public uint pageSize { get; set; }
+    [Parameter] public uint pageOffset { get; set; }
+    [Parameter] public uint pageTotalItems { get; set; }
+    [Parameter] public string? query { get; set; }
+
+    private int CurrentPage => pageSize > 0 ? (int)(pageOffset / pageSize) + 1 : 1;
+    private int TotalPages => pageSize > 0 ? (int)Math.Ceiling((double)pageTotalItems / pageSize) : 1;
+
+    private string GetPageUrl(int page)
+    {
+        int total = Math.Max(TotalPages, 1);
+        page = Math.Clamp(page, 1, total);
+        uint offset = (uint)((page - 1) * pageSize);
+
+        var url = $"{baseUrl}?offset={offset}&size={pageSize}";
+        if (!string.IsNullOrEmpty(query))
+            url += $"&query={Uri.EscapeDataString(query)}";
+
+        return url;
+    }
+
+    private IEnumerable<int> GetPageNumbers()
+    {
+        var pages = new List<int>();
+        int total = TotalPages;
+        int current = CurrentPage;
+
+        for (int i = 1; i <= total; i++)
+        {
+            if (i == 1 || i == total || (i >= current - 1 && i <= current + 1))
+                pages.Add(i);
+            else if (pages.Last() != -1)
+                pages.Add(-1);
+        }
+
+        return pages;
+    }
+}

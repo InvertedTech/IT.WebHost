@@ -1,7 +1,76 @@
-﻿@page "/content"
+@page "/content"
+@inject NavigationManager Nav
 
-<h3>SearchContent</h3>
+<PageTitle>Search Content</PageTitle>
+
+<div class="space-y-6 max-w-6xl">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-bold tracking-tight">Content</h1>
+    </div>
+
+    <form @onsubmit="OnSearch" class="flex items-center gap-2">
+        <Input Type="InputType.Search"
+               Placeholder="Search content..."
+               Class="max-w-md"
+               @bind-Value="_searchInput" />
+        <Button Type="ButtonType.Submit">
+            <LucideIcon Name="search" Class="h-4 w-4 mr-2" />
+            Search
+        </Button>
+        @if (!string.IsNullOrEmpty(Query))
+        {
+            <Button Variant="ButtonVariant.Ghost" Type="ButtonType.Button" OnClick="ClearSearch">
+                Clear
+            </Button>
+        }
+    </form>
+
+    @if (isLoading)
+    {
+        <div class="flex items-center justify-center py-12">
+            <span>Loading...</span>
+        </div>
+    }
+    else if (ContentList.Any())
+    {
+        <ContentGridView Content="ContentList" />
+
+        <Paginator baseUrl="/content"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems"
+                   query="@Query" />
+    }
+    else
+    {
+        <div class="flex items-center justify-center py-12">
+            <Alert Variant="AlertVariant.Warning">
+                <AlertTitle>No Content</AlertTitle>
+                <AlertDescription>No content items found.</AlertDescription>
+            </Alert>
+        </div>
+    }
+</div>
 
 @code {
+    private string? _searchInput;
 
+    protected override void OnParametersSet()
+    {
+        _searchInput = Query;
+    }
+
+    private void OnSearch()
+    {
+        var url = "/content?size=" + pageSize;
+        if (!string.IsNullOrEmpty(_searchInput))
+            url += "&query=" + Uri.EscapeDataString(_searchInput);
+        Nav.NavigateTo(url);
+    }
+
+    private void ClearSearch()
+    {
+        _searchInput = null;
+        Nav.NavigateTo("/content");
+    }
 }
