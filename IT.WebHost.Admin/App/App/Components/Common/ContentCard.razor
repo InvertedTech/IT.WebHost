@@ -49,14 +49,16 @@
                 <span>Free</span>
             </div>
         }
-        @if (Content.SubscriptionLevel == 0)
+@*         @if (Content.SubscriptionLevel == 0)
         {
             <Button OnClick="@(() => Nav.NavigateTo($"/content/{Content.URL.TrimStart('/')}"))">View</Button>
         }
         else
         {
             <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
-        }
+        } *@
+        
+        <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
     </CardFooter>
 </Card>
 

@@ -1,0 +1,90 @@
+﻿@using IT.WebServices.Fragments.Comment
+@using IT.WebServices.Authentication
+@namespace IT.WebHost.Components.Comments
+@inject CommentInterface.CommentInterfaceClient CommentClient
+@inject ONUserHelper UserHelper
+
+<Item>
+    <ItemMedia>
+        <Avatar>
+            <AvatarFallback>AB</AvatarFallback>
+        </Avatar>
+    </ItemMedia>
+    <ItemContent>
+        <ItemTitle>@Comment.UserDisplayName</ItemTitle>
+        <ItemDescription>@Comment.CommentText</ItemDescription>
+    </ItemContent>
+    <ItemActions>
+        <Button Variant="@(_liked ? ButtonVariant.Default : ButtonVariant.Outline)"
+                  Size="ButtonSize.Small"
+                  Disabled="@(!UserHelper.IsLoggedIn)"
+                  @onclick="ToggleLike">
+            <LucideIcon Name="heart" Size="14" class="@(_liked ? "fill-current" : "")" />
+            @_likeCount
+        </Button>
+        <NewCommentForCommentForm CommentId="@Comment.CommentID" />
+    </ItemActions>
+</Item>
+
+<Collapsible>
+    <CollapsibleTrigger>
+        <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="OnTriggerClicked">
+            <LucideIcon Name="message-circle" Size="14" />
+            Replies
+        </Button>
+    </CollapsibleTrigger>
+    <CollapsibleContent>
+        @if (_replies.Any())
+        {
+            <div class="ml-8 flex flex-col divide-y">
+                @foreach (var reply in _replies)
+                {
+                    <CommentItem Comment="reply" />
+                }
+            </div>
+        }
+    </CollapsibleContent>
+</Collapsible>
+
+@code {
+    [Parameter] public CommentResponseRecord Comment { get; set; }
+
+    private bool _liked;
+    private uint _likeCount;
+    private bool _repliesLoaded;
+    private IEnumerable<CommentResponseRecord> _replies = new List<CommentResponseRecord>();
+
+    protected override void OnParametersSet()
+    {
+        _liked = Comment.LikedByUser;
+        _likeCount = Comment.Likes;
+    }
+
+    private async Task OnTriggerClicked()
+    {
+        if (_repliesLoaded) return;
+
+        var res = await CommentClient.GetCommentsForCommentAsync(new GetCommentsForCommentRequest
+        {
+            ParentCommentID = Comment.CommentID,
+            PageSize = 10,
+            Order = CommentOrder.Newest
+        }, UserHelper.GetGrpcCallOptions());
+
+        _replies = res.Records;
+        _repliesLoaded = true;
+    }
+
+    private async Task ToggleLike()
+    {
+        if (!UserHelper.IsLoggedIn) return;
+
+        _liked = !_liked;
+        _likeCount = _liked ? _likeCount + 1 : _likeCount - 1;
+
+        if (_liked)
+            await CommentClient.LikeCommentAsync(new LikeCommentRequest { CommentID = Comment.CommentID }, UserHelper.GetGrpcCallOptions());
+        else
+            await CommentClient.UnLikeCommentAsync(new UnLikeCommentRequest { CommentID = Comment.CommentID }, UserHelper.GetGrpcCallOptions());
+    }
+}

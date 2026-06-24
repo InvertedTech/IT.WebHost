@@ -1,4 +1,5 @@
-﻿@page "/content/written/{**Slug}"
+﻿@page "/content/{**Slug}"
+@using IT.WebHost.Components.Comments
 @using IT.WebHost.Components.Content    
 @using IT.WebServices.Fragments.Content
 
@@ -17,16 +18,16 @@
                 break;
 
             case ContentPublicData.ContentDataOneofOneofCase.Written:
-                <WrittenMetadata Content="_record" />
                 @if (!string.IsNullOrEmpty(_record.Data?.FeaturedImageAssetID))
                 {
-@*                     <FeaturedImage AssetId="_record.Data.FeaturedImageAssetID"
-                                   Alt="@(_record.Data.Title ?? "Featured image")" /> *@
+                    <FeaturedImage AssetId="_record.Data.FeaturedImageAssetID"
+                                   Alt="@(_record.Data.Title ?? "Featured image")" />
                 }
+                <WrittenMetadata Content="_record" />
                 <WrittenBody Written="_record.Data.Written" />
                 break;
         }
 
-       @*  <CommentSection ContentId="@_record.ContentID" /> *@
+        <CommentSection ContentId="@_record.ContentID" />
     }
 </div>

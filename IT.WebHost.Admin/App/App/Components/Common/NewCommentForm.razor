@@ -1,0 +1,34 @@
+﻿@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Comment
+@inject ONUserHelper UserHelper
+@inject CommentInterface.CommentInterfaceClient CommentClient
+
+<Textarea Label="Comments"
+                     HelperText="Leave A Comment"
+                     @bind-Value="CommentText"
+                     Disabled="@(!UserHelper.IsLoggedIn)" />
+<div class="flex justify-end mt-4">
+    <Button Disabled="@(!UserHelper.IsLoggedIn)" @onclick="SubmitComment">Create</Button>
+</div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCommentSubmitted { get; set; }
+
+    private string CommentText { get; set; } = string.Empty;
+
+    private async Task SubmitComment()
+    {
+        if (string.IsNullOrWhiteSpace(CommentText) || string.IsNullOrWhiteSpace(ContentId))
+            return;
+
+        await CommentClient.CreateCommentForContentAsync(new CreateCommentForContentRequest
+        {
+            ContentID = ContentId,
+            Text = CommentText
+        }, UserHelper.GetGrpcCallOptions());
+
+        CommentText = string.Empty;
+        await OnCommentSubmitted.InvokeAsync();
+    }
+}

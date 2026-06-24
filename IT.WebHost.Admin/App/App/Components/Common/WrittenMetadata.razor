@@ -7,9 +7,9 @@
         <div class="flex flex-wrap gap-2" role="group" aria-label="Article status indicators">
             @if (ShowSubscriptionInfo)
             {
-                <BbBadge Variant="@(Content?.Data?.SubscriptionLevel == 0 ? BadgeVariant.Secondary : BadgeVariant.Default)">
+                <Badge Variant="@(Content?.Data?.SubscriptionLevel == 0 ? BadgeVariant.Secondary : BadgeVariant.Default)">
                     @GetSubscriptionLevelText(Content?.Data?.SubscriptionLevel)
-                </BbBadge>
+                </Badge>
             }
         </div>
 
@@ -50,9 +50,9 @@
             <div class="flex flex-wrap gap-2" role="list" aria-label="Article tags">
                 @foreach (var tag in tags)
                 {
-                    <BbBadge Variant="BadgeVariant.Outline" class="text-xs" role="listitem">
+                    <Badge Variant="BadgeVariant.Outline" class="text-xs" role="listitem">
                         @tag
-                    </BbBadge>
+                    </Badge>
                 }
             </div>
         }
