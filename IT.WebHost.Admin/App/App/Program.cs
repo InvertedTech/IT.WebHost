@@ -53,6 +53,7 @@ namespace WebApp
                 app.UseHsts();
             }
 
+            app.Services.GetRequiredService<SiteSettingsService>().LoadAsync().Wait();
             app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
             app.UseHttpsRedirection();
             app.UseAntiforgery();

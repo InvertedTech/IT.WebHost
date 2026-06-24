@@ -97,9 +97,20 @@
         <div class="hidden md:flex items-center gap-2">
 
             <AuthorizeView>
-                @*TODO: Add Authorize Views To Show Subscribe stuff when needed*@
                 <Authorized>
-                    <Button Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/profile"))">Profile</Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger>
+                            <Button Variant="ButtonVariant.Outline">Account</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem OnClick="@(() => OnButtonClick("/profile"))">Profile</DropdownMenuItem>
+                            <DropdownMenuItem OnClick="@(() => OnButtonClick("/subscribe"))">Subscribe</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem OnClick="@(() => OnButtonClick("/auth/logout", forceLoad: true))">Logout</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
              </Authorized>
              <NotAuthorized>
                     <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" OnClick="@(() => OnButtonClick("/login"))">Login</Button>
@@ -127,8 +138,8 @@
 @code {
     [Inject] public NavigationManager navigationManager { get; set; } = null!;
 
-    private void OnButtonClick(string path)
+    private void OnButtonClick(string path, bool forceLoad = false)
     {
-        navigationManager.NavigateTo(path);
+        navigationManager.NavigateTo(path, forceLoad);
     }
 }

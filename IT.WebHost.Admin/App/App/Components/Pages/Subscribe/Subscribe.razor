@@ -1,0 +1,68 @@
+﻿@page "/subscribe"
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <PageTitle>Subscribe</PageTitle>
+
+        @if (tiers.Count == 0)
+        {
+            <div class="flex flex-1 items-center justify-center py-12">
+                <Alert Variant="AlertVariant.Warning">
+                    <AlertTitle>No Subscription Tiers</AlertTitle>
+                    <AlertDescription>No subscription tiers are currently available.</AlertDescription>
+                </Alert>
+            </div>
+        }
+        else
+        {
+            <div class="container max-w-4xl py-12 mx-auto">
+                <div class="grid gap-6 md:grid-cols-@tiers.Count">
+                    @foreach (var tier in tiers)
+                    {
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>@tier.Name</CardTitle>
+                                <CardDescription>@tier.Description</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-3xl font-bold">$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/mo</span></p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button class="w-full" @onclick="() => OpenDialog(tier)">Subscribe</Button>
+                            </CardFooter>
+                        </Card>
+                    }
+                </div>
+            </div>
+            <Dialog @bind-Open="isDialogOpen">
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>@(selectedTier?.Name) - $@(selectedTier?.AmountCents / 100.0m)</DialogTitle>
+                    </DialogHeader>
+                    <Select TValue="string" @bind-Value="selectedProvider">
+                        <SelectLabel>Payment Processor</SelectLabel>
+                        <SelectTrigger class="w-[180px]">
+                            <SelectValue Placeholder="Select Payment Processor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            @*TODO: Programatically Build These Values Based On Settings.Public.Subscription.{Provider}.IsEnabled*@
+                            <SelectItem Value="@("Stripe")" Text="Stripe">Stripe</SelectItem>
+                            @*                     <SelectItem Value="@("Fortis")" Text="Fortis">Fortis</SelectItem>
+                    <SelectItem Value="@("Paypal")" Text="Paypal">Paypal</SelectItem>
+                    <SelectItem Value="@("Crypto")" Text="Crypto">Crypto</SelectItem> *@
+                        </SelectContent>
+                    </Select>
+                    <Input Type="InputType.Text"
+                           Label="Zip/Postal Code"
+                           Placeholder="Enter your zip/postal code"
+                           @bind-Value="zipCode" />
+                    <DialogFooter>
+                        <Button @onclick="() => CloseDialog()">Close</Button>
+                        <Button @onclick="() => SubmitSubscribe()">Submit</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        }
+    </Authorized>
+</AuthorizeView>

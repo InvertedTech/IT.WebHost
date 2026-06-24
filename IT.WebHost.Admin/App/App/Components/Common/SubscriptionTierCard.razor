@@ -1,0 +1,27 @@
+﻿@using IT.WebServices.Fragments.Authorization
+
+<Card class="w-[480px]">
+    <CardHeader>
+        <CardTitle>@tier.Name</CardTitle>
+        <CardDescription>@tier.Description</CardDescription>
+    </CardHeader>
+    <CardContent>
+        <div class="text-2xl font-bold">
+            @if (tier.AmountCents == 0)
+            {
+                <span>Free</span>
+            }
+            else
+            {
+                <span>$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/month</span></span>
+            }
+        </div>
+    </CardContent>
+    <CardFooter>
+        <Button Class="w-full" Disabled="@true">Select</Button>
+    </CardFooter>
+</Card>
+
+@code {
+    [Parameter] public SubscriptionTier tier { get; set; }
+}
