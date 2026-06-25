@@ -1,0 +1,121 @@
+/* Light Cyberpunk Theme */
+/* Based on shadcn/ui default theme, re-themed for Cyberpunk */
+
+:root {
+    /* --- Light Cyberpunk Base --- */
+    /* Background: Very light, slightly cool off-white/pale gray (the surface of the city) */
+    --background: oklch(0.95 0.01 220);
+    /* Foreground: Dark charcoal for high contrast text */
+    --foreground: oklch(0.15 0 220);
+    /* UI Elements */
+    --card: oklch(0.96 0.01 220);
+    --card-foreground: oklch(0.15 0 220);
+    --popover: oklch(0.96 0.01 220);
+    --popover-foreground: oklch(0.15 0 220);
+    /* Primary Accent: Electric Cyan/Blue (The Neon Glow) */
+    --primary: oklch(0.5 0.1 200);
+    --primary-foreground: oklch(0.15 0 220);
+    /* Secondary/Muted: Cool grays */
+    --secondary: oklch(0.93 0.01 220);
+    --secondary-foreground: oklch(0.15 0 220);
+    --muted: oklch(0.93 0.01 220);
+    --muted-foreground: oklch(0.4 0.05 220);
+    /* Accent: Subtle magenta/purple for contrast elements */
+    --accent: oklch(0.8 0.1 300);
+    --accent-foreground: oklch(0.15 0 300);
+    /* Destructive: A sharp red/orange for danger/hacks */
+    --destructive: oklch(0.5 0.2 35);
+    --destructive-foreground: oklch(0.95 0 0);
+    /* Borders and Rings: Subtle glow matching the primary */
+    --border: oklch(0.7 0.02 200);
+    --input: oklch(0.7 0.02 200);
+    --ring: oklch(0.5 0.1 200);
+    --radius: 0.75rem; /* Slightly sharper corners for a high-tech look */
+    /* Chart Colors (Adjusted for a neon glow effect) */
+    --chart-1: oklch(0.6 0.15 280);
+    --chart-2: oklch(0.5 0.2 280);
+    --chart-3: oklch(0.4 0.1 300);
+    --chart-4: oklch(0.3 0.15 320);
+    --chart-5: oklch(0.2 0.1 340);
+    /* Sidebar variables (Darker, structural elements) */
+    --sidebar-background: oklch(0.98 0.01 220);
+    --sidebar-foreground: oklch(0.15 0 220);
+    --sidebar-primary: oklch(0.5 0.1 200);
+    --sidebar-primary-foreground: oklch(0.15 0 220);
+    --sidebar-accent: oklch(0.8 0.1 300);
+    --sidebar-accent-foreground: oklch(0.15 0 300);
+    --sidebar-border: oklch(0.7 0.02 200);
+    --sidebar-ring: oklch(0.5 0.1 200);
+    /* Alert colors (System Status Indicators) */
+    --alert-success: oklch(0.85 0.1 100); /* Bright green/cyan status */
+    --alert-success-foreground: oklch(0.15 0 100);
+    --alert-success-bg: oklch(0.95 0.01 100);
+    --alert-info: oklch(0.5 0.1 255); /* Classic electric blue */
+    --alert-info-foreground: oklch(0.15 0 255);
+    --alert-info-bg: oklch(0.95 0.01 255);
+    --alert-warning: oklch(0.7 0.1 50); /* Amber/Warning yellow */
+    --alert-warning-foreground: oklch(0.15 0 50);
+    --alert-warning-bg: oklch(0.95 0.01 50);
+    --alert-danger: oklch(0.5 0.2 35); /* Red for critical error */
+    --alert-danger-foreground: oklch(0.95 0 0);
+    --alert-danger-bg: oklch(0.95 0.01 35);
+}
+
+.dark {
+    /* --- Dark Cyberpunk Mode (The Gritty Grid) --- */
+    /* Background: Deep, glossy midnight blue/purple */
+    --background: oklch(0.1 0.01 270);
+    /* Foreground: Bright, sharp white/light gray */
+    --foreground: oklch(0.95 0 270);
+    /* UI Elements */
+    --card: oklch(0.15 0.01 270);
+    --card-foreground: oklch(0.95 0 270);
+    --popover: oklch(0.15 0.01 270);
+    --popover-foreground: oklch(0.95 0 270);
+    /* Primary Accent: Intense Neon Pink/Magenta (High energy) */
+    --primary: oklch(0.8 0.2 300);
+    --primary-foreground: oklch(0.15 0 300);
+    /* Secondary/Muted: Muted, dark grays */
+    --secondary: oklch(0.2 0.05 270);
+    --secondary-foreground: oklch(0.95 0 270);
+    --muted: oklch(0.2 0.05 270);
+    --muted-foreground: oklch(0.6 0.05 270);
+    /* Accent: Electric Cyan/Blue (Contrast with the pink primary) */
+    --accent: oklch(0.4 0.15 255);
+    --accent-foreground: oklch(0.95 0 255);
+    /* Destructive: Sharp red */
+    --destructive: oklch(0.6 0.2 35);
+    --destructive-foreground: oklch(0.95 0 0);
+    /* Borders and Rings: Subtle neon lines */
+    --border: oklch(0.3 0.05 255);
+    --input: oklch(0.3 0.05 255);
+    --ring: oklch(0.5 0.1 255);
+    /* Chart Colors (Adjusted for a dark, glowing look) */
+    --chart-1: oklch(0.6 0.15 280);
+    --chart-2: oklch(0.5 0.2 280);
+    --chart-3: oklch(0.4 0.1 300);
+    --chart-4: oklch(0.3 0.15 320);
+    --chart-5: oklch(0.2 0.1 340);
+    /* Sidebar variables (Deep, highly contrasted panel) */
+    --sidebar-background: oklch(0.15 0.01 270);
+    --sidebar-foreground: oklch(0.95 0 270);
+    --sidebar-primary: oklch(0.8 0.2 300);
+    --sidebar-primary-foreground: oklch(0.15 0 300);
+    --sidebar-accent: oklch(0.4 0.15 255);
+    --sidebar-accent-foreground: oklch(0.95 0 255);
+    --sidebar-border: oklch(0.3 0.05 255);
+    --sidebar-ring: oklch(0.5 0.1 255);
+    /* Alert colors (System Status Indicators in Dark Mode) */
+    --alert-success: oklch(0.85 0.1 100);
+    --alert-success-foreground: oklch(0.15 0 100);
+    --alert-success-bg: oklch(0.15 0.01 100);
+    --alert-info: oklch(0.5 0.1 255);
+    --alert-info-foreground: oklch(0.15 0 255);
+    --alert-info-bg: oklch(0.15 0.01 255);
+    --alert-warning: oklch(0.7 0.1 50);
+    --alert-warning-foreground: oklch(0.15 0 50);
+    --alert-warning-bg: oklch(0.15 0.01 50);
+    --alert-danger: oklch(0.6 0.2 35);
+    --alert-danger-foreground: oklch(0.95 0 0);
+    --alert-danger-bg: oklch(0.15 0.01 35);
+}

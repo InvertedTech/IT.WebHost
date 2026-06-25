@@ -1,4 +1,5 @@
-﻿using IT.WebServices.Authentication;
+﻿using Core.Services;
+using IT.WebServices.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -59,7 +60,7 @@ namespace IT.Web.Project1.Services
 
         public static IServiceCollection AddCoreServices(this IServiceCollection services)
         {
-            //services.AddSingleton<TemplateService>();
+            services.AddSingleton<TemplateService>();
             services.AddSingleton<SiteSettingsService>();
             services.AddProtoValidate();
             //services.AddScoped<UserTokenService>();

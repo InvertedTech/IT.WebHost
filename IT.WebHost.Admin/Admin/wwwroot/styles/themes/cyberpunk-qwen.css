@@ -1,0 +1,77 @@
+/* cyberpunk.css */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+/* Cyberpunk Theme */
+:root {
+  --neon-pink: #ff00ff;
+  --neon-blue: #00ffff;
+  --neon-green: #0aff00;
+  --neon-yellow: #ffaa00;
+  --neon-purple: #bc00ff;
+  --neon-red: #ff00ff;
+  --cyber-bg: #050505;
+  --cyber-text: #ffffff;
+  --cyber-glow: #00ffff;
+}
+
+body {
+  background-color: var(--cyber-bg);
+  color: var(--cyber-text);
+  font-family: 'Press Start 2P', cursive;
+  margin: 0;
+  padding: 40px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Cyberpunk Grid Background */
+.cyber-bg {
+  background-image: 
+    linear-gradient(var(--cyber-glow) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyber-glow) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+  background-color: var(--cyber-bg);
+}
+
+/* Cyberpunk Glows */
+.glow {
+  text-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink), 0 0 60px var(--neon-green);
+  animation: pulse 3s infinite;
+}
+
+/* Cyberpunk Font */
+.cyber-font {
+  font-family: 'Press Start 2P', cursive;
+  text-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+}
+
+/* Cyberpunk Grid */
+.cyber-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 10px;
+}
+
+.cyber-grid-item {
+  background: linear-gradient(180deg, var(--neon-blue), transparent);
+  border: 1px solid var(--neon-blue);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* Cyberpunk Neon Borders */
+.cyber-border {
+  border: 2px solid var(--neon-pink);
+  box-shadow: 0 0 10px var(--neon-pink);
+}
+
+/* Cyberpunk Glows */
+.cyber-glow {
+  text-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink), 0 0 60px var(--neon-green);
+}

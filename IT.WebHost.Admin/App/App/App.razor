@@ -1,3 +1,6 @@
+@using Core.Services
+@inject TemplateService templateService
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -61,6 +64,9 @@
     <link rel="stylesheet" href="@Assets["_content/NeoUI.Blazor/css/themes/fonts/calsans.css"]" />
     <link rel="stylesheet" href="@Assets["_content/NeoUI.Blazor/css/themes/fonts/dmsans.css"]" />
     <link rel="stylesheet" href="@Assets["_content/NeoUI.Blazor/css/themes/fonts/plusjakarta.css"]" />
+
+    <!-- Site theme override - must load after NeoUI themes -->
+    <link id="theme-css" rel="stylesheet" href="styles/themes/@(templateService.TemplateFile).css" />
 <ImportMap />
     <link rel="icon" type="image/png" href="@Assets["favicon.png"]" />
     <HeadOutlet @rendermode="InteractiveServer" />
@@ -73,6 +79,9 @@
     <Routes @rendermode="InteractiveServer" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        window.setTheme = (name) => { const l = document.getElementById('theme-css'); if (l) l.href = `/styles/themes/${name}.css`; };
+    </script>
 </body>
 
 </html>

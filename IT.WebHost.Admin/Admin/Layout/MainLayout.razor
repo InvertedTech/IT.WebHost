@@ -129,6 +129,27 @@
                                         AriaLabel="Search">
                                     <LucideIcon Name="search" Size="16" />
                                 </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger AsChild>
+                                        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small">
+                                            <LucideIcon Name="palette" Size="16" Class="mr-2" />
+                                            Site Theme
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>Site Theme</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        @foreach (var (key, value) in TemplateService.BaseTemplates)
+                                        {
+                                            <DropdownMenuItem OnClick="() => SetTheme(value)">
+                                                <span class="flex items-center justify-between w-full">
+                                                    @key.ToString()
+                                                    @if (currentTheme == value) { <LucideIcon Name="check" Size="12" /> }
+                                                </span>
+                                            </DropdownMenuItem>
+                                        }
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 <ThemeSwitcher ShowStyles="true" />
                                 <DarkModeToggle />
                             </div>
@@ -250,18 +271,40 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender) return;
+
+        try
         {
-            try
+            _modifierKey = await KeyboardShortcuts.GetModifierKeyAsync();
+        }
+        catch
+        {
+            _modifierKey = "Ctrl";
+        }
+
+        try
+        {
+            var saved = await Storage.GetAsync<string>("local-theme");
+            if (saved.Success && !string.IsNullOrEmpty(saved.Value))
             {
-                _modifierKey = await KeyboardShortcuts.GetModifierKeyAsync();
-                StateHasChanged();
+                currentTheme = saved.Value;
+                await JS.InvokeVoidAsync("setTheme", currentTheme);
             }
-            catch
+            else
             {
-                _modifierKey = "Ctrl";
+                currentTheme = TemplateService.TemplateFile;
             }
         }
+        catch { currentTheme = TemplateService.TemplateFile; }
+
+        StateHasChanged();
+    }
+
+    private async Task SetTheme(string name)
+    {
+        currentTheme = name;
+        await JS.InvokeVoidAsync("setTheme", name);
+        try { await Storage.SetAsync("local-theme", name); } catch { }
     }
 
     private void OpenSpotlight()

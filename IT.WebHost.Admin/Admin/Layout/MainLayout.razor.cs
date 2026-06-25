@@ -1,4 +1,5 @@
 ﻿using Core.Extensions;
+using Core.Services;
 using IT.Web.Project1.Services;
 using IT.WebServices.Authentication;
 using IT.WebServices.Fragments.Authentication;
@@ -22,7 +23,10 @@ namespace Admin.Layout
         [Inject] private ProtectedLocalStorage Storage { get; set; } = null!;
         [Inject] private SiteSettingsService SiteSettings { get; set; } = null!;
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
+        [Inject] private TemplateService TemplateService { get; set; } = null!;
         [Inject] private IValidator Validator { get; set; } = null!;
+
+        private string currentTheme = "default";
 
         private string UserDisplayName =>
             !string.IsNullOrWhiteSpace(UserHelper.MyUser?.DisplayName)
@@ -80,6 +84,7 @@ namespace Admin.Layout
             await SiteSettings.LoadAsync();
             Nav.LocationChanged += OnLocationChanged;
         }
+
 
         private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
