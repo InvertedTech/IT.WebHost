@@ -3,6 +3,7 @@ using IT.WebServices.Clients.Payment;
 using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Authorization.Payment;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 
 namespace WebApp.Components.Pages.Subscribe
 {
@@ -11,6 +12,7 @@ namespace WebApp.Components.Pages.Subscribe
         [Inject] NavigationManager Navigation { get; set; } = null!;
         [Inject] private SiteSettingsService SiteSettings { get; set; } = null!;
         [Inject] private PaymentClient PaymentClient { get; set; } = null!;
+        [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
 
         private List<SubscriptionTier> tiers { get; set; } = new List<SubscriptionTier>();
         private SubscriptionTier? selectedTier;
@@ -37,13 +39,12 @@ namespace WebApp.Components.Pages.Subscribe
 
         public async Task SubmitSubscribe()
         {
-            // TODO: Remvoe Hardcoded Links
             var req = new GetNewDetailsRequest
             {
                 Level = selectedTier?.AmountCents != null ? selectedTier.AmountCents : 0,
                 PostalCode = zipCode,
-                SuccessUrl = "http://localhost:5003/subscribe/success",
-                CancelUrl = "http://localhost:5003/subscribe/cancel"
+                SuccessUrl = $"{_settings.Value.APP_BASE_URL}/subscribe/success",
+                CancelUrl = $"{_settings.Value.APP_BASE_URL}/subscribe/cancel"
             };
 
             // TODO: Figure Out why this says the total amount due is null on service

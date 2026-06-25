@@ -5,6 +5,7 @@ using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using NeoUI.Blazor;
 
 // TODO: Bind Methods
@@ -18,6 +19,7 @@ namespace Admin.Components.Pages.Content
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
         [Inject] private ContentClient ContentClient { get; set; } = null!;
         [Inject] private IToastService ToastService { get; set; } = null!;
+        [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
 
         private ContentRecord? Content { get; set; }
         private ContentPrivateData? PrivateData { get; set; }
@@ -162,8 +164,8 @@ namespace Admin.Components.Pages.Content
             StateHasChanged();
         }
 
-        private static string GetAssetUrl(string assetId) =>
-            $"http://localhost:8001/api/cms/asset/{assetId}/data";
+        private string GetAssetUrl(string assetId) =>
+            $"{_settings.Value.API_BASE_URL}/cms/asset/{assetId}/data";
 
         private static string GetTypeLabel(ContentType type) => type switch
         {

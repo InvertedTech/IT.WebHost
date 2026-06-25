@@ -12,6 +12,8 @@ namespace WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 

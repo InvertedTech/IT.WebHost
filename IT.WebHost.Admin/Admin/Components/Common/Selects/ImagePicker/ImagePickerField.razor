@@ -1,7 +1,8 @@
-﻿@using Admin.Components.Common.Selects.ImagePicker
+﻿@using System.Linq
+@using Admin.Components.Common.Selects.ImagePicker
+@using Microsoft.Extensions.Options
 @using NeoUI.Blazor
 @using NeoUI.Icons.Lucide
-@using System.Linq
 
 <Field Label="@Label" HelpText="@HelperText">
     <FieldContent>
@@ -92,11 +93,12 @@
     [Parameter] public EventCallback<List<string>> SelectedAssetIdsChanged { get; set; }
 
     [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+    [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
 
     private bool _open = false;
 
     private string GetAssetUrl(string assetId)
-        => $"http://localhost:8001/api/cms/asset/{assetId}/data";
+        => $"{_settings.Value.API_BASE_URL}/cms/asset/{assetId}/data";
 
     private IEnumerable<string> GetInitialSelectedIds()
     {
