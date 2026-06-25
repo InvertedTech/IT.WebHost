@@ -5,6 +5,7 @@
     <Project Path="../IT.WebServices/Fragments/IT.WebServices.Fragments.csproj" />
   </Folder>
   <Folder Name="/Shared/">
+    <Project Path="Components/Components.csproj" />
     <Project Path="Core/Core.csproj" />
   </Folder>
   <Project Path="Admin/Admin.csproj" />

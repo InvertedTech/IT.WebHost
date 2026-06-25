@@ -1,0 +1,82 @@
+@using IT.WebHost.Core.Config
+@{
+    var wrapperClass = "rounded-lg overflow-hidden";
+    if (OnClick.HasDelegate) wrapperClass += " cursor-pointer";
+    if (IsSelected) wrapperClass += " ring-2 ring-primary";
+    if (!string.IsNullOrEmpty(Class)) wrapperClass += $" {Class}";
+
+    var heightClass = Size == FeaturedImageSize.Small ? "h-28" : "h-72";
+    var maxHeightClass = Size == FeaturedImageSize.Small ? "" : " max-h-[480px]";
+}
+
+<div class="@wrapperClass" @onclick="HandleClick">
+    @if (_imageError || string.IsNullOrEmpty(AssetId))
+    {
+        @if (!string.IsNullOrEmpty(AssetId) || Size == FeaturedImageSize.Small)
+        {
+            <div class="w-full @heightClass bg-muted flex items-center justify-center rounded-lg">
+                <span class="text-muted-foreground text-sm">@(Size == FeaturedImageSize.Small ? "No image" : "Image unavailable")</span>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="relative w-full">
+            @if (_imageLoading)
+            {
+                <Skeleton class="@($"w-full {heightClass} rounded-lg")" />
+            }
+            <img src="@GetImageUrl()"
+                 alt="@Alt"
+                 class="w-full object-cover@(maxHeightClass) @heightClass rounded-lg @(_imageLoading ? "invisible absolute inset-0" : "")"
+                 @onload="() => _imageLoading = false"
+                 @onerror="OnImageError" />
+            @if (Title is not null && Size != FeaturedImageSize.Small)
+            {
+                <p>@Title</p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? AssetId { get; set; }
+    [Parameter] public string Alt { get; set; } = "Featured image";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public FeaturedImageSize Size { get; set; } = FeaturedImageSize.Large;
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback<string?> OnClick { get; set; }
+    [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+
+    private bool _imageLoading = true;
+    private bool _imageError = false;
+    private string? _loadedAssetId;
+
+    protected override void OnParametersSet()
+    {
+        if (_loadedAssetId != AssetId)
+        {
+            _imageLoading = true;
+            _imageError = false;
+            _loadedAssetId = AssetId;
+        }
+    }
+
+    private void OnImageError()
+    {
+        _imageError = true;
+        _imageLoading = false;
+    }
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+            await OnClick.InvokeAsync(AssetId);
+    }
+
+    private string GetImageUrl()
+    {
+        return $"{_settings.Value.API_BASE_URL}/cms/asset/{AssetId}/data";
+    }
+}

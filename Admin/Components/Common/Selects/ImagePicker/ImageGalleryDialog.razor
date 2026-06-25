@@ -1,5 +1,4 @@
-﻿@using IT.WebHost.Components.Content
-@using IT.WebServices.Clients.CMS
+﻿@using IT.WebServices.Clients.CMS
 @using IT.WebServices.Fragments.Content
 @using NeoUI.Blazor
 
@@ -21,10 +20,11 @@
                         switch (asset.AssetType)
                         {
                             case AssetType.AssetImage:
-                                <ClickableFeaturedImage AssetId="@asset.AssetID"
-                                                        Alt="@asset.Title"
-                                                        IsSelected="@IsAssetSelected(asset.AssetID)"
-                                                        OnClick="ToggleSelection" />
+                                <FeaturedImage AssetId="@asset.AssetID"
+                                               Alt="@asset.Title"
+                                               Size="FeaturedImageSize.Small"
+                                               IsSelected="@IsAssetSelected(asset.AssetID)"
+                                               OnClick="ToggleSelection" />
                                 break;
                             case AssetType.AssetNone:
                                 break;

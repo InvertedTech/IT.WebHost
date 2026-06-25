@@ -1,5 +1,4 @@
 ﻿@page "/assets"
-@using IT.WebHost.Components.Content
 @using IT.WebServices.Fragments.Content
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -13,7 +12,7 @@
                 {
                     case AssetType.AssetImage:
                         <div class="rounded-lg overflow-hidden border bg-muted hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
-                            <ClickableFeaturedImage AssetId="@asset.AssetID" />
+                            <FeaturedImage AssetId="@asset.AssetID" Size="FeaturedImageSize.Small" />
                         </div>
                         break;
                 }

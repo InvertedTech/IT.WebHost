@@ -1,5 +1,6 @@
 ﻿using Admin.Models;
 using Google.Protobuf.WellKnownTypes;
+using IT.WebHost.Core.Config;
 using IT.WebServices.Authentication;
 using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments;

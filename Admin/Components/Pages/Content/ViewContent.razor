@@ -3,7 +3,6 @@
 @using Admin.Components.Common.Selects
 @using Admin.Components.Common.Selects.ImagePicker
 @using Admin.Models
-@using IT.WebHost.Components.Content
 @using IT.WebServices.Fragments.Content
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -273,7 +272,7 @@
                                     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                         @foreach (var assetId in content.ImageAssetIds)
                                         {
-                                            <ClickableFeaturedImage AssetId="@assetId" Alt="Gallery image" />
+                                            <FeaturedImage AssetId="@assetId" Alt="Gallery image" Size="FeaturedImageSize.Small" />
                                         }
                                     </div>
                                 </ScrollArea>

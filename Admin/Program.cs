@@ -1,4 +1,5 @@
 using IT.Web.Project1.Services;
+using IT.WebHost.Core.Config;
 using IT.WebServices.Authentication;
 using NeoUI.Blazor;
 using NeoUI.Blazor.Extensions;
@@ -11,7 +12,6 @@ namespace Admin
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
 
             builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
             builder.Services.AddRazorComponents()

@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\IT.WebServices\Authentication\Shared\IT.WebServices.Authentication.Shared.csproj" />
     <ProjectReference Include="..\..\IT.WebServices\Clients\IT.WebServices.Clients.csproj" />
     <ProjectReference Include="..\..\IT.WebServices\Fragments\IT.WebServices.Fragments.csproj" />
+    <ProjectReference Include="..\Components\Components.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
