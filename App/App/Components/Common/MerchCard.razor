@@ -1,0 +1,49 @@
+﻿@using IT.WebServices.Fragments.Merch
+@using Microsoft.Extensions.Options
+<Card Class="w-full overflow-hidden">
+    @if (_imageError || string.IsNullOrEmpty(Merch.FeaturedImage.ImageAssetID))
+    {
+        <Skeleton Class="aspect-video w-full rounded-none" />
+    }
+    else
+    {
+        <div class="relative w-full">
+            @if (_imageLoading)
+            {
+                <Skeleton Class="absolute inset-0 w-full h-full rounded-none" />
+            }
+            <img src="@GetImageUrl()"
+                 alt="@Merch.Title"
+                 class="w-full h-full object-cover @(_imageLoading ? "invisible" : "")"
+                 @onload="() => _imageLoading = false"
+                 @onerror="OnImageError" />
+        </div>
+    }
+    <CardHeader>
+        <CardTitle>@Merch.Title</CardTitle>
+        <CardDescription>@Merch.Description</CardDescription>
+    </CardHeader>
+    <CardFooter Class="flex justify-between items-center">
+        <Button OnClick="@(() => Nav.NavigateTo(Merch.Url))">View</Button>
+     </CardFooter>
+    </Card>
+@code {
+    [Parameter] public GenericMerchRecord Merch  { get; set; }
+    [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+
+    private bool _imageError = false;
+    private bool _imageLoading = true;
+
+    private void OnImageError()
+    {
+        _imageError = true;
+        _imageLoading = false;
+    }
+
+    private string GetImageUrl()
+    {
+        var url = $"{_settings.Value.API_BASE_URL}/cms/asset/{Merch?.FeaturedImage.ImageAssetID}/data";
+        return url;
+    }
+}
