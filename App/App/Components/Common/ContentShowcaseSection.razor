@@ -1,0 +1,14 @@
+﻿<ScrollArea Class="w-96 whitespace-nowrap rounded-md border"
+            ShowHorizontalScrollbar="true"
+            ShowVerticalScrollbar="false">
+    <div class="flex w-max space-x-4 p-4">
+        @foreach (var record in Content)
+        {
+            <ContentCard @key="record.ContentID" Content="@record" Url="@($"/content/{record.URL.TrimStart('/')}")" />
+        }
+    </div>
+</ScrollArea>
+
+@code {
+    [Parameter] public List<ContentListRecord> Content { get; set; } = null!;
+}

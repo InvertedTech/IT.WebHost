@@ -122,8 +122,8 @@ namespace Admin.Components.Pages.Content
                     req.Public.Video = new()
                     {
                         HtmlBody = htmlBody,
-                        RumbleVideoId = rumbleVideoId,
-                        YoutubeVideoId = youtubeVideoId,
+                        RumbleVideoId = rumbleVideoId ?? "",
+                        YoutubeVideoId = youtubeVideoId ?? "",
                         IsLive = isLive,
                         IsLiveStream = isLiveStream,
                     };
