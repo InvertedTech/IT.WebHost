@@ -54,14 +54,14 @@ namespace Admin.Components.Pages.Users
         // TODO: Figure Out Why This Isn't Working
         private async Task GetUserSubs()
         {
-            //var res = await PaymentClient.GetOtherSubscriptionRecordsAsync(
-            //    new GetOtherSubscriptionRecordsRequest { UserID = Id },
-            //    ONUserHelper.GetGrpcCallOptions());
+            var res = await PaymentClient.GetOtherSubscriptionRecordsAsync(
+                new GetOtherSubscriptionRecordsRequest { UserID = Id },
+                ONUserHelper.GetGrpcCallOptions());
 
-            //if (res is not null)
-            //{
-            //    SubscriptionRecords = res.Generic.ToList();
-            //}
+            if (res is not null)
+            {
+                SubscriptionRecords = res.Generic.ToList();
+            }
         }
 
         private async Task GetUserTOTP()

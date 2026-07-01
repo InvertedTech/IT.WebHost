@@ -1,6 +1,11 @@
 ﻿@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Authentication
 @using IT.WebServices.Fragments.Authorization.Payment
+@using IT.WebServices.Fragments.Generic
 @inject NavigationManager Nav
+@inject ONUserHelper ONUserHelper;
+@inject AdminPaymentInterface.AdminPaymentInterfaceClient adminPaymentClient;
+@inject PaymentInterface.PaymentInterfaceClient paymentClient;
 
 <Card Class="w-full">
     <CardHeader>
@@ -91,8 +96,10 @@
                                     else if (isSubActive)
                                     {
                                         <Badge Class="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/20 gap-1 px-2.5 py-0.5">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                            Active
+                                            <span class="bg-emerald-500/10 text-emerald-600">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Active
+                                            </span>
                                         </Badge>
                                     }
                                     else if (isSubPaused)
@@ -141,6 +148,13 @@
                                     </div>
 
                                     <div class="flex items-center gap-2">
+                                        <Button Type="ButtonType.Button"
+                                                Size="ButtonSize.Small"
+                                                Variant="ButtonVariant.Outline"
+                                                Class="gap-1.5"
+                                                OnClick="() => HandleReconcileClick(record?.InternalSubscriptionID)">
+                                            @(reconcileId == record?.InternalSubscriptionID ? "Reconciling..." : "Reconcile Subscription")
+                                        </Button>
                                         @if (isSubActive && record?.ProcessorName == "stripe" && ShowUpdate)
                                         {
                                             <Button Type="ButtonType.Button"
@@ -223,7 +237,9 @@
 @code {
     [Parameter] public IEnumerable<GenericSubscriptionFullRecord>? subscriptions { get; set; }
     [Parameter] public bool ShowUpdate { get; set; } = true;
+    [Parameter] public Guid UserID { get; set; }
     private string? cancellingId;
+    private string? reconcileId;
     private Dictionary<string, string> cancelErrors = new();
 
     private IEnumerable<GenericSubscriptionFullRecord> sortedSubscriptions =>
@@ -234,6 +250,32 @@
         sortedSubscriptions.FirstOrDefault()?.SubscriptionRecord?.InternalSubscriptionID
         ?? sortedSubscriptions.FirstOrDefault()?.SubscriptionRecord?.ProcessorSubscriptionID
         ?? "subscription";
+
+    private async Task HandleReconcileClick(string? idStr)
+    {
+        if (idStr is null || cancellingId == idStr) return;
+        var id = idStr?.ToGuid() ?? Guid.Empty;
+
+        if (id == Guid.Empty)
+            return;
+
+        reconcileId = idStr;
+        StateHasChanged();
+
+        try
+        {
+
+            await adminPaymentClient.ReconcileOtherSubscriptionAsync(new() { UserID = UserID.ToString(), InternalSubscriptionID = id.ToString() }, ONUserHelper.GetGrpcCallOptions());
+
+            await ReloadSubscriptions();
+        }
+        finally
+        {
+            reconcileId = null;
+        }
+
+        StateHasChanged();
+    }
 
     private void HandleUpdateStripeCardClick(string? id)
     {
@@ -249,7 +291,9 @@
         StateHasChanged();
         try
         {
-            // await SubscriptionService.CancelAsync(id);
+            await adminPaymentClient.CancelOtherSubscriptionAsync(new() { UserID = UserID.ToString(), InternalSubscriptionID = id }, ONUserHelper.GetGrpcCallOptions());
+
+            await ReloadSubscriptions();
         }
         catch
         {
@@ -259,6 +303,16 @@
         {
             cancellingId = null;
             StateHasChanged();
+        }
+    }
+
+    private async Task ReloadSubscriptions()
+    {
+        var res = await adminPaymentClient.GetOtherSubscriptionRecordsAsync(new() { UserID = UserID.ToString() }, ONUserHelper.GetGrpcCallOptions());
+
+        if (res is not null)
+        {
+            subscriptions = res.Generic.ToList();
         }
     }
 
