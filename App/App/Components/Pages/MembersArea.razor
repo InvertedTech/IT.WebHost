@@ -1,7 +1,23 @@
-﻿@page "/members-area"
+﻿@page "/members"
 
 <h3>MembersArea</h3>
 
-@code {
-
+@if (isLoading)
+{
+    <Skeleton />
+} else
+{
+    if (!featuredChannels.Any())
+    {
+        <Empty>
+            <EmptyTitle>No Members Content Found</EmptyTitle>
+            <EmptyDescription>We Didn't Find Any Members Content</EmptyDescription>
+        </Empty>
+    } else
+    {
+        @foreach (var featured in featuredChannels)
+        {
+            <ContentShowcaseSection Content="featured.Value" />
+        }
+    }
 }
