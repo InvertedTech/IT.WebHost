@@ -4,7 +4,8 @@
 @using IT.WebServices.Fragments.Settings
 @using IT.WebServices.Fragments.Authorization
 @rendermode InteractiveServer
-
+@*TODO: Programatically display processor credential fields*@
+@*TODO: Add Role Gating*@
 <SettingsPageHeader Title="Subscription Settings" Description="Configure payment processing, subscription tiers, and processor credentials.">
     <Actions>
         <Button Variant="@(_isEditing ? ButtonVariant.Default : ButtonVariant.Outline)" Size="ButtonSize.Small" OnClick="ToggleEdit">
@@ -169,10 +170,18 @@
     protected override async Task OnInitializedAsync()
     {
         var pubSettings = await publicSettings.PublicData;
-        _public = pubSettings.Subscription;
+        _public = pubSettings.Subscription ?? new SubscriptionPublicRecord();
+        _public.Manual ??= new();
+        _public.Fortis ??= new();
+        _public.Crypto ??= new();
+        _public.Stripe ??= new();
+        _public.Paypal ??= new();
 
         var ownerSettings = await settingsClient.GetOwnerDataAsync(new GetOwnerDataRequest(), userHelper.GetGrpcCallOptions());
-        _owner = ownerSettings.Owner.Subscription;
+        _owner = ownerSettings.Owner.Subscription ?? new SubscriptionOwnerRecord();
+        _owner.Stripe ??= new();
+        _owner.Paypal ??= new();
+        _owner.Fortis ??= new();
     }
 
     private bool _isEditing = false;
@@ -187,7 +196,7 @@
 
     private async Task HandleSave()
     {
-        // TODO: persist changes via settingsClient
+        // TODO: persist changes via settingsClient 
         _isEditing = false;
     }
 

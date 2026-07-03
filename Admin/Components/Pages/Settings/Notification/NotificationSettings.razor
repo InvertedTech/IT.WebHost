@@ -1,33 +1,46 @@
-﻿@page "/settings/notifications"
+@page "/settings/notifications"
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 
-@* TODO: Wrap card in <AuthorizeView Roles="owner"> (ROLE_OWNER) or IS_OWNER_OR_SERVICE because it loads via SettingsClient.OwnerData (GetOwnerData); ModifyNotificationOwner requires "owner". *@
-<div class="space-y-6">
-    <SectionHeader Title="Notification" />
+<AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER">
+    <Authorized>
+        <div class="space-y-6">
+            <SectionHeader Title="Notification" />
 
-    <Card Class="max-w-3xl">
-        <CardHeader>
-            <CardTitle>Sendgrid</CardTitle>
-            <CardDescription>Configure outbound email delivery.</CardDescription>
-        </CardHeader>
-        <CardContent Class="space-y-6">
-            <Field>
-                <FieldLabel>Enabled</FieldLabel>
-                <FieldContent>
-                    <Switch Checked="@_notificationOwnerSettings.Sendgrid.Enabled" />
-                </FieldContent>
-            </Field>
-            <Field>
-                <FieldLabel For="api-secret">API Key Secret</FieldLabel>
-                <FieldContent>
-                    <Input Id="api-secret" Type="InputType.Password" Placeholder="Sendgrid API Key Secret" @bind-Value="_notificationOwnerSettings.Sendgrid.ApiKeySecret" />
-                </FieldContent>
-            </Field>
-            <Field>
-                <FieldLabel For="send-from-addr">Send From Address</FieldLabel>
-                <FieldContent>
-                    <Input Id="send-from-addr" Type="InputType.Email" Placeholder="The Email Sendgrid Appears From" @bind-Value="_notificationOwnerSettings.Sendgrid.SendFromAddress" />
-                </FieldContent>
-            </Field>
-        </CardContent>
-    </Card>
-</div>
+            <Card Class="max-w-3xl">
+                <CardHeader Class="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Sendgrid</CardTitle>
+                        <CardDescription>Configure outbound email delivery.</CardDescription>
+                    </div>
+                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
+                        <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
+                        Edit
+                    </Button>
+                </CardHeader>
+                <CardContent Class="space-y-6">
+                    <Field>
+                        <FieldLabel>Enabled</FieldLabel>
+                        <FieldContent>
+                            <Switch @bind-Checked="_notificationOwnerSettings.Sendgrid.Enabled" Disabled="!IsEditing" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="api-secret">API Key Secret</FieldLabel>
+                        <FieldContent>
+                            <Input Id="api-secret" Type="InputType.Password" Placeholder="Sendgrid API Key Secret" @bind-Value="_notificationOwnerSettings.Sendgrid.ApiKeySecret" Disabled="!IsEditing" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="send-from-addr">Send From Address</FieldLabel>
+                        <FieldContent>
+                            <Input Id="send-from-addr" Type="InputType.Email" Placeholder="The Email Sendgrid Appears From" @bind-Value="_notificationOwnerSettings.Sendgrid.SendFromAddress" Disabled="!IsEditing" />
+                        </FieldContent>
+                    </Field>
+                </CardContent>
+            </Card>
+        </div>
+
+        <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveSettingsAsync" />
+    </Authorized>
+</AuthorizeView>

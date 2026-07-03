@@ -1,15 +1,21 @@
 ﻿<div class="form-group">
     <label>Roles</label>
     <MultiSelect Items="@roles"
-                 @bind-Values="@selected"
+                 Values="@selected"
+                 ValuesChanged="OnValuesChanged"
                  ValueSelector="@(r => r.Value)"
                  DisplaySelector="@(r => r.Display)"
                  Placeholder="Select Roles" />
 </div>
 
 @code {
-    [Parameter] public IEnumerable<string> selected { get; set; } = new List<string>();
-    [Parameter] public EventCallback<IEnumerable<string>> selectedChanged { get; set; }
+    [Parameter] public List<string> selected { get; set; } = new List<string>();
+    [Parameter] public EventCallback<List<string>> selectedChanged { get; set; }
+
+    private async Task OnValuesChanged(IEnumerable<string> values)
+    {
+        await selectedChanged.InvokeAsync(values.ToList());
+    }
 
     private record RoleOption(string Value, string Display);
 

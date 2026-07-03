@@ -1,5 +1,6 @@
-﻿@using Admin.Components.Common.Selects
+@using Admin.Components.Common.Selects
 @using IT.WebServices.Authentication
+@using IT.WebServices.Fragments
 @using IT.WebServices.Fragments.Authentication
 
 <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="OpenDialog">
@@ -15,39 +16,60 @@
                 Modify Another User's Roles
             </DialogDescription>
         </DialogHeader>
-        <RoleSelect selected="@selected" />
+        <RoleSelect @bind-selected="editingRoles" />
         <DialogFooter>
-            <button>Cancel</button>
-            <button>Save</button>
+            <Button Variant="ButtonVariant.Outline" @onclick="CloseDialog" Disabled="isSaving">Cancel</Button>
+            <Button @onclick="GrantRoles" Disabled="isSaving">Save</Button>
         </DialogFooter>
     </DialogContent>
 </Dialog>
 
 @code {
-    // TODO: Pass Injects As Params
     [Inject] public UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
     [Inject] public ONUserHelper UserHelper { get; set; } = null!;
+    [Inject] public IToastService ToastService { get; set; } = null!;
     [Parameter] public string userId { get; set; } = null!;
     [Parameter] public List<string> selected { get; set; } = new List<string>();
+    [Parameter] public EventCallback<List<string>> selectedChanged { get; set; }
+    private List<string> editingRoles { get; set; } = new List<string>();
     private bool isOpen { get; set; } = false;
+    private bool isSaving { get; set; } = false;
 
     private async Task GrantRoles()
     {
+        isSaving = true;
+
         var req = new ModifyOtherUserRolesRequest
         {
             UserID = userId,
         };
 
-        req.Roles.AddRange(selected);
+        req.Roles.AddRange(editingRoles);
 
         var res = await UserClient.ModifyOtherUserRolesAsync(req, UserHelper.GetGrpcCallOptions());
 
-        // TODO: Handle Response
-        // TODO: Close
+        isSaving = false;
+
+        if (res?.Error is null || res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+        {
+            ToastService.Success("Roles updated successfully.");
+            selected = new List<string>(editingRoles);
+            await selectedChanged.InvokeAsync(selected);
+            CloseDialog();
+        }
+        else
+        {
+            var message = !string.IsNullOrEmpty(res.Error.Message)
+                ? res.Error.Message
+                : res.Error.Reason.ToString();
+
+            ToastService.Error(message);
+        }
     }
 
     private void OpenDialog()
     {
+        editingRoles = new List<string>(selected);
         isOpen = true;
     }
 

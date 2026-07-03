@@ -165,5 +165,10 @@ namespace Admin.Components.Pages.Users
         {
             isResetPasswordOpen = !isResetPasswordOpen;
         }
+
+        private async Task RefreshUserRoles(List<string> roles)
+        {
+            await GetUser();
+        }
     }
 }

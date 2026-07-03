@@ -7,7 +7,6 @@
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
-@* TODO: Wrap view/edit sections with appropriate AuthorizeView: basic view/ModifyContent needs "con_writer,con_publisher,admin,owner" (ROLE_CAN_CREATE_CONTENT); publish/unpublish/delete actions need "admin,owner,con_publisher" (ROLE_CAN_PUBLISH). Consider nested or multiple views or policy for edit vs publish buttons. *@
 <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
     <Authorized>
         <PageTitle>@(EditContent is not null ? $"{EditContent.Title} — Content" : "Content")</PageTitle>
@@ -98,17 +97,21 @@
                                 }
                             </div>
                             <div class="flex shrink-0 gap-2">
-                                @if (!isPublished)
-                                {
-                                    <PublishContentDialog contentId="@content.ContentId" OnPublish="HandlePublish" />
-                                }
-                                else
-                                {
-                                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="HandleUnpublish">
-                                        <LucideIcon Name="eye-off" class="mr-1.5 h-4 w-4" />
-                                        Unpublish
-                                    </Button>
-                                }
+                                <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_PUBLISH)" Context="publishContext">
+                                    <Authorized>
+                                        @if (!isPublished)
+                                        {
+                                            <PublishContentDialog contentId="@content.ContentId" OnPublish="HandlePublish" />
+                                        }
+                                        else
+                                        {
+                                            <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="HandleUnpublish">
+                                                <LucideIcon Name="eye-off" class="mr-1.5 h-4 w-4" />
+                                                Unpublish
+                                            </Button>
+                                        }
+                                    </Authorized>
+                                </AuthorizeView>
                                 <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
                                     <LucideIcon Name="pencil" class="mr-1.5 h-4 w-4" />
                                     Edit
@@ -314,33 +317,37 @@
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle Class="text-destructive">
-                            <LucideIcon Name="triangle-alert" class="mr-2 inline-block h-4 w-4" />
-                            Danger Zone
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent Class="space-y-3">
-                        <p class="text-sm text-muted-foreground">These actions affect the published content and cannot be undone.</p>
-                        <div class="flex flex-wrap gap-2">
-                            @if (isDeleted)
-                            {
-                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleUnDelete">
-                                    <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
-                                    Undelete Content
-                                </Button>
-                            }
-                            else
-                            {
-                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleDelete">
-                                    <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
-                                    Delete Content
-                                </Button>
-                            }
-                        </div>
-                    </CardContent>
-                </Card>
+                <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_PUBLISH)" Context="publishContext">
+                    <Authorized>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle Class="text-destructive">
+                                    <LucideIcon Name="triangle-alert" class="mr-2 inline-block h-4 w-4" />
+                                    Danger Zone
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent Class="space-y-3">
+                                <p class="text-sm text-muted-foreground">These actions affect the published content and cannot be undone.</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @if (isDeleted)
+                                    {
+                                        <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleUnDelete">
+                                            <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
+                                            Undelete Content
+                                        </Button>
+                                    }
+                                    else
+                                    {
+                                        <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="HandleDelete">
+                                            <LucideIcon Name="trash-2" class="mr-1.5 h-4 w-4" />
+                                            Delete Content
+                                        </Button>
+                                    }
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Authorized>
+                </AuthorizeView>
             </div>
 
             <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveContent" />

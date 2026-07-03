@@ -133,6 +133,8 @@ namespace Admin.Components.Pages.Content
                     break;
             }
 
+            req.Public.URL = Slugify(title, contentType);
+
             return req;
         }
 
@@ -230,6 +232,26 @@ namespace Admin.Components.Pages.Content
             list.AddRange(rumbleVideoIdErrors);
             list.AddRange(youtubeVideoIdErrors);
             return list;
+        }
+
+        private string Slugify(string title, ContentType type)
+        {
+            var sluggedTitle = title.Replace(" ", "-")
+                .ToLower();
+
+            switch (type)
+            {
+                case ContentType.ContentVideo:
+                    return $"/watch/{sluggedTitle}";
+                case ContentType.ContentAudio:
+                    return $"/listen/{sluggedTitle}";
+                case ContentType.ContentPicture:
+                    return $"/picture/{sluggedTitle}";
+                case ContentType.ContentWritten:
+                    return $"/written/{sluggedTitle}";
+                default:
+                    return $"/content/{sluggedTitle}";
+            }
         }
     }
 

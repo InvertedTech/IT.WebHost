@@ -6,8 +6,6 @@
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 
-@*TODO: Wire Up*@
-
 <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
     <Authorized>
         <FormWizard OnFinish="HandleFinish" FinishButtonText="Create Content">
