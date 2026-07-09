@@ -15,7 +15,31 @@ namespace WebApp.Components.Pages
 
         private bool isLoading { get; set; } = false;
         private bool isSuccess { get; set; } = false;
+        private bool isCheckingToken { get; set; } = true;
+        private bool isTokenValid { get; set; } = false;
         private string? errorMessage { get; set; } = null;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var res = await UserClient.ValidatePasswordResetTokenAsync(new ValidatePasswordResetTokenRequest
+            {
+                Token = this.Token,
+            });
+
+            if (res?.Error is null || res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+            {
+                isTokenValid = true;
+            }
+            else
+            {
+                isTokenValid = false;
+                errorMessage = !string.IsNullOrEmpty(res.Error.Message)
+                    ? res.Error.Message
+                    : "Reset link is invalid or has expired.";
+            }
+
+            isCheckingToken = false;
+        }
 
         private async Task OnResetPasswordAsync()
         {
