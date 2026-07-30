@@ -1,0 +1,17 @@
+<div class="flex flex-col gap-6 rounded-lg border p-4 sm:p-6">
+    <CommentInput ContentId="@ContentId" OnCommentSubmitted="RefreshComments" />
+    <Separator />
+    <CommentList @ref="_commentList" ContentId="@ContentId" />
+</div>
+
+@code {
+    [Parameter] public string ContentId { get; set; } = string.Empty;
+
+    private CommentList? _commentList;
+
+    private async Task RefreshComments()
+    {
+        if (_commentList is not null)
+            await _commentList.RefreshAsync();
+    }
+}

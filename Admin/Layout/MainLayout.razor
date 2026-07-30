@@ -258,7 +258,9 @@
 
 <AppError />
 
-<SpotlightCommandPalette @ref="_spotlightRef" />
+<CascadingAuthenticationState>
+    <SpotlightCommandPalette @ref="_spotlightRef" NavItems="navItems" SettingsNavItems="settingsNavItems" />
+</CascadingAuthenticationState>
 <ToastViewport />
 <DialogHost />
 <ContainerPortalHost />

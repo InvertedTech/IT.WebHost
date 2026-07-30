@@ -1,9 +1,11 @@
 @page "/settings/merch"
+@using IT.WebServices.Authentication
 @using IT.WebServices.Clients.Settings
 @using IT.WebServices.Fragments
 @using IT.WebServices.Fragments.Merch
 @using IT.WebServices.Fragments.Settings
 @using IT.WebServices.Fragments.Merch.Shopify
+@implements IDisposable
 @rendermode InteractiveServer
 
 <div class="merch-page">
@@ -14,10 +16,29 @@
             <p class="merch-page-subtitle">Global commerce integration and multi-store orchestration.</p>
         </div>
         <div class="merch-page-actions">
-            <Button Variant="ButtonVariant.Outline" OnClick="OnSyncGlobal">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.4rem"><path d="M21.5 2v6h-6" /><path d="M2.5 22v-6h6" /><path d="M22 11.5A10 10 0 0 1 3.2 7.2" /><path d="M2 12.5A10 10 0 0 0 20.8 16.8" /></svg>
-                Sync Global
-            </Button>
+            @if (_isSyncing)
+            {
+                <div class="merch-sync-progress">
+                    <div class="merch-sync-progress-info">
+                        <span class="merch-sync-progress-label">Syncing…</span>
+                        @if (!string.IsNullOrWhiteSpace(_syncStatusMessage))
+                        {
+                            <span class="merch-sync-progress-message">@_syncStatusMessage</span>
+                        }
+                    </div>
+                    <Progress Value="@_syncProgressPercent" Max="100" Class="merch-sync-progress-bar" />
+                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="CancelSync" Disabled="_syncCancelRequested">
+                        @(_syncCancelRequested ? "Canceling…" : "Cancel")
+                    </Button>
+                </div>
+            }
+            else
+            {
+                <Button Variant="ButtonVariant.Outline" OnClick="OnSyncGlobal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.4rem"><path d="M21.5 2v6h-6" /><path d="M2.5 22v-6h6" /><path d="M22 11.5A10 10 0 0 1 3.2 7.2" /><path d="M2 12.5A10 10 0 0 0 20.8 16.8" /></svg>
+                    Sync Global
+                </Button>
+            }
             <Button Variant="ButtonVariant.Default" OnClick="OpenCreateSheet">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.4rem"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 New Store
@@ -192,8 +213,39 @@
 
     .merch-page-actions {
         display: flex;
+        align-items: center;
         gap: 0.75rem;
         flex-shrink: 0;
+    }
+
+    .merch-sync-progress {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .merch-sync-progress-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 8rem;
+    }
+
+    .merch-sync-progress-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .merch-sync-progress-message {
+        font-size: 0.7rem;
+        color: var(--muted-foreground);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 12rem;
+    }
+
+    .merch-sync-progress-bar {
+        width: 8rem;
     }
 
     .merch-grid {
@@ -379,9 +431,19 @@
     [Inject] public PublicSettingsClient PublicSettingsClient { get; set; } = null!;
     [Inject] public SettingsClient SettingsClient { get; set; } = null!;
     [Inject] public IToastService ToastService { get; set; } = null!;
+    [Inject] public AdminMerchInterface.AdminMerchInterfaceClient AdminMerchClient { get; set; } = null!;
+    [Inject] public ONUserHelper UserHelper { get; set; } = null!;
 
     private bool _shopifyEnabled = false;
     private List<ShopifyStoreConfig> _stores = new();
+
+    private static readonly TimeSpan SyncPollInterval = TimeSpan.FromSeconds(1.5);
+
+    private bool _isSyncing;
+    private bool _syncCancelRequested;
+    private double _syncProgressPercent;
+    private string _syncStatusMessage = string.Empty;
+    private CancellationTokenSource? _syncPollCts;
 
     private bool _isEditing = false;
     private bool _isSheetOpen = false;
@@ -392,7 +454,11 @@
     private string _editStorefrontDomain = "";
     private List<string> _editCollectionIds = new();
 
-    protected override async Task OnInitializedAsync() => await LoadSettings();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+        await CheckForRunningSync();
+    }
 
     private async Task LoadSettings()
     {
@@ -403,6 +469,133 @@
         var ownerData = await SettingsClient.OwnerData;
         if (ownerData?.Merch?.Shopify?.Stores is { Count: > 0 } stores)
             _stores = stores.ToList();
+    }
+
+    private async Task CheckForRunningSync()
+    {
+        var res = await AdminMerchClient.MerchBulkActionStatusAsync(new MerchBulkActionStatusRequest(), UserHelper.GetGrpcCallOptions());
+
+        if (ApplyProgress(res.RunningActions))
+        {
+            _isSyncing = true;
+            StartPolling();
+        }
+    }
+
+    private async Task OnSyncGlobal()
+    {
+        if (_isSyncing)
+            return;
+
+        try
+        {
+            var res = await AdminMerchClient.MerchBulkActionStartAsync(new MerchBulkActionStartRequest
+            {
+                Action = MerchBulkAction.PullFromAll
+            }, UserHelper.GetGrpcCallOptions());
+
+            _isSyncing = true;
+            _syncCancelRequested = false;
+            ApplyProgress(res.RunningActions);
+            StartPolling();
+        }
+        catch (Exception)
+        {
+            ToastService.Error("Failed to start merch sync.");
+        }
+    }
+
+    private async Task CancelSync()
+    {
+        if (!_isSyncing || _syncCancelRequested)
+            return;
+
+        _syncCancelRequested = true;
+
+        try
+        {
+            await AdminMerchClient.MerchBulkActionCancelAsync(new MerchBulkActionCancelRequest
+            {
+                Action = MerchBulkAction.PullFromAll
+            }, UserHelper.GetGrpcCallOptions());
+        }
+        catch (Exception)
+        {
+            ToastService.Error("Failed to cancel merch sync.");
+        }
+    }
+
+    private void StartPolling()
+    {
+        _syncPollCts?.Cancel();
+        _syncPollCts?.Dispose();
+        _syncPollCts = new CancellationTokenSource();
+
+        _ = PollSyncStatus(_syncPollCts.Token);
+    }
+
+    private async Task PollSyncStatus(CancellationToken token)
+    {
+        using var timer = new PeriodicTimer(SyncPollInterval);
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                var res = await AdminMerchClient.MerchBulkActionStatusAsync(new MerchBulkActionStatusRequest(), UserHelper.GetGrpcCallOptions(token));
+
+                var stillRunning = false;
+
+                await InvokeAsync(async () =>
+                {
+                    stillRunning = ApplyProgress(res.RunningActions);
+
+                    if (!stillRunning)
+                        await FinishSync();
+
+                    StateHasChanged();
+                });
+
+                if (!stillRunning)
+                    break;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Component disposed or a new sync superseded this poll loop.
+        }
+    }
+
+    private bool ApplyProgress(IEnumerable<MerchBulkActionProgress> runningActions)
+    {
+        var job = runningActions.FirstOrDefault(a => a.Action == MerchBulkAction.PullFromAll);
+        if (job is null)
+            return false;
+
+        // Backend reports Progress as a 0-1 fraction while running but jumps to 100 on completion; normalize both.
+        _syncProgressPercent = job.Progress > 1 ? job.Progress : job.Progress * 100;
+        _syncStatusMessage = job.StatusMessage;
+        return true;
+    }
+
+    private async Task FinishSync()
+    {
+        var wasCanceled = _syncCancelRequested;
+
+        _isSyncing = false;
+        _syncCancelRequested = false;
+        _syncProgressPercent = 0;
+        _syncStatusMessage = string.Empty;
+
+        ToastService.Success(wasCanceled ? "Merch sync canceled." : "Merch sync completed.");
+
+        await LoadSettings();
+    }
+
+    public void Dispose()
+    {
+        _syncPollCts?.Cancel();
+        _syncPollCts?.Dispose();
     }
 
     private void ToggleEdit() => _isEditing = !_isEditing;
@@ -513,8 +706,6 @@
         if (index >= 0 && index < _editCollectionIds.Count)
             _editCollectionIds.RemoveAt(index);
     }
-
-    private void OnSyncGlobal() { }
 
     private static string GetAvatarColor(string? name)
     {

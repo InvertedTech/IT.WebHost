@@ -148,6 +148,51 @@ namespace Admin.Components.Pages.Users
             }
         }
 
+        private async Task DisableUser()
+        {
+            var req = new DisableEnableOtherUserRequest
+            {
+                UserID = Id,
+            };
+
+            var res = await UsersClient.DisableOtherUserAsync(req, ONUserHelper.GetGrpcCallOptions());
+            
+            if (res?.Error is null || res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+            {
+                ToastService.Success("User disabled successfully.");
+                await LoadUser();
+            }
+            else
+            {
+                var message = !string.IsNullOrEmpty(res.Error.Message)
+                    ? res.Error.Message
+                    : res.Error.Reason.ToString();
+                ToastService.Error(message);
+            }
+        }
+
+        private async Task EnableUser()
+        {
+            var req = new DisableEnableOtherUserRequest
+            {
+                UserID = Id,
+            };
+            var res = await UsersClient.EnableOtherUserAsync(req, ONUserHelper.GetGrpcCallOptions());
+
+            if (res?.Error is null || res.Error.Reason == APIErrorReason.ErrorReasonNoError)
+            {
+                ToastService.Success("User enabled successfully.");
+                await LoadUser();
+            }
+            else
+            {
+                var message = !string.IsNullOrEmpty(res.Error.Message)
+                    ? res.Error.Message
+                    : res.Error.Reason.ToString();
+                ToastService.Error(message);
+            }
+        }
+
         private static string GetInitials(string displayName)
         {
             if (string.IsNullOrWhiteSpace(displayName))

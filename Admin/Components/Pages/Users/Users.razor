@@ -1,14 +1,58 @@
 ﻿@page "/users"
+@using Admin.Components.Common.Selects
 @using IT.WebServices.Fragments.Authentication
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
-@inject NavigationManager Nav
 
 <AuthorizeView Roles="@(RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)">
     <Authorized>
         <SectionHeader Title="Users" />
 
-        <DataTable TData="UserNormalRecord"
+        <div class="flex flex-wrap items-end gap-3 rounded-lg border p-4">
+            <Field Class="w-56">
+                <FieldLabel>Search</FieldLabel>
+                <FieldContent>
+                    <Input Type="InputType.Text" Placeholder="Name, username, or email" @bind-Value="_searchFilter" />
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-56">
+                <FieldLabel>Roles</FieldLabel>
+                <FieldContent>
+                    <RoleSelect selected="_rolesFilter" selectedChanged="@((List<string> r) => _rolesFilter = r)" />
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-40">
+                <FieldLabel>Registered after</FieldLabel>
+                <FieldContent>
+                    <DatePicker @bind-SelectedDate="_createdAfterFilter" Placeholder="Any" />
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-40">
+                <FieldLabel>Registered before</FieldLabel>
+                <FieldContent>
+                    <DatePicker @bind-SelectedDate="_createdBeforeFilter" Placeholder="Any" />
+                </FieldContent>
+            </Field>
+
+            <Field Orientation="FieldOrientation.Horizontal" Class="items-center gap-2">
+                <Switch @bind-Checked="_includeDeletedFilter" />
+                <FieldLabel>Include deleted</FieldLabel>
+            </Field>
+
+            <div class="flex gap-2">
+                <Button Size="ButtonSize.Small" @onclick="@(() => ApplyFilters(_searchFilter, _rolesFilter, _createdAfterFilter, _createdBeforeFilter, _includeDeletedFilter))">
+                    Apply
+                </Button>
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="ClearFilters">
+                    Clear
+                </Button>
+            </div>
+        </div>
+
+        <DataTable TData="UserSearchRecord"
                    Data="UserList"
                    Dense="false"
                    IsLoading="IsLoading"
@@ -17,20 +61,22 @@
                    BodyRowClass="cursor-pointer"
                    AdditionalRowAttributes="@(row => new Dictionary<string, object>
                          {
-                             { "onclick", EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => Nav.NavigateTo($"/users/{row.Public.UserID}")) }
+                             { "onclick", EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => Nav.NavigateTo($"/users/{row.UserID}")) }
                          })">
             <Columns>
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.UserID)" Header="ID" Sortable Alignment="ColumnAlignment.Right" />
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.FirstName)" Header="First Name" Sortable />
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.LastName)" Header="Last Name" Sortable />
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.Data.UserName)" Header="Username" Sortable />
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Private.Data.Email)" Header="Email" Sortable />
-                <DataTableColumn TData="UserNormalRecord" TValue="string" Property="@(p => p.Public.CreatedOnUTC.ToString())" Header="Registered On" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.UserID)" Header="ID" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.FirstName)" Header="First Name" Sortable />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.LastName)" Header="Last Name" Sortable />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.UserName)" Header="Username" Sortable />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.Email)" Header="Email" Sortable />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.CreatedOnUTC != null ? p.CreatedOnUTC.ToDateTime().ToString() : "—")" Header="Registered On" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="UserSearchRecord" TValue="string" Property="@(p => p.DisabledOnUTC != null ? "Disabled" : "Active")" Header="Status" />
             </Columns>
         </DataTable>
         <Paginator baseUrl="/users"
                    pageSize="@((uint)pageSize)"
                    pageOffset="@((uint)pageOffset)"
-                   pageTotalItems="@totalItems" />
+                   pageTotalItems="@totalItems"
+                   ExtraQuery="@ExtraQuery" />
     </Authorized>
 </AuthorizeView>

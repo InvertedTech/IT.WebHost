@@ -1,0 +1,160 @@
+@page "/careers/{CareerId}"
+@using Admin.Models
+@using IT.WebServices.Fragments.Careers
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">
+    <Authorized>
+        <PageTitle>@(EditCareer is not null ? $"{EditCareer.Title} — Career" : "Career")</PageTitle>
+
+        @if (IsLoading)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <div class="flex flex-col items-center gap-3 text-muted-foreground">
+                    <LucideIcon Name="loader-circle" class="h-8 w-8 animate-spin" />
+                    <span class="text-sm">Loading career…</span>
+                </div>
+            </div>
+        }
+        else if (EditCareer is null)
+        {
+            <div class="flex h-64 items-center justify-center">
+                <Empty>
+                    <EmptyTitle>Career not found</EmptyTitle>
+                    <EmptyDescription>This listing may have been deleted or the ID is invalid.</EmptyDescription>
+                </Empty>
+            </div>
+        }
+        else
+        {
+            var career = EditCareer;
+            var isDeleted = career.DeletedOnUTC.HasValue;
+
+            <div class="space-y-6">
+                <Card Class="overflow-hidden">
+                    <CardContent Class="px-6 pb-5 pt-4">
+                        <div class="mb-4 flex items-start justify-between gap-4">
+                            <div class="space-y-1.5">
+                                <h1 class="text-2xl font-bold leading-tight">
+                                    @(string.IsNullOrWhiteSpace(career.Title) ? "Untitled" : career.Title)
+                                </h1>
+                                <p class="text-sm text-muted-foreground">@career.Company</p>
+                            </div>
+                            <div class="flex shrink-0 gap-2">
+                                @if (isDeleted)
+                                {
+                                    <Badge Variant="BadgeVariant.Destructive">Deleted</Badge>
+                                }
+                                <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
+                                    <LucideIcon Name="pencil" class="mr-1.5 h-4 w-4" />
+                                    Edit
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                            @if (career.CreatedOnUTC.HasValue)
+                            {
+                                <span class="flex items-center gap-1.5">
+                                    <LucideIcon Name="calendar" class="h-4 w-4" />
+                                    Posted @career.CreatedOnUTC.Value.ToLocalTime().ToString("MMMM d, yyyy")
+                                </span>
+                            }
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="briefcase" class="mr-2 inline-block h-4 w-4" />
+                            Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        <div class="space-y-0.5">
+                            <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Career ID</p>
+                            <p class="break-all font-mono text-sm">@career.CareerId</p>
+                        </div>
+
+                        <Separator />
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field>
+                                <FieldLabel For="title">Title</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="title" Type="InputType.Text" @bind-Value="career.Title" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="company">Company</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="company" Type="InputType.Text" @bind-Value="career.Company" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="department">Department</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="department" Type="InputType.Text" @bind-Value="career.Department" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel For="contact">Contact</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="contact" Type="InputType.Text" @bind-Value="career.Contact" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                        </div>
+
+                        <Separator />
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <Field>
+                                <FieldLabel For="area">Location Area</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="area" Type="InputType.Text" @bind-Value="career.Area" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel>Employment Type</FieldLabel>
+                                <FieldContent>
+                                    <Select TValue="JobType" @bind-Value="career.EmploymentType" Disabled="!IsEditing">
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem Value="JobType.FullTime">Full Time</SelectItem>
+                                            <SelectItem Value="JobType.PartTime">Part Time</SelectItem>
+                                            <SelectItem Value="JobType.Hybrid">Hybrid</SelectItem>
+                                            <SelectItem Value="JobType.Remote">Remote</SelectItem>
+                                            <SelectItem Value="JobType.Contract">Contract</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FieldContent>
+                            </Field>
+                            <Field>
+                                <FieldLabel>Relocation Required</FieldLabel>
+                                <FieldContent>
+                                    <Switch @bind-Checked="career.RelocationRequired" Disabled="!IsEditing" />
+                                </FieldContent>
+                            </Field>
+                        </div>
+
+                        <Separator />
+
+                        <Field>
+                            <FieldLabel For="body">Body</FieldLabel>
+                            <FieldContent>
+                                <MarkdownEditor Id="body" @bind-Value="career.BodyMarkdown" Placeholder="No description set." Disabled="!IsEditing" />
+                                <FieldDescription>Markdown. Use ## About, ## Role Overview, ## Responsibilities, and ## Qualifications sections.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveCareer" />
+        }
+    </Authorized>
+</AuthorizeView>

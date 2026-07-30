@@ -1,0 +1,132 @@
+@page "/audit-log"
+@using IT.WebServices.Fragments.AuditLog
+@using Microsoft.AspNetCore.Components.Authorization
+@using IT.WebServices.Authentication
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">
+    <Authorized>
+        <SectionHeader Title="Audit Log" />
+
+        <DataTable TData="AuditLogEntry"
+                   Data="Entries"
+                   Dense="false"
+                   IsLoading="isLoading"
+                   InitialPageSize="pageSize"
+                   ShowPagination="false">
+            <Columns>
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.CreatedOnUTC != null ? p.CreatedOnUTC.ToDateTime().ToLocalTime().ToString() : "—")" Header="Created" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.Action.ToString())" Header="Action" Sortable />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.Summary)" Header="Summary" />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.Reason)" Header="Reason" />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.ContextName)" Header="Context" Sortable />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => !string.IsNullOrWhiteSpace(p.Actor.DisplayName) ? p.Actor.DisplayName : p.Actor.UserName)" Header="Actor" Sortable />
+                <DataTableColumn TData="AuditLogEntry" TValue="int" Property="@(p => p.Targets.Count)" Header="Targets" Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="AuditLogEntry" TValue="string" Property="@(p => p.EntryID)" Header="Changes">
+                    <CellTemplate Context="entry">
+                        @if (entry.Changes.Count > 0)
+                        {
+                            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="@(() => ViewDetails(entry))">
+                                View
+                            </Button>
+                        }
+                        else
+                        {
+                            <span class="text-xs text-muted-foreground">—</span>
+                        }
+                    </CellTemplate>
+                </DataTableColumn>
+            </Columns>
+        </DataTable>
+
+        <Paginator baseUrl="/audit-log"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems" />
+
+        <Dialog @bind-Open="isDetailsOpen">
+            <DialogContent>
+                @if (selectedEntry is not null)
+                {
+                    var entry = selectedEntry;
+                    <DialogHeader>
+                        <DialogTitle>@entry.Action</DialogTitle>
+                        <DialogDescription>@(!string.IsNullOrWhiteSpace(entry.Summary) ? entry.Summary : "Audit log entry details")</DialogDescription>
+                    </DialogHeader>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Actor</p>
+                                <p class="text-sm">@(!string.IsNullOrWhiteSpace(entry.Actor.DisplayName) ? entry.Actor.DisplayName : entry.Actor.UserName)</p>
+                            </div>
+                            <div class="space-y-0.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Created</p>
+                                <p class="text-sm">@(entry.CreatedOnUTC?.ToDateTime().ToLocalTime().ToString() ?? "—")</p>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(entry.Reason))
+                            {
+                                <div class="space-y-0.5 sm:col-span-2">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reason</p>
+                                    <p class="text-sm">@entry.Reason</p>
+                                </div>
+                            }
+                        </div>
+
+                        @if (entry.Targets.Count > 0)
+                        {
+                            <div class="space-y-1.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Targets</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach (var target in entry.Targets)
+                                    {
+                                        <Badge Variant="BadgeVariant.Secondary">@target.Type: @(!string.IsNullOrWhiteSpace(target.DisplayName) ? target.DisplayName : target.TargetID)</Badge>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (entry.Changes.Count > 0)
+                        {
+                            <div class="space-y-1.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Changes</p>
+                                <div class="space-y-2">
+                                    @foreach (var change in entry.Changes)
+                                    {
+                                        <div class="grid grid-cols-1 gap-2 rounded-md border p-3 sm:grid-cols-3">
+                                            <div class="text-sm font-medium">@change.FieldName</div>
+                                            <div class="space-y-0.5">
+                                                <p class="text-xs uppercase text-muted-foreground">Before</p>
+                                                <p class="whitespace-pre-wrap break-words text-xs">@(string.IsNullOrEmpty(change.BeforeValue) ? "—" : change.BeforeValue)</p>
+                                            </div>
+                                            <div class="space-y-0.5">
+                                                <p class="text-xs uppercase text-muted-foreground">After</p>
+                                                <p class="whitespace-pre-wrap break-words text-xs">@(string.IsNullOrEmpty(change.AfterValue) ? "—" : change.AfterValue)</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (entry.Metadata.Count > 0)
+                        {
+                            <div class="space-y-1.5">
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Metadata</p>
+                                <div class="space-y-1 font-mono text-xs">
+                                    @foreach (var kvp in entry.Metadata)
+                                    {
+                                        <div><span class="text-muted-foreground">@(kvp.Key):</span> @kvp.Value</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <DialogFooter>
+                        <Button Variant="ButtonVariant.Outline" @onclick="CloseDetails">Close</Button>
+                    </DialogFooter>
+                }
+            </DialogContent>
+        </Dialog>
+    </Authorized>
+</AuthorizeView>

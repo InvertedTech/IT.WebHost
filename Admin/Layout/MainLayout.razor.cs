@@ -67,6 +67,8 @@ namespace Admin.Layout
             new() { Text = "Content",   Href = "/content", Icon = "file-text", RequiredRole = RoleAbilities.ROLE_CAN_CREATE_CONTENT },
             new() { Text = "Assets",    Href = "/assets",  Icon = "image", RequiredRole = RoleAbilities.ROLE_CAN_CREATE_CONTENT },
             new() { Text = "Users",     Href = "/users",   Icon = "users", RequiredRole = $"{RoleAbilities.ROLE_MEMBER_MANAGER},{RoleAbilities.ROLE_IS_SUBSCRIPTION_MANAGER_OR_HIGHER}" },
+            new() { Text = "Careers",   Href = "/careers", Icon = "briefcase", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
+            new() { Text = "Audit Log", Href = "/audit-log", Icon = "history", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
         };
 
         private readonly List<AdminNavItem> settingsNavItems = new()

@@ -1,0 +1,91 @@
+@page "/users/verify-qr"
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER)">
+    <Authorized>
+        <div class="flex items-center justify-center min-h-[60vh]">
+            @if (!IsValid)
+            {
+                <Card Class="w-full max-w-sm border-destructive/50 bg-destructive/5">
+                    <CardHeader Class="pb-3 text-center">
+                        <div class="flex justify-center mb-3">
+                            <LucideIcon Name="shield-alert" class="h-12 w-12 text-destructive" />
+                        </div>
+                        <CardTitle Class="text-destructive text-xl">Invalid QR Code</CardTitle>
+                    </CardHeader>
+                    <Separator Class="bg-destructive/20" />
+                    <CardContent Class="pt-4 text-center space-y-2">
+                        <p class="text-sm text-muted-foreground">
+                            The QR code you scanned is not valid. Please make sure you are scanning the correct QR code and try again.
+                        </p>
+                        @if (!string.IsNullOrEmpty(Name))
+                        {
+                            <p class="text-sm text-muted-foreground">
+                                Display Name: <span class="font-semibold text-foreground">@Name</span>
+                            </p>
+                        }
+                        @if (Level.HasValue)
+                        {
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="text-xs text-muted-foreground">Access Level</span>
+                                <Badge Variant="BadgeVariant.Secondary" Class="text-xs">Level @Level</Badge>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Reason))
+                        {
+                            <p class="text-xs text-destructive/80 font-medium">Reason: @Reason</p>
+                        }
+                        <p class="text-xs text-muted-foreground">
+                            If the problem persists, contact support for assistance.
+                        </p>
+                    </CardContent>
+                </Card>
+            }
+            else
+            {
+                <Card Class="w-full max-w-sm border-green-500/50 bg-green-500/5">
+                    <CardHeader Class="pb-3 text-center">
+                        <div class="flex justify-center mb-3">
+                            <LucideIcon Name="circle-check-big" class="h-12 w-12 text-green-500" />
+                        </div>
+                        <CardTitle Class="text-green-600 dark:text-green-400 text-xl">QR Code Verified</CardTitle>
+                    </CardHeader>
+                    <Separator Class="bg-green-500/20" />
+                    <CardContent Class="pt-4 text-center space-y-3">
+                        @if (!string.IsNullOrEmpty(Name))
+                        {
+                            <p class="text-sm text-muted-foreground">
+                                Welcome, <span class="font-semibold text-foreground">@Name</span>!
+                            </p>
+                        }
+                        @if (Level.HasValue)
+                        {
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="text-xs text-muted-foreground">Access Level</span>
+                                <Badge Variant="BadgeVariant.Secondary" Class="text-xs">Level @Level</Badge>
+                            </div>
+                        }
+                    </CardContent>
+                </Card>
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [SupplyParameterFromQuery(Name = "valid")]
+    public string? ValidRaw { get; set; }
+
+    [SupplyParameterFromQuery(Name = "name")]
+    public string? Name { get; set; }
+
+    [SupplyParameterFromQuery(Name = "level")]
+    public string? LevelRaw { get; set; }
+
+    [SupplyParameterFromQuery(Name = "reason")]
+    public string? Reason { get; set; }
+
+    private bool IsValid => ValidRaw == "true";
+    private int? Level => int.TryParse(LevelRaw, out var level) ? level : null;
+}

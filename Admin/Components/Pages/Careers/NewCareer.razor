@@ -1,0 +1,108 @@
+@page "/careers/create"
+@using Admin.Models
+@using IT.WebServices.Fragments.Careers
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">
+    <Authorized>
+        <SectionHeader Title="New Career" />
+
+        <div class="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>
+                        <LucideIcon Name="briefcase" class="mr-2 inline-block h-4 w-4" />
+                        Details
+                    </CardTitle>
+                </CardHeader>
+                <CardContent Class="space-y-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field>
+                            <FieldLabel For="title">Title</FieldLabel>
+                            <FieldContent>
+                                <Input Id="title" Type="InputType.Text" Placeholder="Enter a title" @bind-Value="NewCareerModel.Title" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="company">Company</FieldLabel>
+                            <FieldContent>
+                                <Input Id="company" Type="InputType.Text" Placeholder="Enter a company" @bind-Value="NewCareerModel.Company" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="department">Department</FieldLabel>
+                            <FieldContent>
+                                <Input Id="department" Type="InputType.Text" Placeholder="Enter a department" @bind-Value="NewCareerModel.Department" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="contact">Contact</FieldLabel>
+                            <FieldContent>
+                                <Input Id="contact" Type="InputType.Text" Placeholder="Enter a contact" @bind-Value="NewCareerModel.Contact" />
+                            </FieldContent>
+                        </Field>
+                    </div>
+
+                    <Separator />
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field>
+                            <FieldLabel For="area">Location Area</FieldLabel>
+                            <FieldContent>
+                                <Input Id="area" Type="InputType.Text" Placeholder="Enter a location" @bind-Value="NewCareerModel.Area" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Employment Type</FieldLabel>
+                            <FieldContent>
+                                <Select TValue="JobType" @bind-Value="NewCareerModel.EmploymentType">
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem Value="JobType.FullTime">Full Time</SelectItem>
+                                        <SelectItem Value="JobType.PartTime">Part Time</SelectItem>
+                                        <SelectItem Value="JobType.Hybrid">Hybrid</SelectItem>
+                                        <SelectItem Value="JobType.Remote">Remote</SelectItem>
+                                        <SelectItem Value="JobType.Contract">Contract</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Relocation Required</FieldLabel>
+                            <FieldContent>
+                                <Switch @bind-Checked="NewCareerModel.RelocationRequired" />
+                            </FieldContent>
+                        </Field>
+                    </div>
+
+                    <Separator />
+
+                    <Field>
+                        <FieldLabel For="body">Body</FieldLabel>
+                        <FieldContent>
+                            <MarkdownEditor Id="body" @bind-Value="NewCareerModel.BodyMarkdown" Placeholder="Describe the role…" />
+                            <FieldDescription>Markdown. Use ## About, ## Role Overview, ## Responsibilities, and ## Qualifications sections.</FieldDescription>
+                        </FieldContent>
+                    </Field>
+                </CardContent>
+            </Card>
+
+            @if (!string.IsNullOrEmpty(OverallError))
+            {
+                <div class="rounded border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
+                    @OverallError
+                </div>
+            }
+
+            <div class="flex justify-end">
+                <Button Variant="ButtonVariant.Default" @onclick="SubmitCreate" Disabled="IsSaving">
+                    <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                    Create Career
+                </Button>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>

@@ -3,6 +3,7 @@
 @using Admin.Components.Common.Selects
 @using Admin.Components.Common.Selects.ImagePicker
 @using Admin.Models
+@using IT.WebHost.Shared.Comments
 @using IT.WebServices.Fragments.Content
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -314,6 +315,18 @@
                                 <div class="prose prose-sm max-w-none text-foreground">@((MarkupString)content.HtmlBody)</div>
                             }
                         }
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="message-square" class="mr-2 inline-block h-4 w-4" />
+                            Comments
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <CommentSection ContentId="@content.ContentId" />
                     </CardContent>
                 </Card>
 

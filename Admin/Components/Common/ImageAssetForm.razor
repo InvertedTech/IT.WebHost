@@ -1,56 +1,98 @@
-﻿@using IT.WebServices.Fragments.Content
-<Field>
-    <FieldLabel For="title">Title</FieldLabel>
-    <FieldContent>
-        <Input Id="title" Type="InputType.Text" Placeholder="Enter your title" />
-        <FieldDescription>Choose a unique title for your content.</FieldDescription>
-    </FieldContent>
-</Field>
-<Field>
-    <FieldLabel For="caption">Caption</FieldLabel>
-    <FieldContent>
-        <Input Id="caption" Type="InputType.Text" Placeholder="Enter your caption" />
-        <FieldDescription>Choose a unique caption for your content.</FieldDescription>
-    </FieldContent>
-</Field>
-<Field>
-    <FieldLabel For="image">Image</FieldLabel>
-    <FieldContent>
-        <FileUpload Id="image" MaxFileCount="MaxFileCount" OnFilesChanged="OnFilesChanged" />
-    </FieldContent>
-</Field>
+@using IT.WebServices.Clients.CMS
+@using IT.WebServices.Fragments.Content
+@inject AssetClient AssetClient
+@inject IToastService ToastService
+
+<div class="flex flex-col gap-4">
+    <Field>
+        <FieldLabel For="title">Title</FieldLabel>
+        <FieldContent>
+            <Input Id="title" Type="InputType.Text" Placeholder="Enter your title" @bind-Value="_title" />
+            <FieldDescription>Choose a unique title for your content.</FieldDescription>
+        </FieldContent>
+    </Field>
+    <Field>
+        <FieldLabel For="caption">Caption</FieldLabel>
+        <FieldContent>
+            <Input Id="caption" Type="InputType.Text" Placeholder="Enter your caption" @bind-Value="_caption" />
+            <FieldDescription>Choose a unique caption for your content.</FieldDescription>
+        </FieldContent>
+    </Field>
+    <Field>
+        <FieldLabel For="image">Image</FieldLabel>
+        <FieldContent>
+            <FileUpload Id="image" Accept="image/*" MaxFileCount="MaxFileCount" OnFilesChanged="OnFilesChanged" Disabled="_isSubmitting" />
+        </FieldContent>
+    </Field>
+
+    <div class="flex justify-end">
+        <Button Size="ButtonSize.Small" Disabled="@(_selectedFile is null || _isSubmitting)" @onclick="Submit">
+            @(_isSubmitting ? "Creating..." : "Create Asset")
+        </Button>
+    </div>
+</div>
 
 @code {
     [Parameter] public int MaxFileCount { get; set; } = 1;
-    [Parameter]
-    public CreateAssetRequest CreateAssetRequest { get; set; } = new()
+    [Parameter] public EventCallback<ImageAssetRecord> OnCreated { get; set; }
+
+    private string _title = string.Empty;
+    private string _caption = string.Empty;
+    private IBrowserFile? _selectedFile;
+    private bool _isSubmitting;
+
+    private Task OnFilesChanged(IReadOnlyList<IBrowserFile> fileList)
     {
-        Image = new()
-        {
-            Public = new(),
-            Private = new()
-        }
-    };
-    [Parameter] public EventCallback<CreateAssetRequest> CreateAssetRequestChanged { get; set; }
+        _selectedFile = fileList.Count > 0 ? fileList[0] : null;
+        return Task.CompletedTask;
+    }
 
-    private IReadOnlyList<IBrowserFile>? files { get; set; }
-
-
-    private async Task OnFilesChanged(IReadOnlyList<IBrowserFile> fileList)
+    private async Task Submit()
     {
-        if (fileList.Count == 0)
+        if (_selectedFile is null || _isSubmitting)
             return;
 
-        var img = fileList[0];
+        _isSubmitting = true;
 
-        CreateAssetRequest.Image.Public.MimeType = img.ContentType;
+        try
+        {
+            await using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            var data = await Google.Protobuf.ByteString.FromStreamAsync(stream);
 
-        await using var stream = img.OpenReadStream(
-            maxAllowedSize: 10 * 1024 * 1024);
+            var req = new CreateAssetRequest
+            {
+                Image = new ImageAssetData
+                {
+                    Public = new ImageAssetPublicData
+                    {
+                        Title = _title,
+                        Caption = _caption,
+                        MimeType = _selectedFile.ContentType,
+                        Data = data,
+                    },
+                    Private = new ImageAssetPrivateData(),
+                }
+            };
 
-        CreateAssetRequest.Image.Public.Data =
-            await Google.Protobuf.ByteString.FromStreamAsync(stream);
+            var record = await AssetClient.Create(req);
 
-        await CreateAssetRequestChanged.InvokeAsync(CreateAssetRequest);
+            if (record is null)
+            {
+                ToastService.Error("Failed to create asset.");
+                return;
+            }
+
+            ToastService.Success("Asset created successfully.");
+
+            _title = string.Empty;
+            _caption = string.Empty;
+            _selectedFile = null;
+
+            await OnCreated.InvokeAsync(record);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 }

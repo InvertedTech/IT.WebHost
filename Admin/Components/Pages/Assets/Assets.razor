@@ -5,6 +5,48 @@
 
 <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)">
     <Authorized>
+        <div class="flex items-center justify-between">
+            <SectionHeader Title="Assets" />
+            <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="@(() => _isCreateDialogOpen = true)">
+                <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                New Asset
+            </Button>
+        </div>
+
+        <div class="flex flex-wrap items-end gap-3 rounded-lg border p-4">
+            <Field Class="w-56">
+                <FieldLabel>Search</FieldLabel>
+                <FieldContent>
+                    <Input Type="InputType.Text" Placeholder="Title or caption" @bind-Value="_queryFilter" />
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-40">
+                <FieldLabel>Type</FieldLabel>
+                <FieldContent>
+                    <Select TValue="string" Value="@_assetTypeFilter" ValueChanged="@((string v) => _assetTypeFilter = v)">
+                        <SelectTrigger>
+                            <SelectValue Placeholder="All types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem Value="@("")">All types</SelectItem>
+                            <SelectItem Value="@(nameof(AssetType.AssetImage))">Image</SelectItem>
+                            <SelectItem Value="@(nameof(AssetType.AssetAudio))">Audio</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FieldContent>
+            </Field>
+
+            <div class="flex gap-2">
+                <Button Size="ButtonSize.Small" @onclick="@(() => ApplyFilters(_queryFilter, _assetTypeFilter))">
+                    Apply
+                </Button>
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="ClearFilters">
+                    Clear
+                </Button>
+            </div>
+        </div>
+
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             @foreach (var asset in AssetList)
             {
@@ -22,7 +64,17 @@
         <Paginator baseUrl="/assets"
                    pageSize="@((uint)pageSize)"
                    pageOffset="@((uint)pageOffset)"
-                   pageTotalItems="@totalItems" />
+                   pageTotalItems="@totalItems"
+                   ExtraQuery="@ExtraQuery" />
 
+        <Dialog @bind-Open="_isCreateDialogOpen">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>New Asset</DialogTitle>
+                    <DialogDescription>Upload an image to create a new asset.</DialogDescription>
+                </DialogHeader>
+                <ImageAssetForm OnCreated="HandleAssetCreated" />
+            </DialogContent>
+        </Dialog>
     </Authorized>
 </AuthorizeView>

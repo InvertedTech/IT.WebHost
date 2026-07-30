@@ -56,15 +56,9 @@
                 </DialogFooter>
             </TabsContent>
             <TabsContent Value="upload">
-                @* // TODO: Wire This Up To Create The Asset And Select It On Success *@
-                <ImageAssetForm />
+                <ImageAssetForm OnCreated="HandleAssetCreated" />
                 <DialogFooter>
-                    <div class="flex justify-between w-full">
-                        <Button Variant="ButtonVariant.Outline" OnClick="@(() => IsDialogOpen = false)">Close</Button>
-                        <div class="flex gap-2">
-                            <Button>Create</Button>
-                        </div>
-                    </div>
+                    <Button Variant="ButtonVariant.Outline" OnClick="@(() => IsDialogOpen = false)">Close</Button>
                 </DialogFooter>
             </TabsContent>
         </Tabs>
@@ -109,6 +103,23 @@
         });
         AssetRecords = assetsResponse.Records.ToList();
         StateHasChanged();
+    }
+
+    private async Task HandleAssetCreated(ImageAssetRecord asset)
+    {
+        if (MultiSelect)
+        {
+            if (!SelectedAssetIds.Contains(asset.Public.AssetID))
+                SelectedAssetIds.Add(asset.Public.AssetID);
+
+            await LoadAssets();
+        }
+        else
+        {
+            SelectedAssetIds.Clear();
+            SelectedAssetIds.Add(asset.Public.AssetID);
+            await Confirm();
+        }
     }
 
     private async Task ToggleSelection(string assetId)

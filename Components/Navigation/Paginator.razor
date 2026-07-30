@@ -32,6 +32,12 @@
     [Parameter] public uint pageTotalItems { get; set; }
     [Parameter] public string? query { get; set; }
 
+    /// <summary>
+    /// Additional already-encoded querystring key/value pairs (e.g. filter state) to preserve
+    /// across page navigation, formatted as "key1=value1&amp;key2=value2" with no leading "&amp;".
+    /// </summary>
+    [Parameter] public string? ExtraQuery { get; set; }
+
     private int CurrentPage => pageSize > 0 ? (int)(pageOffset / pageSize) + 1 : 1;
     private int TotalPages => pageSize > 0 ? (int)Math.Ceiling((double)pageTotalItems / pageSize) : 1;
 
@@ -44,6 +50,8 @@
         var url = $"{baseUrl}?offset={offset}&size={pageSize}";
         if (!string.IsNullOrEmpty(query))
             url += $"&query={Uri.EscapeDataString(query)}";
+        if (!string.IsNullOrEmpty(ExtraQuery))
+            url += $"&{ExtraQuery}";
 
         return url;
     }

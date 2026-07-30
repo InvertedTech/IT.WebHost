@@ -172,7 +172,7 @@
                                                     Variant="ButtonVariant.Ghost"
                                                     Class="text-muted-foreground hover:text-destructive hover:bg-destructive/5"
                                                     Disabled="(cancellingId == record?.InternalSubscriptionID)"
-                                                    OnClick="() => HandleCancelClick(record?.InternalSubscriptionID)">
+                                                    OnClick="() => RequestCancel(record?.InternalSubscriptionID)">
                                                 @(cancellingId == record?.InternalSubscriptionID ? "Canceling..." : "Cancel Subscription")
                                             </Button>
                                         }
@@ -234,6 +234,13 @@
     </CardContent>
 </Card>
 
+<ConfirmDialog @ref="_cancelConfirmDialog"
+               Title="Cancel subscription?"
+               Description="This will cancel the subscription immediately and stop future renewals."
+               ConfirmText="Cancel Subscription"
+               CancelText="Keep Subscription"
+               OnConfirm="ConfirmCancel" />
+
 @code {
     [Parameter] public IEnumerable<GenericSubscriptionFullRecord>? subscriptions { get; set; }
     [Parameter] public bool ShowUpdate { get; set; } = true;
@@ -241,6 +248,8 @@
     private string? cancellingId;
     private string? reconcileId;
     private Dictionary<string, string> cancelErrors = new();
+    private ConfirmDialog? _cancelConfirmDialog;
+    private string? _pendingCancelId;
 
     private IEnumerable<GenericSubscriptionFullRecord> sortedSubscriptions =>
         (subscriptions ?? []).OrderByDescending(s =>
@@ -283,15 +292,30 @@
             Nav.NavigateTo($"/profile/subscription/stripe/updatecard?txId={id}");
     }
 
-    private async Task HandleCancelClick(string? id)
+    private void RequestCancel(string? id)
     {
+        if (id is null || cancellingId == id) return;
+        _pendingCancelId = id;
+        _cancelConfirmDialog?.Open();
+    }
+
+    private async Task ConfirmCancel()
+    {
+        var id = _pendingCancelId;
+        _pendingCancelId = null;
+
         if (id is null || cancellingId == id) return;
         cancelErrors.Remove(id);
         cancellingId = id;
         StateHasChanged();
         try
         {
-            await adminPaymentClient.CancelOtherSubscriptionAsync(new() { UserID = UserID.ToString(), InternalSubscriptionID = id }, ONUserHelper.GetGrpcCallOptions());
+            await adminPaymentClient.CancelOtherSubscriptionAsync(new()
+            {
+                UserID = UserID.ToString(),
+                InternalSubscriptionID = id,
+                Reason = "Canceled via admin portal",
+            }, ONUserHelper.GetGrpcCallOptions());
 
             await ReloadSubscriptions();
         }

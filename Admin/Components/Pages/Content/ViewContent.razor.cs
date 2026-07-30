@@ -4,6 +4,7 @@ using IT.WebHost.Core.Config;
 using IT.WebServices.Authentication;
 using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments;
+using IT.WebServices.Fragments.Comment;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ namespace Admin.Components.Pages.Content
 
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
         [Inject] private ContentClient ContentClient { get; set; } = null!;
+        [Inject] private CommentInterface.CommentInterfaceClient CommentClient { get; set; } = null!;
         [Inject] private IToastService ToastService { get; set; } = null!;
         [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
 

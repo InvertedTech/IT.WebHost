@@ -8,6 +8,81 @@
     <Authorized>
         <h3>Content</h3>
 
+        <div class="flex flex-wrap items-end gap-3 rounded-lg border p-4">
+            <Field Class="w-40">
+                <FieldLabel>Type</FieldLabel>
+                <FieldContent>
+                    <Select TValue="string" Value="@_typeFilter" ValueChanged="@((string v) => _typeFilter = v)">
+                        <SelectTrigger>
+                            <SelectValue Placeholder="All types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem Value="@("")">All types</SelectItem>
+                            <SelectItem Value="@(nameof(ContentType.ContentWritten))">Written</SelectItem>
+                            <SelectItem Value="@(nameof(ContentType.ContentVideo))">Video</SelectItem>
+                            <SelectItem Value="@(nameof(ContentType.ContentPicture))">Picture</SelectItem>
+                            <SelectItem Value="@(nameof(ContentType.ContentAudio))">Audio</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-48">
+                <FieldLabel>Channel</FieldLabel>
+                <FieldContent>
+                    <Select TValue="string" Value="@_channelFilter" ValueChanged="@((string v) => _channelFilter = v)">
+                        <SelectTrigger>
+                            <SelectValue Placeholder="All channels" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem Value="@("")">All channels</SelectItem>
+                            @foreach (var channel in Channels)
+                            {
+                                <SelectItem Value="@channel.ChannelId">@channel.DisplayName</SelectItem>
+                            }
+                        </SelectContent>
+                    </Select>
+                </FieldContent>
+            </Field>
+
+            <Field Class="w-48">
+                <FieldLabel>Category</FieldLabel>
+                <FieldContent>
+                    <Select TValue="string" Value="@_categoryFilter" ValueChanged="@((string v) => _categoryFilter = v)">
+                        <SelectTrigger>
+                            <SelectValue Placeholder="All categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem Value="@("")">All categories</SelectItem>
+                            @foreach (var category in Categories)
+                            {
+                                <SelectItem Value="@category.CategoryId">@category.DisplayName</SelectItem>
+                            }
+                        </SelectContent>
+                    </Select>
+                </FieldContent>
+            </Field>
+
+            <Field Orientation="FieldOrientation.Horizontal" Class="items-center gap-2">
+                <Switch @bind-Checked="_onlyLiveFilter" />
+                <FieldLabel>Live only</FieldLabel>
+            </Field>
+
+            <Field Orientation="FieldOrientation.Horizontal" Class="items-center gap-2">
+                <Switch @bind-Checked="_includeDeletedFilter" />
+                <FieldLabel>Include deleted</FieldLabel>
+            </Field>
+
+            <div class="flex gap-2">
+                <Button Size="ButtonSize.Small" @onclick="@(() => ApplyFilters(_typeFilter, _channelFilter, _categoryFilter, _onlyLiveFilter, _includeDeletedFilter))">
+                    Apply
+                </Button>
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="ClearFilters">
+                    Clear
+                </Button>
+            </div>
+        </div>
+
         <DataTable TData="ContentListRecord"
                    Data="ContentList"
                    Dense="false"
@@ -30,6 +105,7 @@
         <Paginator baseUrl="/content"
                    pageSize="@((uint)pageSize)"
                    pageOffset="@((uint)pageOffset)"
-                   pageTotalItems="@totalItems" />
+                   pageTotalItems="@totalItems"
+                   ExtraQuery="@ExtraQuery" />
     </Authorized>
 </AuthorizeView>

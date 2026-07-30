@@ -22,11 +22,38 @@ namespace Admin.Components.Pages.Assets
         {
             get => int.Parse(PageOffsetStr ?? "0");
         }
+
+        [SupplyParameterFromQuery(Name = "q")]
+        public string? QueryFilter { get; set; }
+
+        [SupplyParameterFromQuery(Name = "type")]
+        public string? AssetTypeFilter { get; set; }
+
         private uint totalItems { get; set; } = 0;
+
+        private string _queryFilter = string.Empty;
+        private string? _assetTypeFilter;
+        private bool _isCreateDialogOpen;
+
+        private string ExtraQuery
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(QueryFilter))
+                    parts.Add($"q={Uri.EscapeDataString(QueryFilter)}");
+                if (!string.IsNullOrEmpty(AssetTypeFilter))
+                    parts.Add($"type={Uri.EscapeDataString(AssetTypeFilter)}");
+                return string.Join("&", parts);
+            }
+        }
 
         protected override async Task OnParametersSetAsync()
         {
             // TODO: This page calls SearchAsset requiring ROLE_CAN_CREATE_CONTENT_OR_SERVICE ("con_publisher,con_writer,admin,owner,service"); wrap UI with AuthorizeView
+            _queryFilter = QueryFilter ?? string.Empty;
+            _assetTypeFilter = AssetTypeFilter;
+
             await LoadAssets();
             StateHasChanged();
         }
@@ -39,6 +66,12 @@ namespace Admin.Components.Pages.Assets
                 PageOffset = (uint)pageOffset,
             };
 
+            if (!string.IsNullOrEmpty(QueryFilter))
+                req.Query = QueryFilter;
+
+            if (!string.IsNullOrEmpty(AssetTypeFilter) && Enum.TryParse<AssetType>(AssetTypeFilter, out var assetType))
+                req.AssetType = assetType;
+
             var res = await AssetClient.SearchAsset(req);
 
             if (res is null)
@@ -48,6 +81,26 @@ namespace Admin.Components.Pages.Assets
 
             AssetList = res.Records.ToList();
             totalItems = res.PageTotalItems;
+        }
+
+        private void ApplyFilters(string query, string? assetType)
+        {
+            var parts = new List<string> { $"size={pageSize}" };
+            if (!string.IsNullOrEmpty(query))
+                parts.Add($"q={Uri.EscapeDataString(query)}");
+            if (!string.IsNullOrEmpty(assetType))
+                parts.Add($"type={Uri.EscapeDataString(assetType)}");
+
+            Nav.NavigateTo($"/assets?{string.Join("&", parts)}");
+        }
+
+        private void ClearFilters() => Nav.NavigateTo("/assets");
+
+        private async Task HandleAssetCreated(ImageAssetRecord asset)
+        {
+            _isCreateDialogOpen = false;
+            await LoadAssets();
+            StateHasChanged();
         }
     }
 }

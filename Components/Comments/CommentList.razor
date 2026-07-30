@@ -1,0 +1,107 @@
+﻿@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Comment
+
+@if (isLoading)
+{
+    <div class="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+        <LucideIcon Name="loader-circle" Size="18" class="animate-spin" />
+        Loading comments...
+    </div>
+}
+else if (Comments.Count == 0)
+{
+    <div class="flex flex-col items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+        <LucideIcon Name="message-square" Size="24" />
+        <p>No comments yet.</p>
+    </div>
+}
+else
+{
+    <div class="space-y-4">
+        @foreach (var comment in Comments)
+        {
+            <CommentItem CommentClient="@CommentClient" UserHelper="@UserHelper" Comment="@comment" />
+        }
+    </div>
+}
+
+@code {
+    [Inject] private ONUserHelper UserHelper { get; set; } = null!;
+    [Inject] private CommentInterface.CommentInterfaceClient CommentClient { get; set; } = null!;
+
+    [Parameter] public string ContentId { get; set; } = null!;
+
+    private List<CommentResponseRecord> Comments { get; set; } = new List<CommentResponseRecord>();
+    public string? PageSizeStr { get; set; }
+    private int pageSize
+    {
+        get => int.Parse(PageSizeStr ?? "25");
+    }
+    public string? PageOffsetStr { get; set; }
+    private int pageOffset
+    {
+        get => int.Parse(PageOffsetStr ?? "0");
+    }
+
+    private bool isLoading { get; set; } = true;
+    private uint totalItems { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAsync();
+    }
+
+    public async Task RefreshAsync()
+    {
+        var records = await GetComments();
+        Comments = records;
+        StateHasChanged();
+    }
+
+    private async Task<List<CommentResponseRecord>> GetComments()
+    {
+        isLoading = true;
+        var req = new GetCommentsForContentRequest
+        {
+            ContentID = ContentId,
+            PageSize = (uint)pageSize,
+            PageOffset = (uint)pageOffset,
+            Order = CommentOrder.Newest
+        };
+
+        var res = await CommentClient.GetCommentsForContentAsync(req, UserHelper.GetGrpcCallOptions());
+        if (res is null)
+        {
+            isLoading = false;
+            return new();
+        }
+
+        isLoading = false;
+        totalItems = res.PageTotalItems;
+        return res.Records.ToList();
+    }
+
+    // TODO: See if it's worth it to move this on to CommentItem.razor
+    private async Task<List<CommentResponseRecord>> GetCommentsForComment(string commentId)
+    {
+        isLoading = true;
+        var req = new GetCommentsForCommentRequest
+        {
+            ParentCommentID = commentId,
+            PageSize = (uint)pageSize,
+            PageOffset = (uint)pageOffset,
+            Order = CommentOrder.Newest
+        };
+        var res = await CommentClient.GetCommentsForCommentAsync(req, UserHelper.GetGrpcCallOptions());
+        if (res is null)
+        {
+            isLoading = false;
+            return new();
+        }
+        isLoading = false;
+        totalItems = res.PageTotalItems;
+        return res.Records.ToList();
+    }
+
+    // TODO: Add ShowMore method to trigger GetCommentsForComment call with pageOffset = pageOffset + pageSize
+}

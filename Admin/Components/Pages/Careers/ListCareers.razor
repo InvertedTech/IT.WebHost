@@ -1,0 +1,49 @@
+@page "/careers"
+@using IT.WebServices.Fragments.Careers
+@using Microsoft.AspNetCore.Components.Authorization
+@using IT.WebServices.Authentication
+@inject NavigationManager Nav
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">
+    <Authorized>
+        <div class="flex items-center justify-between">
+            <SectionHeader Title="Careers" />
+            <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="@(() => Nav.NavigateTo("/careers/create"))">
+                <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                New Career
+            </Button>
+        </div>
+
+        <Field Orientation="FieldOrientation.Horizontal" Class="items-center gap-2">
+            <Switch Checked="_includeDeletedFilter" CheckedChanged="ToggleIncludeDeleted" />
+            <FieldLabel>Include deleted</FieldLabel>
+        </Field>
+
+        <DataTable TData="CareerListRecord"
+                   Data="CareerList"
+                   Dense="false"
+                   IsLoading="isLoading"
+                   InitialPageSize="pageSize"
+                   ShowPagination="false"
+                   BodyRowClass="cursor-pointer"
+                   AdditionalRowAttributes="@(row => new Dictionary<string, object>
+                                {
+                                    { "onclick", EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => Nav.NavigateTo($"/careers/{row.CareerId}")) }
+                                })">
+            <Columns>
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.Title)" Header="Title" Sortable />
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.Company)" Header="Company" Sortable />
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.Department)" Header="Department" Sortable />
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.Location.Area)" Header="Location" Sortable />
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.CreatedOnUTC != null ? p.CreatedOnUTC.ToDateTime().ToString() : "—")" Header="Created On" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="CareerListRecord" TValue="string" Property="@(p => p.DeletedOnUTC != null ? "Deleted" : "Active")" Header="Status" />
+            </Columns>
+        </DataTable>
+
+        <Paginator baseUrl="/careers"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems"
+                   ExtraQuery="@ExtraQuery" />
+    </Authorized>
+</AuthorizeView>

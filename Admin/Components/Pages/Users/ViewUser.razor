@@ -225,10 +225,20 @@
                     <CardContent Class="space-y-3">
                         <p class="text-sm text-muted-foreground">These actions affect the user's account and cannot be undone.</p>
                         <div class="flex flex-wrap gap-2">
-                            <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small">
-                                <LucideIcon Name="user-x" class="h-4 w-4 mr-1.5" />
-                                Disable Account
-                            </Button>
+                            @if (User.Public.DisabledOnUTC is null)
+                            {
+                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="DisableUser">
+                                    <LucideIcon Name="user-x" class="h-4 w-4 mr-1.5" />
+                                    Disable Account
+                                </Button>
+                            }
+                            else
+                            {
+                                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" @onclick="EnableUser">
+                                    <LucideIcon Name="user-check" class="h-4 w-4 mr-1.5" />
+                                    Enable Account
+                                </Button>
+                            }
                         </div>
                     </CardContent>
                 </Card>

@@ -1,3 +1,6 @@
+@using Admin.Layout
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IKeyboardShortcutService KeyboardShortcuts
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
@@ -24,18 +27,75 @@
                     </CommandEmpty>
                     
                     <CommandGroup Heading="Navigation">
-                        <CommandItem Value="">
-                            <LucideIcon Name="house" Size="16" Class="mr-2" />
-                            <span>Home</span>
-                        </CommandItem>
-                        <CommandItem Value="counter">
-                            <LucideIcon Name="component" Size="16" Class="mr-2" />
-                            <span>Counter</span>
-                        </CommandItem>
-                        <CommandItem Value="weather">
-                            <LucideIcon Name="cloud-rain" Size="16" Class="mr-2" />
-                            <span>Weather</span>
-                        </CommandItem>
+                        @foreach (var item in NavItems)
+                        {
+                            @if (item.RequiredRole is not null)
+                            {
+                                <AuthorizeView Roles="@item.RequiredRole" Context="navAuth">
+                                    <Authorized>
+                                        <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                            <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                            <span>@item.Text</span>
+                                        </CommandItem>
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+                            else
+                            {
+                                <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                    <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                    <span>@item.Text</span>
+                                </CommandItem>
+                            }
+                        }
+                    </CommandGroup>
+
+                    <CommandGroup Heading="Settings">
+                        @foreach (var item in SettingsNavItems)
+                        {
+                            @if (item.RequiredRole is not null)
+                            {
+                                <AuthorizeView Roles="@item.RequiredRole" Context="settingsAuth">
+                                    <Authorized>
+                                        <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                            <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                            <span>@item.Text</span>
+                                        </CommandItem>
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+                            else
+                            {
+                                <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                    <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                    <span>@item.Text</span>
+                                </CommandItem>
+                            }
+                        }
+                    </CommandGroup>
+
+                    <CommandGroup Heading="Quick Actions">
+                        @foreach (var item in QuickActions)
+                        {
+                            @if (item.RequiredRole is not null)
+                            {
+                                <AuthorizeView Roles="@item.RequiredRole" Context="actionAuth">
+                                    <Authorized>
+                                        <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                            <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                            <span>@item.Text</span>
+                                        </CommandItem>
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+                            else
+                            {
+                                <CommandItem Value="@item.Href" SearchText="@item.Text">
+                                    <LucideIcon Name="@item.Icon" Size="16" Class="mr-2" />
+                                    <span>@item.Text</span>
+                                </CommandItem>
+                            }
+                        }
                     </CommandGroup>
 
                 </CommandList>
@@ -45,6 +105,16 @@
 </Dialog>
 
 @code {
+    [Parameter] public List<AdminNavItem> NavItems { get; set; } = new();
+    [Parameter] public List<AdminNavItem> SettingsNavItems { get; set; } = new();
+
+    private readonly List<AdminNavItem> QuickActions = new()
+    {
+        new() { Text = "Create Content", Href = "/content/create", Icon = "file-plus", RequiredRole = RoleAbilities.ROLE_CAN_CREATE_CONTENT },
+        new() { Text = "Create User",    Href = "/users/create",   Icon = "user-plus", RequiredRole = RoleAbilities.ROLE_IS_MEMBER_MANAGER_OR_HIGHER },
+        new() { Text = "New Career",     Href = "/careers/create", Icon = "briefcase", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
+    };
+
     private bool _isOpen = false;
     private readonly HeightAnimationConfig _heightAnimationConfig = new()
     {

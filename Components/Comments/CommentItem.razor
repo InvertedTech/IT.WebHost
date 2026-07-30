@@ -1,0 +1,418 @@
+@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Comment
+
+<Item Variant="ItemVariant.Default" Class="items-start gap-3 px-0 py-2">
+    <ItemMedia Variant="ItemMediaVariant.Image">
+        <Avatar Size="AvatarSize.Default">
+            <AvatarFallback>JD</AvatarFallback>
+        </Avatar>
+    </ItemMedia>
+    <ItemContent Class="gap-0.5">
+        <ItemTitle Class="gap-2 text-sm font-medium">
+            @Comment.UserDisplayName
+            @if (IsPinned)
+            {
+                <Badge Variant="BadgeVariant.Secondary" Class="gap-1 text-[10px]">
+                    <LucideIcon Name="pin" Size="10" />
+                    Pinned
+                </Badge>
+            }
+        </ItemTitle>
+
+        @if (IsDeleted)
+        {
+            <ItemDescription Class="text-sm italic text-muted-foreground">
+                [comment deleted]
+            </ItemDescription>
+        }
+        else if (_isEditing)
+        {
+            <div class="flex flex-col gap-2">
+                <Textarea @bind-Value="_editText"
+                          Rows="3"
+                          Class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                <div class="flex gap-2">
+                    <Button Size="ButtonSize.Small" Disabled="@(string.IsNullOrWhiteSpace(_editText) || _isBusy)" @onclick="SaveEdit">Save</Button>
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="CancelEdit">Cancel</Button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <ItemDescription Class="text-sm text-foreground line-clamp-none">
+                @Comment.CommentText
+            </ItemDescription>
+        }
+
+        <ItemActions Class="mt-1 flex-wrap gap-1 px-0">
+            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small"
+                    Disabled="@(!UserHelper.IsLoggedIn || IsDeleted)"
+                    Class="@($"h-7 gap-1 rounded-full px-2 hover:bg-muted hover:text-foreground {(_liked ? "text-foreground" : "text-muted-foreground")}")"
+                    @onclick="ToggleLike">
+                <LucideIcon Name="thumbs-up" Size="16" class="@(_liked ? "fill-current" : "")" />
+                @if (_likeCount > 0)
+                {
+                    @_likeCount
+                }
+            </Button>
+
+            @if (UserHelper.IsLoggedIn && !IsDeleted && !IsReply)
+            {
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" @onclick="ToggleReplyBox">
+                    Reply
+                </Button>
+            }
+
+            @if (IsOwnComment && !IsDeleted)
+            {
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" @onclick="StartEdit">
+                    Edit
+                </Button>
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-destructive" Disabled="_isBusy" @onclick="DeleteOwn">
+                    Delete
+                </Button>
+            }
+
+            @if (CanModerate)
+            {
+                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" Disabled="_isBusy" @onclick="TogglePin">
+                    @(IsPinned ? "Unpin" : "Pin")
+                </Button>
+                @if (IsDeleted)
+                {
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" Disabled="_isBusy" @onclick="RestoreComment">
+                        Restore
+                    </Button>
+                }
+                else
+                {
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-destructive" Disabled="_isBusy" @onclick="ModeratorDelete">
+                        Remove
+                    </Button>
+                }
+            }
+        </ItemActions>
+
+        @if (_showReplyBox)
+        {
+            <div class="mt-2 flex flex-col gap-2">
+                <Textarea @bind-Value="_replyText"
+                          Placeholder="Write a reply..."
+                          Rows="2"
+                          Class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                <div class="flex gap-2">
+                    <Button Size="ButtonSize.Small" Disabled="@(string.IsNullOrWhiteSpace(_replyText) || _isBusy)" @onclick="SubmitReply">Reply</Button>
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" @onclick="@(() => _showReplyBox = false)">Cancel</Button>
+                </div>
+            </div>
+        }
+
+@* TODO: n-th dimensional reply loading — replies are currently restricted to a single level (you
+   can reply to a top-level comment, but not to a reply). Comment.NumReplies/GetCommentsForComment
+   support arbitrarily deep threads server-side, so once nested reply UI is desired, remove the
+   !IsReply guard below and pass IsReply="true" down through each level (or switch to an iterative/
+   flattened renderer instead of the current recursive <CommentItem> approach so deep threads don't
+   blow the render stack). *@
+        @if (!IsReply && Comment.NumReplies > 0)
+        {
+            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="mt-1 h-7 w-fit gap-1 rounded-full px-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" Disabled="_isBusy" @onclick="ToggleReplies">
+                <LucideIcon Name="@(_showReplies ? "chevron-up" : "chevron-down")" Size="14" />
+                @(_showReplies ? "Hide" : "View") @Comment.NumReplies repl@(Comment.NumReplies == 1 ? "y" : "ies")
+            </Button>
+
+            @if (_showReplies)
+            {
+                <div class="ml-8 mt-2 flex flex-col gap-3 border-l pl-4">
+                    @foreach (var reply in _replies)
+                    {
+                        <CommentItem Comment="@reply" UserHelper="@UserHelper" CommentClient="@CommentClient" IsReply="true" />
+                    }
+                    @if (_hasMoreReplies)
+                    {
+                        <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Small" Class="h-7 w-fit rounded-full px-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground" Disabled="_isBusy" @onclick="LoadMoreReplies">
+                            Show more replies
+                        </Button>
+                    }
+                </div>
+            }
+        }
+    </ItemContent>
+</Item>
+
+@code {
+    private const int RepliesPageSize = 10;
+
+    [Parameter] public ONUserHelper UserHelper { get; set; } = null!;
+    [Parameter] public CommentInterface.CommentInterfaceClient CommentClient { get; set; } = null!;
+    [Parameter] public CommentResponseRecord Comment { get; set; } = null!;
+    [Parameter] public bool IsReply { get; set; }
+
+    private bool _liked;
+    private uint _likeCount;
+
+    private bool _showReplyBox;
+    private string _replyText = string.Empty;
+
+    private bool _showReplies;
+    private bool _repliesLoaded;
+    private int _repliesOffset;
+    private bool _hasMoreReplies;
+    private List<CommentResponseRecord> _replies = new();
+
+    private bool _isEditing;
+    private string _editText = string.Empty;
+
+    private bool _isBusy;
+
+    private bool IsDeleted => Comment.DeletedOnUTC is not null;
+    private bool IsPinned => Comment.PinnedOnUTC is not null;
+    private bool IsOwnComment => UserHelper.IsLoggedIn && Guid.TryParse(Comment.UserID, out var ownerId) && ownerId == UserHelper.MyUserId;
+    private bool CanModerate => UserHelper.MyUser?.RoleAbilities.IsCommentModeratorOrHigher ?? false;
+
+    protected override void OnParametersSet()
+    {
+        _liked = Comment.LikedByUser;
+        _likeCount = Comment.Likes;
+    }
+
+    private async Task ToggleLike()
+    {
+        if (!UserHelper.IsLoggedIn || IsDeleted || _isBusy)
+            return;
+
+        _liked = !_liked;
+        _likeCount = _liked ? _likeCount + 1 : _likeCount - 1;
+
+        if (_liked)
+            await LikeComment();
+        else
+            await UnlikeComment();
+
+        Comment.LikedByUser = _liked;
+        Comment.Likes = _likeCount;
+    }
+
+    private void ToggleReplyBox() => _showReplyBox = !_showReplyBox;
+
+    private async Task SubmitReply()
+    {
+        if (string.IsNullOrWhiteSpace(_replyText) || _isBusy)
+            return;
+
+        _isBusy = true;
+
+        await CommentClient.CreateCommentForCommentAsync(new CreateCommentForCommentRequest
+        {
+            ParentCommentID = Comment.CommentID,
+            Text = _replyText
+        }, UserHelper.GetGrpcCallOptions());
+
+        Comment.NumReplies++;
+        _replyText = string.Empty;
+        _showReplyBox = false;
+        _isBusy = false;
+
+        if (_repliesLoaded)
+            await ReloadReplies();
+        else
+            await ToggleReplies();
+    }
+
+    private async Task ToggleReplies()
+    {
+        _showReplies = !_showReplies;
+
+        if (_showReplies && !_repliesLoaded)
+            await ReloadReplies();
+    }
+
+    private async Task ReloadReplies()
+    {
+        _repliesOffset = 0;
+        _replies = await FetchReplies(0);
+        _repliesLoaded = true;
+        _hasMoreReplies = _replies.Count == RepliesPageSize;
+    }
+
+    private async Task LoadMoreReplies()
+    {
+        if (_isBusy)
+            return;
+
+        _isBusy = true;
+        _repliesOffset += RepliesPageSize;
+        var more = await FetchReplies(_repliesOffset);
+        _replies.AddRange(more);
+        _hasMoreReplies = more.Count == RepliesPageSize;
+        _isBusy = false;
+    }
+
+    private async Task<List<CommentResponseRecord>> FetchReplies(int offset)
+    {
+        var res = await CommentClient.GetCommentsForCommentAsync(new GetCommentsForCommentRequest
+        {
+            ParentCommentID = Comment.CommentID,
+            PageSize = RepliesPageSize,
+            PageOffset = (uint)offset,
+            Order = CommentOrder.Newest
+        }, UserHelper.GetGrpcCallOptions());
+
+        return res?.Records.ToList() ?? new();
+    }
+
+    private void StartEdit()
+    {
+        _editText = Comment.CommentText;
+        _isEditing = true;
+    }
+
+    private void CancelEdit() => _isEditing = false;
+
+    private async Task SaveEdit()
+    {
+        if (string.IsNullOrWhiteSpace(_editText) || _isBusy)
+            return;
+
+        _isBusy = true;
+        await EditComment();
+        Comment.CommentText = _editText;
+        _isEditing = false;
+        _isBusy = false;
+    }
+
+    private async Task DeleteOwn()
+    {
+        if (_isBusy)
+            return;
+
+        _isBusy = true;
+        await DeleteComment();
+        Comment.DeletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
+        _isBusy = false;
+    }
+
+    private async Task ModeratorDelete()
+    {
+        if (_isBusy)
+            return;
+
+        _isBusy = true;
+        await AdminDeleteComment();
+        Comment.DeletedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
+        _isBusy = false;
+    }
+
+    private async Task RestoreComment()
+    {
+        if (_isBusy)
+            return;
+
+        _isBusy = true;
+        await AdminUnDeleteComment();
+        Comment.DeletedOnUTC = null;
+        _isBusy = false;
+    }
+
+    private async Task TogglePin()
+    {
+        if (_isBusy)
+            return;
+
+        _isBusy = true;
+
+        if (IsPinned)
+        {
+            await UnPinComment();
+            Comment.PinnedOnUTC = null;
+        }
+        else
+        {
+            await PinComment();
+            Comment.PinnedOnUTC = Timestamp.FromDateTime(DateTime.UtcNow);
+        }
+
+        _isBusy = false;
+    }
+
+    public async Task LikeComment()
+    {
+        var req = new LikeCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.LikeCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task UnlikeComment()
+    {
+        var req = new UnLikeCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.UnLikeCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task PinComment()
+    {
+        var req = new AdminPinCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.AdminPinCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task UnPinComment()
+    {
+        var req = new AdminUnPinCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.AdminUnPinCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task AdminDeleteComment()
+    {
+        var req = new AdminDeleteCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.AdminDeleteCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task AdminUnDeleteComment()
+    {
+        var req = new AdminUnDeleteCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.AdminUnDeleteCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task DeleteComment()
+    {
+        var req = new DeleteOwnCommentRequest
+        {
+            CommentID = Comment.CommentID
+        };
+
+        await CommentClient.DeleteOwnCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+
+    public async Task EditComment()
+    {
+        var req = new EditCommentRequest
+        {
+            CommentID = Comment.CommentID,
+            Text = _editText
+        };
+
+        await CommentClient.EditCommentAsync(req, UserHelper.GetGrpcCallOptions());
+    }
+}
