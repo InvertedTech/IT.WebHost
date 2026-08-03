@@ -1,9 +1,12 @@
 @page "/"
 @using NeoUI.Blazor.Charts
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 
-@* TODO: Wrap main dashboard content (KPIs and charts) in <AuthorizeView Roles="admin,owner"> (or full: "admin,owner,service,bot_verification" per RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT from service) to guard Dashboard GetKpis route *@
 <PageTitle>Dashboard</PageTitle>
 
+<AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER_OR_SERVICE_OR_BOT">
+    <Authorized>
 <div class="space-y-8">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-1">
@@ -255,3 +258,5 @@
         </div>
     }
 </div>
+    </Authorized>
+</AuthorizeView>

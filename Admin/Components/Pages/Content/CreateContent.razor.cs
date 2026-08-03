@@ -16,8 +16,6 @@ namespace Admin.Components.Pages.Content
         [Inject] private IValidator Validator { get; set; } = null!;
         [Inject] private IToastService ToastService { get; set; } = null!;
 
-        // TODO: Add role guard - CreateContent/Modify requires ROLE_CAN_CREATE_CONTENT, publish requires ROLE_CAN_PUBLISH; place AuthorizeView in .razor
-
         private async Task HandleFinish()
         {
             overallError = null;

@@ -92,8 +92,6 @@
         }
     }
 
-    // TODO: LoadAssets calls SearchAsset requiring ROLE_CAN_CREATE_CONTENT_OR_SERVICE; since used inside content edit (which is guarded by can_create), ok, but if standalone wrap parent with AuthorizeView.
-
     private async Task LoadAssets()
     {
         var assetsResponse = await AssetClient.SearchAsset(new SearchAssetRequest()

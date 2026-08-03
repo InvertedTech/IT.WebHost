@@ -24,7 +24,6 @@ namespace Admin.Components.Pages.Settings.Comments
 
         protected override async Task OnInitializedAsync()
         {
-            // TODO: Page requires "owner" (or service) role due to SettingsClient.PrivateData fetch (GetOwnerData); public mods admin/owner. Add AuthorizeView in .razor for the whole UI or sections.
             await LoadSettings();
         }
 

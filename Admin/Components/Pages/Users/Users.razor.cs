@@ -71,7 +71,6 @@ namespace Admin.Components.Pages.Users
 
         protected override async Task OnParametersSetAsync()
         {
-            // TODO: Guard this page - calls SearchUsersAdmin which requires ROLE_IS_MEMBER_MANAGER_OR_HIGHER ("member_manager,admin,owner"); add <AuthorizeView Roles="member_manager,admin,owner"> around content in .razor
             _searchFilter = SearchFilter ?? string.Empty;
             _rolesFilter = string.IsNullOrEmpty(RolesFilter) ? new() : RolesFilter.Split(',').ToList();
             _createdAfterFilter = DateOnly.TryParse(CreatedAfterFilter, out var after) ? after : null;

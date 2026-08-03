@@ -50,7 +50,6 @@ namespace Admin.Components.Pages.Assets
 
         protected override async Task OnParametersSetAsync()
         {
-            // TODO: This page calls SearchAsset requiring ROLE_CAN_CREATE_CONTENT_OR_SERVICE ("con_publisher,con_writer,admin,owner,service"); wrap UI with AuthorizeView
             _queryFilter = QueryFilter ?? string.Empty;
             _assetTypeFilter = AssetTypeFilter;
 

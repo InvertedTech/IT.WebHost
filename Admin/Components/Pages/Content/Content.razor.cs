@@ -75,7 +75,6 @@ namespace Admin.Components.Pages.Content
 
         protected override async Task OnParametersSetAsync()
         {
-            // TODO: Guard page with AuthorizeView Roles using ROLE_CAN_CREATE_CONTENT ("con_publisher,con_writer,admin,owner") for GetAllContentAdmin
             Channels = ChannelHelper.GetAll();
             Categories = CategoryHelper.GetAll();
 

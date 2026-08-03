@@ -52,8 +52,6 @@
         StateHasChanged();
     }
 
-    // TODO: This component assumes parent page (create/edit content) has already guarded with ROLE_CAN_CREATE_CONTENT (since it calls SearchUsersAdmin which requires ROLE_IS_MEMBER_MANAGER_OR_HIGHER? wait no, but in context of content writers); if used elsewhere add AuthorizeView wrapper.
-
     private async Task OnAuthorSelected(string userId)
     {
         var user = _users.FirstOrDefault(u => u.id == userId);

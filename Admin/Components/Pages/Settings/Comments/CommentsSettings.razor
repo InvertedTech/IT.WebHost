@@ -1,7 +1,10 @@
 ﻿@page "/settings/comments"
 @using IT.WebServices.Fragments.Comment
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 
-@* TODO: Wrap tabs/content in <AuthorizeView Roles="owner"> because Load uses SettingsClient (fetches via GetOwnerData which requires ROLE_IS_OWNER_OR_SERVICE); saves use ModifyComments*Public/Private (admin,owner) or Owner (owner only). Existing switches may need role-based visibility. *@
+<AuthorizeView Roles="@RoleAbilities.ROLE_IS_OWNER_OR_SERVICE">
+    <Authorized>
 <div class="space-y-6">
     <SectionHeader Title="Comments" />
 
@@ -120,3 +123,5 @@
         </Tabs>
     }
 </div>
+    </Authorized>
+</AuthorizeView>

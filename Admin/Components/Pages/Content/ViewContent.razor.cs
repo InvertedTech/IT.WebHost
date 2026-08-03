@@ -35,7 +35,6 @@ namespace Admin.Components.Pages.Content
             IsLoading = true;
             IsEditing = false;
             Content = null;
-            // TODO: Load (GetContentAdmin) and Modify require ROLE_CAN_CREATE_CONTENT; PublishContent requires ROLE_CAN_PUBLISH. Add AuthorizeView(s) in .razor accordingly for buttons/editing UI.
             await LoadContent();
             EditContent = Content is not null ? ContentEditData.FromRecord(Content) : null;
             IsLoading = false;
