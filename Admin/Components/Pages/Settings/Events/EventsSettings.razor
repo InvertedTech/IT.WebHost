@@ -1,0 +1,244 @@
+@page "/settings/events"
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authorization.Events
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER">
+    <Authorized>
+<div class="space-y-6">
+    <SectionHeader Title="Events" />
+
+    @if (isLoading)
+    {
+        <AppLoader />
+    }
+    else
+    {
+        <Tabs DefaultValue="general" Class="space-y-6">
+            <TabsList Class="grid w-full max-w-2xl grid-cols-3">
+                <TabsTrigger Value="general">General</TabsTrigger>
+                <TabsTrigger Value="venues">Venues</TabsTrigger>
+                <AuthorizeView Roles="@RoleAbilities.ROLE_OWNER">
+                    <Authorized Context="ownerTriggerContext">
+                        <TabsTrigger Value="eventbrite">Eventbrite</TabsTrigger>
+                    </Authorized>
+                </AuthorizeView>
+            </TabsList>
+
+            <TabsContent Value="general" Class="mt-6 space-y-6">
+                <Card Class="max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>General</CardTitle>
+                        <CardDescription>Public settings for the Events module.</CardDescription>
+                    </CardHeader>
+                    <CardContent Class="space-y-6">
+                        <Field>
+                            <FieldLabel>Enabled</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_publicSettings.Enabled" />
+                                <FieldDescription>Turns the Events module on or off site-wide.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Eventbrite Enabled</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_publicSettings.Eventbrite.Enabled" />
+                                <FieldDescription>Enables the Eventbrite integration for events.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                    <CardFooter Class="border-t pt-6">
+                        <Button @onclick="SavePublicSettings">Save</Button>
+                    </CardFooter>
+                </Card>
+            </TabsContent>
+
+            <TabsContent Value="venues" Class="mt-6 space-y-6">
+                <Card Class="max-w-3xl">
+                    <CardHeader Class="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Venues</CardTitle>
+                            <CardDescription>Physical and virtual venues events can be held at.</CardDescription>
+                        </div>
+                        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="OpenCreateVenueSheet">
+                            <LucideIcon Name="plus" class="h-4 w-4 mr-1.5" />
+                            New Venue
+                        </Button>
+                    </CardHeader>
+                    <CardContent Class="space-y-3">
+                        @if (_venues.Count == 0)
+                        {
+                            <p class="text-sm text-muted-foreground">No venues configured yet.</p>
+                        }
+                        else
+                        {
+                            @foreach (var venue in _venues)
+                            {
+                                var capturedVenue = venue;
+                                <div class="flex items-center justify-between gap-3 rounded-md border p-3">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium">@VenueDisplayName(capturedVenue)</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            @(capturedVenue.VenueOneOfCase == GenericEventVenueRecord.VenueOneOfOneofCase.Virtual ? "Virtual" : "Physical")
+                                            @(string.IsNullOrEmpty(VenueDisplaySubtitle(capturedVenue)) ? "" : $" · {VenueDisplaySubtitle(capturedVenue)}")
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => OpenEditVenueSheet(capturedVenue)">
+                                            <LucideIcon Name="pencil" class="h-4 w-4" />
+                                        </Button>
+                                        <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => RemoveVenue(capturedVenue)">
+                                            <LucideIcon Name="trash-2" class="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </CardContent>
+                    <CardFooter Class="border-t pt-6">
+                        <Button @onclick="SaveVenues">Save</Button>
+                    </CardFooter>
+                </Card>
+            </TabsContent>
+
+            <AuthorizeView Roles="@RoleAbilities.ROLE_OWNER">
+                <Authorized Context="ownerContentContext">
+                    <TabsContent Value="eventbrite" Class="mt-6 space-y-6">
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Eventbrite</CardTitle>
+                                <CardDescription>Owner-only API credentials for the Eventbrite integration.</CardDescription>
+                            </CardHeader>
+                            <CardContent Class="space-y-6">
+                                <Field>
+                                    <FieldLabel For="eventbrite-api-key">API Key</FieldLabel>
+                                    <FieldContent>
+                                        <Input Id="eventbrite-api-key" Type="InputType.Password" Placeholder="Eventbrite API Key" @bind-Value="_ownerSettings.Eventbrite.ApiKey" />
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="eventbrite-api-secret">API Secret</FieldLabel>
+                                    <FieldContent>
+                                        <Input Id="eventbrite-api-secret" Type="InputType.Password" Placeholder="Eventbrite API Secret" @bind-Value="_ownerSettings.Eventbrite.ApiSecret" />
+                                    </FieldContent>
+                                </Field>
+                            </CardContent>
+                            <CardFooter Class="border-t pt-6">
+                                <Button @onclick="SaveOwnerSettings">Save</Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+                </Authorized>
+            </AuthorizeView>
+        </Tabs>
+    }
+</div>
+
+<Sheet @bind-Open="_isSheetOpen">
+    <SheetContent Class="flex flex-col gap-6">
+        <SheetHeader>
+            <SheetTitle>@(_selectedVenue is not null ? "Edit Venue" : "Create New Venue")</SheetTitle>
+        </SheetHeader>
+        <div class="space-y-4">
+            <Field>
+                <FieldLabel>Venue Type</FieldLabel>
+                <FieldContent>
+                    <Select TValue="VenueType" @bind-Value="_editVenueType">
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem Value="VenueType.Physical">Physical</SelectItem>
+                            <SelectItem Value="VenueType.Virtual">Virtual</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FieldContent>
+            </Field>
+
+            @if (_editVenueType == VenueType.Physical)
+            {
+                <Field>
+                    <FieldLabel For="venue-name">Name</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-name" Type="InputType.Text" Placeholder="Venue Name" @bind-Value="_editPhysical.Name" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-address">Address</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-address" Type="InputType.Text" Placeholder="Street Address" @bind-Value="_editPhysical.Address" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-city">City</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-city" Type="InputType.Text" Placeholder="City" @bind-Value="_editPhysical.City" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-state">State / Province</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-state" Type="InputType.Text" Placeholder="State or Province" @bind-Value="_editPhysical.StateOrProvince" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-postal">Postal Code</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-postal" Type="InputType.Text" Placeholder="Postal Code" @bind-Value="_editPhysical.PostalCode" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-country">Country</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-country" Type="InputType.Text" Placeholder="Country" @bind-Value="_editPhysical.Country" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-phone">Phone Number</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-phone" Type="InputType.Text" Placeholder="Phone Number" @bind-Value="_editPhysical.PhoneNumber" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-email">Email Address</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-email" Type="InputType.Email" Placeholder="Email Address" @bind-Value="_editPhysical.EmailAddress" />
+                    </FieldContent>
+                </Field>
+            }
+            else
+            {
+                <Field>
+                    <FieldLabel For="venue-virtual-name">Name</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-virtual-name" Type="InputType.Text" Placeholder="Venue Name" @bind-Value="_editVirtual.Name" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-url">Url</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-url" Type="InputType.Text" Placeholder="https://..." @bind-Value="_editVirtual.Url" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-access">Access Instructions</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-access" Type="InputType.Text" Placeholder="How to join" @bind-Value="_editVirtual.AccessInstructions" />
+                    </FieldContent>
+                </Field>
+                <Field>
+                    <FieldLabel For="venue-contact-email">Contact Email Address</FieldLabel>
+                    <FieldContent>
+                        <Input Id="venue-contact-email" Type="InputType.Email" Placeholder="Contact Email Address" @bind-Value="_editVirtual.ContactEmailAddress" />
+                    </FieldContent>
+                </Field>
+            }
+        </div>
+        <SheetFooter Class="gap-2 sm:justify-end">
+            <Button Variant="ButtonVariant.Outline" @onclick="CloseVenueSheet">Close</Button>
+            <Button @onclick="SaveVenueToList">Save</Button>
+        </SheetFooter>
+    </SheetContent>
+</Sheet>
+    </Authorized>
+</AuthorizeView>

@@ -79,6 +79,7 @@ namespace Admin.Layout
             new() { Text = "Subscription",    Href = "/settings/subscription",    Icon = "credit-card", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
             new() { Text = "Comments",        Href = "/settings/comments",        Icon = "message-circle", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
             new() { Text = "Notifications",   Href = "/settings/notifications",   Icon = "bell", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
+            new() { Text = "Events",          Href = "/settings/events",          Icon = "calendar", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
         };
 
         protected override async Task OnInitializedAsync()
