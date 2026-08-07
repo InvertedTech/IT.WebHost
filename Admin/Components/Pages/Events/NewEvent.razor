@@ -1,0 +1,266 @@
+@page "/events/create"
+@using IT.WebServices.Fragments.Authorization.Events
+@using IT.WebServices.Authentication
+@using Admin.Components.Common.Selects
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)">
+    <Authorized>
+        <SectionHeader Title="New Event" />
+
+        @if (_isLoading)
+        {
+            <AppLoader />
+        }
+        else
+        {
+        <div class="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>
+                        <LucideIcon Name="calendar" class="mr-2 inline-block h-4 w-4" />
+                        Details
+                    </CardTitle>
+                </CardHeader>
+                <CardContent Class="space-y-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field>
+                            <FieldLabel For="title">Title</FieldLabel>
+                            <FieldContent>
+                                <Input Id="title" Type="InputType.Text" Placeholder="Enter a title" @bind-Value="_title" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="location">Location</FieldLabel>
+                            <FieldContent>
+                                <Input Id="location" Type="InputType.Text" Placeholder="Enter a location" @bind-Value="_location" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel>Venue</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Select TValue="string" @bind-Value="_venueId">
+                                    <SelectTrigger>
+                                        <SelectValue Placeholder="Select a venue" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem Value="@("")">None</SelectItem>
+                                        @foreach (var venue in _venues)
+                                        {
+                                            <SelectItem Value="@venue.VenueID">@VenueDisplayName(venue)</SelectItem>
+                                        }
+                                    </SelectContent>
+                                </Select>
+                                <FieldDescription>Venues are managed in Events settings.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="max-tickets">Max Tickets</FieldLabel>
+                            <FieldContent>
+                                <NumericInput TValue="uint" Id="max-tickets" @bind-Value="_maxTickets" Min="0" />
+                            </FieldContent>
+                        </Field>
+                    </div>
+
+                    <Field>
+                        <FieldLabel For="description">Description</FieldLabel>
+                        <FieldContent>
+                            <Input Id="description" Type="InputType.Text" Placeholder="Describe the event" @bind-Value="_description" />
+                        </FieldContent>
+                    </Field>
+
+                    <Separator />
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <UtcDateTimeField Label="Start"
+                                          @bind-SelectedDate="_startDate"
+                                          @bind-Hour="_startHour"
+                                          @bind-Minute="_startMinute" />
+                        <UtcDateTimeField Label="End"
+                                          @bind-SelectedDate="_endDate"
+                                          @bind-Hour="_endHour"
+                                          @bind-Minute="_endMinute" />
+                    </div>
+
+                    <Separator />
+
+                    <Field>
+                        <FieldLabel>Tags</FieldLabel>
+                        <FieldContent Class="space-y-3">
+                            @for (var i = 0; i < _tags.Count; i++)
+                            {
+                                var index = i;
+                                <div class="flex items-center gap-3">
+                                    <Input Class="flex-1" Type="InputType.Text" Placeholder="Tag" @bind-Value="_tags[index]" />
+                                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="() => RemoveTag(index)">Remove</Button>
+                                </div>
+                            }
+                            <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="AddTag">Add Tag</Button>
+                        </FieldContent>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel For="internal-notes">Internal Notes</FieldLabel>
+                        <FieldContent>
+                            <Input Id="internal-notes" Type="InputType.Text" Placeholder="Notes visible only to staff" @bind-Value="_internalNotes" />
+                        </FieldContent>
+                    </Field>
+
+                    @* Only offered when Eventbrite is on — creating with the flag set while it is off fails the whole create. *@
+                    @if (_eventbriteEnabled)
+                    {
+                        <Field>
+                            <FieldLabel>Sync To Eventbrite</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_syncToEventbrite" />
+                                <FieldDescription>Also creates this event on Eventbrite. This is a one-way push made at creation time and is ignored when editing.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                    }
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader Class="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Ticket Classes</CardTitle>
+                        <CardDescription>Define the types of tickets available for this event.</CardDescription>
+                    </div>
+                    <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="OpenCreateTicketClassSheet">
+                        <LucideIcon Name="plus" class="h-4 w-4 mr-1.5" />
+                        New Ticket Class
+                    </Button>
+                </CardHeader>
+                <CardContent Class="space-y-3">
+                    @if (_ticketClasses.Count == 0)
+                    {
+                        <p class="text-sm text-muted-foreground">No ticket classes configured yet.</p>
+                    }
+                    else
+                    {
+                        @foreach (var ticketClass in _ticketClasses)
+                        {
+                            var captured = ticketClass;
+                            <div class="flex items-center justify-between gap-3 rounded-md border p-3">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-medium">@captured.Name</span>
+                                    <span class="text-xs text-muted-foreground">
+                                        @captured.Type · @captured.AmountAvailable available · $@((captured.PricePerTicketCents / 100.0).ToString("0.00"))
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => OpenEditTicketClassSheet(captured)">
+                                        <LucideIcon Name="pencil" class="h-4 w-4" />
+                                    </Button>
+                                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" @onclick="() => RemoveTicketClass(captured)">
+                                        <LucideIcon Name="trash-2" class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </CardContent>
+            </Card>
+
+            @if (!string.IsNullOrEmpty(OverallError))
+            {
+                <div class="rounded border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
+                    @OverallError
+                </div>
+            }
+
+            <div class="flex justify-end">
+                <Button Variant="ButtonVariant.Default" @onclick="SubmitCreate" Disabled="IsSaving">
+                    <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                    Create Event
+                </Button>
+            </div>
+        </div>
+
+        <Sheet @bind-Open="_isSheetOpen">
+            <SheetContent Class="flex flex-col gap-6">
+                <SheetHeader>
+                    <SheetTitle>@(_selectedTicketClass is not null ? "Edit Ticket Class" : "Create Ticket Class")</SheetTitle>
+                </SheetHeader>
+                <div class="space-y-4">
+                    <Field>
+                        <FieldLabel For="class-name">Name</FieldLabel>
+                        <FieldContent>
+                            <Input Id="class-name" Type="InputType.Text" Placeholder="e.g. General Admission" @bind-Value="_editClassName" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Type</FieldLabel>
+                        <FieldContent>
+                            <Select TValue="GenericEventTicketClassType" @bind-Value="_editClassType">
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem Value="GenericEventTicketClassType.TicketGeneralAccess">General Access</SelectItem>
+                                    <SelectItem Value="GenericEventTicketClassType.TicketAllMemberAccess">All Member Access</SelectItem>
+                                    <SelectItem Value="GenericEventTicketClassType.TicketMemberLevelAccess">Member Level Access</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="class-amount">Amount Available</FieldLabel>
+                        <FieldContent>
+                            <NumericInput TValue="uint" Id="class-amount" @bind-Value="_editAmountAvailable" Min="0" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="class-price">Price Per Ticket (cents)</FieldLabel>
+                        <FieldContent>
+                            <NumericInput TValue="uint" Id="class-price" @bind-Value="_editPricePerTicketCents" Min="0" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel For="class-max-per-user">Max Tickets Per User</FieldLabel>
+                        <FieldContent>
+                            <NumericInput TValue="uint" Id="class-max-per-user" @bind-Value="_editMaxTicketsPerUser" Min="0" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Transferrable</FieldLabel>
+                        <FieldContent>
+                            <Switch @bind-Checked="_editIsTransferrable" />
+                        </FieldContent>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Counts Toward Event Max</FieldLabel>
+                        <FieldContent>
+                            <Switch @bind-Checked="_editCountTowardEventMax" />
+                        </FieldContent>
+                    </Field>
+
+                    @* Only applies to member-level tickets, so it is hidden for the other types. *@
+                    @if (_editClassType == GenericEventTicketClassType.TicketMemberLevelAccess)
+                    {
+                        <SubscriptionLevelSelect Title="Required Subscription Level"
+                                                 @bind-SelectedSubscriptionLevel="_editRequiredSubscriptionAmountCents" />
+                    }
+
+                    <Separator />
+
+                    <UtcDateTimeField Label="Sale Starts"
+                                      Description="Leave the date empty to put the tickets on sale immediately."
+                                      @bind-SelectedDate="_editSaleStartDate"
+                                      @bind-Hour="_editSaleStartHour"
+                                      @bind-Minute="_editSaleStartMinute" />
+                    <UtcDateTimeField Label="Sale Ends"
+                                      Description="Leave the date empty for sales to stay open until the event starts."
+                                      @bind-SelectedDate="_editSaleEndDate"
+                                      @bind-Hour="_editSaleEndHour"
+                                      @bind-Minute="_editSaleEndMinute" />
+                </div>
+                <SheetFooter Class="gap-2 sm:justify-end">
+                    <Button Variant="ButtonVariant.Outline" @onclick="CloseTicketClassSheet">Close</Button>
+                    <Button @onclick="SaveTicketClassToList">Save</Button>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
+        }
+    </Authorized>
+</AuthorizeView>

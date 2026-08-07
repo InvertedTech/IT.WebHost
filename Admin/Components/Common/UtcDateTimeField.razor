@@ -1,0 +1,60 @@
+@* Date + time-of-day picker that yields a UTC DateTime, or null when no date is picked. *@
+@* Callers must omit the corresponding Timestamp field entirely when this is null. *@
+
+<Field>
+    <FieldLabel>@Label</FieldLabel>
+    <FieldContent Class="space-y-2">
+        <DatePicker SelectedDate="SelectedDate" SelectedDateChanged="OnDateChanged" ShowIcon="false" ShowDropdownIcon="true" Placeholder="@Placeholder" />
+        <div class="flex items-center gap-2">
+            <select class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value="@Hour"
+                    @onchange="OnHourChanged">
+                @for (int h = 0; h < 24; h++)
+                {
+                    var hour = h;
+                    <option value="@hour">@($"{hour:D2}:00")</option>
+                }
+            </select>
+            <span class="text-muted-foreground">:</span>
+            <select class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value="@Minute"
+                    @onchange="OnMinuteChanged">
+                @foreach (var min in MinuteOptions)
+                {
+                    <option value="@min">@($"{min:D2}")</option>
+                }
+            </select>
+        </div>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <FieldDescription>@Description</FieldDescription>
+        }
+        <FieldError Errors="Errors" />
+    </FieldContent>
+</Field>
+
+@code {
+    private static readonly int[] MinuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Select date";
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+
+    [Parameter] public DateOnly? SelectedDate { get; set; }
+    [Parameter] public EventCallback<DateOnly?> SelectedDateChanged { get; set; }
+
+    [Parameter] public int Hour { get; set; }
+    [Parameter] public EventCallback<int> HourChanged { get; set; }
+
+    [Parameter] public int Minute { get; set; }
+    [Parameter] public EventCallback<int> MinuteChanged { get; set; }
+
+    private Task OnDateChanged(DateOnly? date) => SelectedDateChanged.InvokeAsync(date);
+
+    private Task OnHourChanged(ChangeEventArgs e) =>
+        HourChanged.InvokeAsync(int.Parse(e.Value!.ToString()!));
+
+    private Task OnMinuteChanged(ChangeEventArgs e) =>
+        MinuteChanged.InvokeAsync(int.Parse(e.Value!.ToString()!));
+}

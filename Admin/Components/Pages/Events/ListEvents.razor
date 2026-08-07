@@ -1,0 +1,37 @@
+@page "/events"
+@using IT.WebServices.Fragments.Authorization.Events
+@using Microsoft.AspNetCore.Components.Authorization
+@using IT.WebServices.Authentication
+@inject NavigationManager Nav
+
+<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_EVENT_MANAGER_OR_HIGHER)">
+    <Authorized>
+        <div class="flex items-center justify-between">
+            <SectionHeader Title="Events" />
+            <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="@(() => Nav.NavigateTo("/events/create"))">
+                <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                New Event
+            </Button>
+        </div>
+
+        <DataTable TData="GenericEventRecord"
+                   Data="EventList"
+                   Dense="false"
+                   IsLoading="isLoading"
+                   InitialPageSize="pageSize"
+                   ShowPagination="false">
+            <Columns>
+                <DataTableColumn TData="GenericEventRecord" TValue="string" Property="@(p => p.Title)" Header="Title" Sortable />
+                <DataTableColumn TData="GenericEventRecord" TValue="string" Property="@(p => p.Location)" Header="Location" Sortable />
+                <DataTableColumn TData="GenericEventRecord" TValue="string" Property="@(p => p.StartOnUTC != null ? p.StartOnUTC.ToDateTime().ToString() : "—")" Header="Start" Sortable Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="GenericEventRecord" TValue="string" Property="@(p => p.MaxTickets.ToString())" Header="Max Tickets" Alignment="ColumnAlignment.Right" />
+                <DataTableColumn TData="GenericEventRecord" TValue="string" Property="@(p => p.IsCanceled ? "Canceled" : "Active")" Header="Status" />
+            </Columns>
+        </DataTable>
+
+        <Paginator baseUrl="/events"
+                   pageSize="@((uint)pageSize)"
+                   pageOffset="@((uint)pageOffset)"
+                   pageTotalItems="@totalItems" />
+    </Authorized>
+</AuthorizeView>

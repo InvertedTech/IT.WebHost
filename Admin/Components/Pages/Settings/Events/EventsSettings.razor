@@ -18,11 +18,7 @@
             <TabsList Class="grid w-full max-w-2xl grid-cols-3">
                 <TabsTrigger Value="general">General</TabsTrigger>
                 <TabsTrigger Value="venues">Venues</TabsTrigger>
-                <AuthorizeView Roles="@RoleAbilities.ROLE_OWNER">
-                    <Authorized Context="ownerTriggerContext">
-                        <TabsTrigger Value="eventbrite">Eventbrite</TabsTrigger>
-                    </Authorized>
-                </AuthorizeView>
+                <TabsTrigger Value="eventbrite">Eventbrite</TabsTrigger>
             </TabsList>
 
             <TabsContent Value="general" Class="mt-6 space-y-6">
@@ -37,13 +33,6 @@
                             <FieldContent Class="space-y-2">
                                 <Switch @bind-Checked="_publicSettings.Enabled" />
                                 <FieldDescription>Turns the Events module on or off site-wide.</FieldDescription>
-                            </FieldContent>
-                        </Field>
-                        <Field>
-                            <FieldLabel>Eventbrite Enabled</FieldLabel>
-                            <FieldContent Class="space-y-2">
-                                <Switch @bind-Checked="_publicSettings.Eventbrite.Enabled" />
-                                <FieldDescription>Enables the Eventbrite integration for events.</FieldDescription>
                             </FieldContent>
                         </Field>
                     </CardContent>
@@ -96,30 +85,84 @@
                         }
                     </CardContent>
                     <CardFooter Class="border-t pt-6">
-                        <Button @onclick="SaveVenues">Save</Button>
+                        <Button @onclick="SavePrivateSettings">Save</Button>
                     </CardFooter>
                 </Card>
             </TabsContent>
 
-            <AuthorizeView Roles="@RoleAbilities.ROLE_OWNER">
-                <Authorized Context="ownerContentContext">
-                    <TabsContent Value="eventbrite" Class="mt-6 space-y-6">
+            <TabsContent Value="eventbrite" Class="mt-6 space-y-6">
+                <Card Class="max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>Eventbrite</CardTitle>
+                        <CardDescription>Public settings for the Eventbrite integration.</CardDescription>
+                    </CardHeader>
+                    <CardContent Class="space-y-6">
+                        <Field>
+                            <FieldLabel>Enabled</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Switch @bind-Checked="_publicSettings.Eventbrite.Enabled" />
+                                <FieldDescription>Enables the Eventbrite integration for events.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="eventbrite-currency">Currency</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Input Id="eventbrite-currency" Type="InputType.Text" Placeholder="USD" @bind-Value="_publicSettings.Eventbrite.Currency" />
+                                <FieldDescription>ISO 4217 currency code. Required by Eventbrite when creating events.</FieldDescription>
+                                <FieldError Errors="CurrencyErrors" />
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                </Card>
+
+                <Card Class="max-w-3xl">
+                    <CardHeader>
+                        <CardTitle>Eventbrite Organization</CardTitle>
+                        <CardDescription>Identifies which Eventbrite organization and organizer events are published under.</CardDescription>
+                    </CardHeader>
+                    <CardContent Class="space-y-6">
+                        <Field>
+                            <FieldLabel For="eventbrite-org-id">Organization ID</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Input Id="eventbrite-org-id" Type="InputType.Text" Placeholder="Eventbrite Organization ID" @bind-Value="_privateSettings.Eventbrite.OrganizationID" />
+                                <FieldDescription>Found in the Eventbrite organizer dashboard URL.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="eventbrite-organizer-id">Organizer ID</FieldLabel>
+                            <FieldContent Class="space-y-2">
+                                <Input Id="eventbrite-organizer-id" Type="InputType.Text" Placeholder="Eventbrite Organizer ID" @bind-Value="_privateSettings.Eventbrite.OrganizerID" />
+                                <FieldDescription>The organizer profile new events are attributed to.</FieldDescription>
+                            </FieldContent>
+                        </Field>
+                    </CardContent>
+                </Card>
+
+                @* One Save for both cards — these fields straddle the public and private tiers. *@
+                <div class="flex max-w-3xl justify-end">
+                    <Button @onclick="SaveEventbriteSettings">Save</Button>
+                </div>
+
+                <AuthorizeView Roles="@RoleAbilities.ROLE_OWNER">
+                    <Authorized Context="ownerContentContext">
                         <Card Class="max-w-3xl">
                             <CardHeader>
-                                <CardTitle>Eventbrite</CardTitle>
+                                <CardTitle>Credentials</CardTitle>
                                 <CardDescription>Owner-only API credentials for the Eventbrite integration.</CardDescription>
                             </CardHeader>
                             <CardContent Class="space-y-6">
                                 <Field>
-                                    <FieldLabel For="eventbrite-api-key">API Key</FieldLabel>
-                                    <FieldContent>
-                                        <Input Id="eventbrite-api-key" Type="InputType.Password" Placeholder="Eventbrite API Key" @bind-Value="_ownerSettings.Eventbrite.ApiKey" />
+                                    <FieldLabel For="eventbrite-private-token">Private Token</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <Input Id="eventbrite-private-token" Type="InputType.Password" Placeholder="Eventbrite Private Token" @bind-Value="_ownerSettings.Eventbrite.PrivateToken" />
+                                        <FieldDescription>From the API Keys page of your Eventbrite account. Used as the bearer credential for server-to-server calls.</FieldDescription>
                                     </FieldContent>
                                 </Field>
                                 <Field>
-                                    <FieldLabel For="eventbrite-api-secret">API Secret</FieldLabel>
-                                    <FieldContent>
-                                        <Input Id="eventbrite-api-secret" Type="InputType.Password" Placeholder="Eventbrite API Secret" @bind-Value="_ownerSettings.Eventbrite.ApiSecret" />
+                                    <FieldLabel For="eventbrite-webhook-token">Webhook Verification Token</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <Input Id="eventbrite-webhook-token" Type="InputType.Password" Placeholder="Eventbrite Webhook Verification Token" @bind-Value="_ownerSettings.Eventbrite.WebhookVerificationToken" />
+                                        <FieldDescription>Shown by Eventbrite when you create the webhook. Used to verify inbound webhook deliveries.</FieldDescription>
                                     </FieldContent>
                                 </Field>
                             </CardContent>
@@ -127,9 +170,9 @@
                                 <Button @onclick="SaveOwnerSettings">Save</Button>
                             </CardFooter>
                         </Card>
-                    </TabsContent>
-                </Authorized>
-            </AuthorizeView>
+                    </Authorized>
+                </AuthorizeView>
+            </TabsContent>
         </Tabs>
     }
 </div>

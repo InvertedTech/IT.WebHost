@@ -23,8 +23,14 @@ namespace Admin.Components.Pages.Settings.Events
         private bool IsOwner => UserHelper.MyUser?.RoleAbilities.IsOwner ?? false;
 
         private EventPublicSettings _publicSettings { get; set; } = new() { Eventbrite = new() };
+        private EventPrivateSettings _privateSettings { get; set; } = new() { Eventbrite = new() };
         private List<GenericEventVenueRecord> _venues { get; set; } = new();
         private EventOwnerSettings _ownerSettings { get; set; } = new() { Eventbrite = new() };
+
+        private string? _currencyError;
+
+        private IReadOnlyList<string> CurrencyErrors =>
+            _currencyError is null ? [] : [_currencyError];
 
         private bool _isSheetOpen = false;
         private GenericEventVenueRecord? _selectedVenue = null;
@@ -65,8 +71,12 @@ namespace Admin.Components.Pages.Settings.Events
         {
             var res = await SettingsClient.PrivateData;
 
-            if (res?.Events?.Venues is not null)
-                _venues = res.Events.Venues.ToList();
+            if (res?.Events is not null)
+            {
+                _privateSettings = res.Events;
+                _privateSettings.Eventbrite ??= new EventbriteEventPrivateSettings();
+                _venues = _privateSettings.Venues.ToList();
+            }
         }
 
         private async Task LoadOwnerSettings()
@@ -80,28 +90,78 @@ namespace Admin.Components.Pages.Settings.Events
             }
         }
 
-        private async Task SavePublicSettings()
+        // Eventbrite requires an ISO 4217 currency on event creation, so it cannot be
+        // left blank while the integration is turned on. Checked on every path that
+        // writes public settings, since the Eventbrite subtree rides along with them.
+        private bool ValidatePublicSettings()
         {
-            var error = await SettingsClient.ModifyEventPublicSettings(new ModifyEventPublicSettingsRequest
+            _currencyError = null;
+
+            if (_publicSettings.Eventbrite.Enabled && string.IsNullOrWhiteSpace(_publicSettings.Eventbrite.Currency))
+                _currencyError = "Currency is required while Eventbrite is enabled.";
+
+            return _currencyError is null;
+        }
+
+        private Task<APIError> WritePublicSettings() =>
+            SettingsClient.ModifyEventPublicSettings(new ModifyEventPublicSettingsRequest
             {
                 Data = _publicSettings.Clone()
             });
 
-            ReportResult(error, "Event settings saved successfully.");
-        }
-
-        private async Task SaveVenues()
+        private Task<APIError> WritePrivateSettings()
         {
-            var data = new EventPrivateSettings();
+            // Clone the loaded record so provider-owned fields we do not surface
+            // (eg. Eventbrite.VenueIDToProcessorVenueID) survive the round trip.
+            var data = _privateSettings.Clone();
+            data.Venues.Clear();
             data.Venues.AddRange(_venues);
 
-            var error = await SettingsClient.ModifyEventPrivateSettings(new ModifyEventPrivateSettingsRequest
+            return SettingsClient.ModifyEventPrivateSettings(new ModifyEventPrivateSettingsRequest
             {
                 Data = data
             });
-
-            ReportResult(error, "Venues saved successfully.");
         }
+
+        private async Task SavePublicSettings()
+        {
+            if (!ValidatePublicSettings())
+            {
+                ToastService.Error(_currencyError!);
+                return;
+            }
+
+            ReportResult(await WritePublicSettings(), "Event settings saved successfully.");
+        }
+
+        private async Task SavePrivateSettings()
+        {
+            ReportResult(await WritePrivateSettings(), "Event settings saved successfully.");
+        }
+
+        // The Eventbrite tab spans the public and private tiers, so its single Save
+        // fans out to both RPCs. Public goes first: if it fails there is no point
+        // writing the private half, and the two are reported as one result.
+        private async Task SaveEventbriteSettings()
+        {
+            if (!ValidatePublicSettings())
+            {
+                ToastService.Error(_currencyError!);
+                return;
+            }
+
+            var publicError = await WritePublicSettings();
+            if (IsError(publicError))
+            {
+                ReportResult(publicError, "");
+                return;
+            }
+
+            ReportResult(await WritePrivateSettings(), "Eventbrite settings saved successfully.");
+        }
+
+        private static bool IsError(APIError error) =>
+            error is not null && error.Reason != APIErrorReason.ErrorReasonNoError;
 
         private async Task SaveOwnerSettings()
         {
@@ -115,7 +175,7 @@ namespace Admin.Components.Pages.Settings.Events
 
         private void ReportResult(APIError error, string successMessage)
         {
-            if (error is null || error.Reason == APIErrorReason.ErrorReasonNoError)
+            if (!IsError(error))
             {
                 ToastService.Success(successMessage);
             }
