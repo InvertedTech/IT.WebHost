@@ -48,6 +48,8 @@ namespace WebApp
             builder.Services.AddAuthenticationClasses();
             builder.Services.AddSingleton<IToastService, ToastService>();
 
+            builder.Services.AddControllers();
+
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
@@ -65,23 +67,7 @@ namespace WebApp
             app.MapRazorComponents<WebApp.App>()
                 .AddInteractiveServerRenderMode();
 
-            app.MapGet("/auth/set-cookie", (string token, string? returnUrl, HttpContext ctx) =>
-            {
-                ctx.Response.Cookies.Append(JwtExtensions.JWT_COOKIE_NAME, token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Path = "/"
-                });
-                return Results.Redirect(returnUrl ?? "/");
-            });
-
-            app.MapGet("/auth/logout", (HttpContext ctx) =>
-            {
-                ctx.Response.Cookies.Delete(JwtExtensions.JWT_COOKIE_NAME);
-                return Results.Redirect("/");
-            });
+            app.MapControllers();
 
             app.Run();
         }
