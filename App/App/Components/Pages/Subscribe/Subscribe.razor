@@ -3,66 +3,108 @@
 
 <AuthorizeView>
     <Authorized>
-        <PageTitle>Subscribe</PageTitle>
-
-        @if (tiers.Count == 0)
+        @if (!HasActiveSubscription)
         {
-            <div class="flex flex-1 items-center justify-center py-12">
-                <Alert Variant="AlertVariant.Warning">
-                    <AlertTitle>No Subscription Tiers</AlertTitle>
-                    <AlertDescription>No subscription tiers are currently available.</AlertDescription>
-                </Alert>
-            </div>
+            <PageTitle>Subscribe</PageTitle>
+
+            @if (tiers.Count == 0)
+            {
+                <div class="flex flex-1 items-center justify-center py-12">
+                    <Alert Variant="AlertVariant.Warning">
+                        <AlertTitle>No Subscription Tiers</AlertTitle>
+                        <AlertDescription>No subscription tiers are currently available.</AlertDescription>
+                    </Alert>
+                </div>
+            }
+            else
+            {
+                <div class="container max-w-4xl py-12 mx-auto">
+                    <div class="grid gap-6 md:grid-cols-@tiers.Count">
+                        @foreach (var tier in tiers)
+                        {
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>@tier.Name</CardTitle>
+                                    <CardDescription>@tier.Description</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p class="text-3xl font-bold">$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/mo</span></p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button class="w-full" @onclick="() => OpenDialog(tier)">Subscribe</Button>
+                                </CardFooter>
+                            </Card>
+                        }
+                    </div>
+                </div>
+                <Dialog @bind-Open="isDialogOpen">
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>@(selectedTier?.Name) - $@(selectedTier?.AmountCents / 100.0m)</DialogTitle>
+                        </DialogHeader>
+                        <Select TValue="string" @bind-Value="selectedProvider">
+                            <SelectLabel>Payment Processor</SelectLabel>
+                            <SelectTrigger class="w-[180px]">
+                                <SelectValue Placeholder="Select Payment Processor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                @*TODO: Programatically Build These Values Based On Settings.Public.Subscription.{Provider}.IsEnabled*@
+                                <SelectItem Value="@("Stripe")" Text="Stripe">Stripe</SelectItem>
+                                @*                     <SelectItem Value="@("Fortis")" Text="Fortis">Fortis</SelectItem>
+                    <SelectItem Value="@("Paypal")" Text="Paypal">Paypal</SelectItem>
+                    <SelectItem Value="@("Crypto")" Text="Crypto">Crypto</SelectItem> *@
+                            </SelectContent>
+                        </Select>
+                        <Input Type="InputType.Text"
+                               Label="Zip/Postal Code"
+                               Placeholder="Enter your zip/postal code"
+                               @bind-Value="zipCode" />
+                        <DialogFooter>
+                            <Button @onclick="() => CloseDialog()">Close</Button>
+                            <Button @onclick="() => SubmitSubscribe()">Submit</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            }
         }
         else
         {
-            <div class="container max-w-4xl py-12 mx-auto">
-                <div class="grid gap-6 md:grid-cols-@tiers.Count">
-                    @foreach (var tier in tiers)
-                    {
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>@tier.Name</CardTitle>
-                                <CardDescription>@tier.Description</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p class="text-3xl font-bold">$@(tier.AmountCents / 100.0m)<span class="text-sm font-normal text-muted-foreground">/mo</span></p>
-                            </CardContent>
-                            <CardFooter>
-                                <Button class="w-full" @onclick="() => OpenDialog(tier)">Subscribe</Button>
-                            </CardFooter>
-                        </Card>
-                    }
-                </div>
+            <div class="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <LucideIcon Name="circle-dollar-sign" class="mr-2 inline-block h-4 w-4" />
+                            Subscriptions
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent Class="space-y-4">
+                        @foreach (var sub in ActiveSubscriptions)
+                        {
+                            <Separator />
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <div class="space-y-0.5">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Amount</p>
+                                    <p class="break-all font-mono text-sm">@((sub.SubscriptionRecord.AmountCents / 100.0).ToString("$###,###,##0.00"))</p>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</p>
+                                    <p class="text-sm">Active</p>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground"></p>
+                                    <p class="text-sm">
+                                        <Button @onclick="async () => await CancelSubscription(sub)" Class="--alert-danger">Cancel</Button>
+                                    </p>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Subscribed Since</p>
+                                    <p class="text-sm">@(sub.SubscriptionRecord.CreatedOnUTC?.ToDateTime().ToLocalTime().ToString("yyyy-MM-dd") ?? "—")</p>
+                                </div>
+                            </div>
+                        }
+                    </CardContent>
+                </Card>
             </div>
-            <Dialog @bind-Open="isDialogOpen">
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>@(selectedTier?.Name) - $@(selectedTier?.AmountCents / 100.0m)</DialogTitle>
-                    </DialogHeader>
-                    <Select TValue="string" @bind-Value="selectedProvider">
-                        <SelectLabel>Payment Processor</SelectLabel>
-                        <SelectTrigger class="w-[180px]">
-                            <SelectValue Placeholder="Select Payment Processor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            @*TODO: Programatically Build These Values Based On Settings.Public.Subscription.{Provider}.IsEnabled*@
-                            <SelectItem Value="@("Stripe")" Text="Stripe">Stripe</SelectItem>
-                            @*                     <SelectItem Value="@("Fortis")" Text="Fortis">Fortis</SelectItem>
-                    <SelectItem Value="@("Paypal")" Text="Paypal">Paypal</SelectItem>
-                    <SelectItem Value="@("Crypto")" Text="Crypto">Crypto</SelectItem> *@
-                        </SelectContent>
-                    </Select>
-                    <Input Type="InputType.Text"
-                           Label="Zip/Postal Code"
-                           Placeholder="Enter your zip/postal code"
-                           @bind-Value="zipCode" />
-                    <DialogFooter>
-                        <Button @onclick="() => CloseDialog()">Close</Button>
-                        <Button @onclick="() => SubmitSubscribe()">Submit</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         }
     </Authorized>
 </AuthorizeView>
