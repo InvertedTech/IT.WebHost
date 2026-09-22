@@ -45,8 +45,10 @@
                                 }
                             </div>
                             <div class="flex gap-2 pb-1">
-                                @*                                 <ResetPasswordDialog userId="@user.Public.UserID" />
-                                <GrantRolesDialog userId="@user.Public.UserID" selected="@user.Private.Roles.ToList()" /> *@
+                                <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="ToggleResetPassword">
+                                    <LucideIcon Name="key-round" class="h-4 w-4 mr-1.5" />
+                                    Reset Password
+                                </Button>
                                 <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
                                     <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
                                     Edit
@@ -176,29 +178,35 @@
                     </CardContent>
                 </Card>
 
-                @* <SubscriptionCard subscriptions="@SubscriptionRecords" ShowUpdate="false" /> *@
+                <SubscriptionCard Subscriptions="@SubscriptionRecords" OnCancel="CancelSubscription" />
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            <LucideIcon Name="smartphone" class="mr-2 inline-block h-4 w-4" />
-                            MFA Devices
-                            @if (TOTPDevices.Any())
-                            {
-                                <Badge Variant="BadgeVariant.Secondary" Class="ml-2">@TOTPDevices.Count()</Badge>
-                            }
-                        </CardTitle>
+                        <div class="flex items-center justify-between gap-2">
+                            <CardTitle>
+                                <LucideIcon Name="smartphone" class="mr-2 inline-block h-4 w-4" />
+                                MFA Devices
+                                @if (TOTPDevices.Any())
+                                {
+                                    <Badge Variant="BadgeVariant.Secondary" Class="ml-2">@TOTPDevices.Count()</Badge>
+                                }
+                            </CardTitle>
+                            <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" Type="ButtonType.Button" OnClick="OpenAddTotp">
+                                <LucideIcon Name="plus" class="h-4 w-4 mr-1.5" />
+                                Add device
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         @if (TOTPDevices.Any())
                         {
-                            @*                             <ScrollArea Class="max-h-[400px] w-full">
+                            <ScrollArea Class="max-h-[400px] w-full">
                                 @foreach (var device in TOTPDevices)
                                 {
                                     var capturedDevice = device;
-                                    <TotpItem TOTPDevice="@capturedDevice" OnClick="@(() => DisableTotp(capturedDevice))" />
+                                    <TotpItem @key="capturedDevice.TotpID" TOTPDevice="@capturedDevice" OnClick="@(() => DisableTotp(capturedDevice))" />
                                 }
-                            </ScrollArea> *@
+                            </ScrollArea>
                         }
                         else
                         {
@@ -228,6 +236,120 @@
                     </CardContent>
                 </Card> *@
             </div>
+
+            <Dialog @bind-Open="isAddTotpOpen">
+                <DialogContent>
+                    @if (addTotpStep == 1)
+                    {
+                        <DialogHeader>
+                            <DialogTitle>Add an authenticator device</DialogTitle>
+                            <DialogDescription>
+                                Give this device a name so you can recognize it later.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <Field>
+                            <FieldLabel For="totp-device-name">Device name</FieldLabel>
+                            <FieldContent>
+                                <Input Id="totp-device-name" Type="InputType.Text" Placeholder="e.g. My phone" @bind-Value="newTotpDeviceName" />
+                            </FieldContent>
+                        </Field>
+
+                        <DialogFooter>
+                            <Button Variant="ButtonVariant.Outline" Type="ButtonType.Button" OnClick="CloseAddTotp">Cancel</Button>
+                            <Button Type="ButtonType.Button" OnClick="NextAddTotpStep">Continue</Button>
+                        </DialogFooter>
+                    }
+                    else
+                    {
+                        <DialogHeader>
+                            <DialogTitle>Scan the QR code</DialogTitle>
+                            <DialogDescription>
+                                Scan this code with your authenticator app, then enter the 6-digit code it shows.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div class="space-y-4">
+                            <div class="flex flex-col items-center gap-2 rounded-md border border-dashed p-6 text-center text-muted-foreground">
+                                <LucideIcon Name="qr-code" class="h-32 w-32" />
+                                <p class="text-sm">Your QR code will appear here</p>
+                            </div>
+
+                            <Field>
+                                <FieldLabel For="totp-code">Verification code</FieldLabel>
+                                <FieldContent>
+                                    <Input Id="totp-code" Type="InputType.Text" Placeholder="123456" @bind-Value="newTotpCode" />
+                                </FieldContent>
+                            </Field>
+                        </div>
+
+                        <DialogFooter>
+                            <Button Variant="ButtonVariant.Outline" Type="ButtonType.Button" OnClick="PreviousAddTotpStep">Back</Button>
+                            <Button Type="ButtonType.Button">Verify</Button>
+                        </DialogFooter>
+                    }
+                </DialogContent>
+            </Dialog>
+
+            <Dialog @bind-Open="isResetPasswordOpen">
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reset Password</DialogTitle>
+                        <DialogDescription>
+                            Enter your current password and choose a new one.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="space-y-4">
+                        <Field>
+                            <FieldLabel For="current-password">Current password</FieldLabel>
+                            <FieldContent>
+                                <Input Id="current-password"
+                                       Type="InputType.Password"
+                                       @bind-Value="oldPassword"
+                                       @bind-Value:after="ClearPasswordValidation"
+                                       AriaInvalid="@(passwordErrors.Count > 0)" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="new-password">New password</FieldLabel>
+                            <FieldContent>
+                                <Input Id="new-password"
+                                       Type="InputType.Password"
+                                       @bind-Value="newPassword"
+                                       @bind-Value:after="ClearPasswordValidation"
+                                       AriaInvalid="@(passwordErrors.Count > 0)" />
+                            </FieldContent>
+                        </Field>
+                        <Field>
+                            <FieldLabel For="confirm-new-password">Confirm new password</FieldLabel>
+                            <FieldContent>
+                                <Input Id="confirm-new-password"
+                                       Type="InputType.Password"
+                                       @bind-Value="confirmNewPassword"
+                                       @bind-Value:after="ClearPasswordValidation"
+                                       AriaInvalid="@(passwordErrors.Count > 0)" />
+                                <FieldError Errors="passwordErrors" />
+                            </FieldContent>
+                        </Field>
+                    </div>
+
+                    <DialogFooter>
+                        <Button Variant="ButtonVariant.Outline" Type="ButtonType.Button" OnClick="ToggleResetPassword" Disabled="isSavingPassword">Cancel</Button>
+                        <Button Type="ButtonType.Button" OnClick="SavePassword" Disabled="isSavingPassword">
+                            @if (isSavingPassword)
+                            {
+                                <Spinner Size="SpinnerSize.Small" />
+                                @("Saving")
+                            }
+                            else
+                            {
+                                @("Save")
+                            }
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <SaveChangesBar IsShown="IsEditing" OnDiscard="CancelEdit" OnSave="SaveUser" />
         }

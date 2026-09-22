@@ -1,4 +1,5 @@
 ﻿@page "/signup"
+<form @onsubmit="OnSignupAsync">
 <Card Class="w-full max-w-sm">
     <CardHeader Class="space-y-1 pb-4">
         <div class="flex items-center justify-center mb-2">
@@ -117,7 +118,7 @@
                 <a href="#" @onclick:preventDefault class="text-foreground font-medium hover:underline underline-offset-2">Privacy Policy</a>
             </Label>
         </div> *@
-        <Button Class="w-full" OnClick="OnSignupAsync" Disabled="isSubmitting">
+        <Button Type="ButtonType.Submit" Class="w-full" Disabled="@(isSubmitting || !RendererInfo.IsInteractive)">
             @if (isSubmitting)
             {
                 <Spinner Size="SpinnerSize.Small" />
@@ -134,3 +135,4 @@
         </p>
     </CardContent>
 </Card>
+</form>

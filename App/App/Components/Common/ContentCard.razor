@@ -1,7 +1,9 @@
-﻿@using IT.WebServices.Fragments.Content;
+﻿@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Content;
 @using Microsoft.Extensions.Options
 @namespace IT.WebHost.Components.Content
 @inject NavigationManager Nav
+@inject ONUserHelper UserHelper
 
 
 <Card Class="w-full overflow-hidden">
@@ -50,16 +52,14 @@
                 <span>Free</span>
             </div>
         }
-@*         @if (Content.SubscriptionLevel == 0)
+        @if (HasAccess)
         {
-            <Button OnClick="@(() => Nav.NavigateTo($"/content/{Content.URL.TrimStart('/')}"))">View</Button>
+            <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
         }
         else
         {
-            <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
-        } *@
-        
-        <Button OnClick="@(() => Nav.NavigateTo(Url))">View</Button>
+            <Button Variant="ButtonVariant.Outline" OnClick="@(() => Nav.NavigateTo("/subscribe"))">Subscribe to view</Button>
+        }
     </CardFooter>
 </Card>
 
@@ -67,6 +67,8 @@
     [Parameter] public ContentListRecord Content { get; set; }
     [Parameter] public string Url { get; set; } = string.Empty;
     [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+
+    private bool HasAccess => Content.SubscriptionLevel == 0 || (UserHelper.MyUser?.SubscriptionLevel ?? 0) >= Content.SubscriptionLevel;
 
     private bool _imageError = false;
     private bool _imageLoading = true;

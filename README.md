@@ -1,6 +1,8 @@
 # IT.WebHost
 
-A Blazor Server web application for the Timcast IT team, built on [BlazorBlueprint](https://blazorblueprintui.com) and Tailwind CSS.
+Blazor Server front ends for the IT web services: a public-facing site (`App`) and an admin console (`Admin`). Both are built on [NeoUI](https://www.nuget.org/packages/NeoUI.Blazor) and Tailwind CSS, and talk to the [IT.WebServices](../IT.WebServices) backend over gRPC.
+
+The feature status of the public site, including known stubs, is tracked in [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md).
 
 ---
 
@@ -8,98 +10,57 @@ A Blazor Server web application for the Timcast IT team, built on [BlazorBluepri
 
 ```
 IT.WebHost/
-├── IT.WebHost.slnx               # Solution file
-├── IT.WebHost.App/               # Blazor Server web application (entry point)
-└── IT.WebHost.Components/        # Razor Class Library — shared UI components
+├── IT.WebHost.slnx      # Solution file (also pulls in the sibling IT.WebServices projects)
+├── App/App/             # Public site: Blazor Server, entry point
+├── Admin/               # Admin console: Blazor Server, entry point
+├── Components/          # Razor Class Library: UI shared by App and Admin
+├── Core/                # Class library: config, DI extensions, auth middleware, services
+└── docs/                # Project docs
 ```
 
-### IT.WebHost.App
+`IT.WebHost` expects the `IT.WebServices` repo to sit next to it (`../IT.WebServices`). Every project references its `Authentication.Shared`, `Clients` and `Fragments` projects directly, so the solution won't restore without it.
 
-The runnable Blazor Server application. Handles routing, layout, and page-level concerns. References `IT.WebHost.Components` for shared components.
+### App (`App/App`)
 
-Key files:
+The public site. Handles routing, layout and page-level concerns.
 
-| Path                                | Purpose                                                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------- |
-| `App.razor`                         | Root HTML shell — loads CSS, scripts, sets render mode                                |
-| `Routes.razor`                      | Router with 404 fallback                                                              |
-| `Shared/MainLayout.razor`           | Top-nav header, footer, dark mode toggle                                              |
-| `Shared/MainLayout.razor.cs`        | Code-behind for dark mode JS interop                                                  |
-| `Pages/`                            | Application pages (`@page` components)                                                |
-| `wwwroot/styles/themes/default.css` | CSS custom properties (colors, radius, etc.) — must load before `blazorblueprint.css` |
-| `wwwroot/css/app-input.css`         | Tailwind CSS source file — scans `Pages/` and `Shared/` for utility classes           |
-| `wwwroot/css/app.css`               | Compiled Tailwind CSS output — committed, rebuilt when layout/page classes change     |
-| `tailwind.config.js`                | Tailwind v3 config — maps CSS variables to Tailwind color tokens                      |
+| Path                       | Purpose                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| `Program.cs`               | Service registration, auth policy, middleware                                     |
+| `App.razor`                | Root HTML shell: loads CSS and scripts, sets the Interactive Server render mode  |
+| `Routes.razor`             | Router with not-found fallback                                                    |
+| `Layout/`                  | `MainLayout` and nav                                                              |
+| `Components/Pages/`        | Routable pages (`@page`): home, content, members, merch, profile, subscribe, etc.|
+| `Components/Common/`       | Reusable pieces used by the pages (cards, feeds, video player, comments, etc.)   |
+| `Controllers/`             | MVC controllers for things that can't be Blazor pages (`/auth/*`, `/subscribe/success`) |
+| `styles/app-input.css`     | Tailwind source file                                                              |
+| `styles/theme.css`         | Theme tokens (colors, radius, etc.)                                               |
+| `wwwroot/css/app.css`      | Compiled Tailwind output (see [CSS](#css))                                        |
 
-### IT.WebHost.Components
+### Admin (`Admin`)
 
-A [Razor Class Library (RCL)](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class) containing shared, reusable Blazor components. All BlazorBlueprint NuGet packages are declared here and flow to consumers transitively.
+The admin console: content, users, careers, assets and site settings (CMS, comments, merch, notifications, payments, personalization). Same stack as `App`, with its own `styles/` and `wwwroot/css/app.css`.
 
-Add new shared components here. They are automatically available in `IT.WebHost.App` and any other project that references this library.
+### Components (`Components`)
+
+A [Razor Class Library](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/ui-class) for UI shared between `App` and `Admin`: `Comments/`, `Navigation/` (the `Paginator`), `Assets/` (`FeaturedImage`) and `Overlay/` (`SaveChangesBar`). Its `_Imports.razor` adds the `IT.WebHost.Shared` namespace, so its components are available in both apps without further imports.
+
+### Core (`Core`)
+
+Non-UI code shared by both apps: `AppSettings`, DI extensions (gRPC clients, auth, ProtoValidate), the JWT cookie authentication middleware, and `SiteSettingsService`.
 
 ---
 
 ## Stack
 
-| Layer                        | Technology                                                                                            |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Framework                    | [.NET 10](https://dotnet.microsoft.com/) — Blazor Server with Interactive Server render mode          |
-| UI Library                   | [BlazorBlueprint](https://blazorblueprintui.com) v3.5.x — shadcn/ui-inspired Blazor component library |
-| Icons                        | [BlazorBlueprint Lucide Icons](https://blazorblueprintui.com/docs/icons) v2.x                         |
-| CSS                          | [Tailwind CSS](https://tailwindcss.com) v3 — utility classes compiled from `app-input.css`            |
-| Theming                      | CSS custom properties (OKLCH color space) via `styles/themes/default.css`                             |
-| Popover/Dropdown positioning | [Floating UI](https://floating-ui.com) — loaded from CDN at runtime                                   |
-
----
-
-## NuGet Packages
-
-All declared in `IT.WebHost.Components.csproj` and available to all referencing projects:
-
-| Package                               | Version | Purpose                                                    |
-| ------------------------------------- | ------- | ---------------------------------------------------------- |
-| `BlazorBlueprint.Components`          | 3.\*    | Core UI components (buttons, cards, dialogs, toasts, etc.) |
-| `BlazorBlueprint.Primitives`          | 3.\*    | Headless/unstyled primitive components and services        |
-| `BlazorBlueprint.Icons.Lucide`        | 2.\*    | Lucide icon set via `<LucideIcon Name="..." />`            |
-| `Microsoft.AspNetCore.Components.Web` | 10.x    | ASP.NET Core Blazor web components (base)                  |
-
----
-
-## CSS Architecture
-
-There are three CSS layers, loaded in this order in `App.razor`:
-
-1. **`styles/themes/default.css`** — defines all CSS custom properties (`--primary`, `--background`, `--border`, etc.) in OKLCH color space. Edit this file to change the theme. Must load first.
-
-2. **`_content/BlazorBlueprint.Components/blazorblueprint.css`** — pre-compiled styles for BlazorBlueprint components. Served automatically from the NuGet package. Do not modify.
-
-3. **`css/app.css`** — compiled Tailwind CSS output containing utility classes used in layout and page components. Rebuilt by running Tailwind against `app-input.css`.
-
-### Rebuilding app.css
-
-If you add new Tailwind utility classes to pages or layout files, recompile:
-
-```bash
-npx tailwindcss -i wwwroot/css/app-input.css -o wwwroot/css/app.css
-```
-
-Or watch mode during development:
-
-```bash
-npx tailwindcss -i wwwroot/css/app-input.css -o wwwroot/css/app.css --watch
-```
-
-### Dark Mode
-
-Dark mode is toggled by adding/removing the `dark` class on `<html>`. Two JS functions are defined globally in `App.razor`:
-
-```js
-window.toggleDarkMode = () => document.documentElement.classList.toggle('dark');
-window.isDarkModeEnabled = () =>
-	document.documentElement.classList.contains('dark');
-```
-
-`MainLayout.razor.cs` calls these via `IJSRuntime` to sync the toggle button state.
+| Layer      | Technology                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------ |
+| Framework  | .NET 10, Blazor Server with Interactive Server render mode                                        |
+| UI library | NeoUI (`NeoUI.Blazor` 4.0.x, `NeoUI.Blazor.Primitives`), a shadcn/ui-style component library     |
+| Icons      | `NeoUI.Icons.Lucide`, used as `<LucideIcon Name="..." />`                                         |
+| CSS        | Tailwind CSS v4, compiled with `@tailwindcss/cli`                                                 |
+| Backend    | IT.WebServices over gRPC (generated clients in `IT.WebServices.Clients` / `Fragments`)            |
+| Validation | [ProtoValidate](https://www.nuget.org/packages/ProtoValidate), driven by the proto definitions     |
 
 ---
 
@@ -108,14 +69,20 @@ window.isDarkModeEnabled = () =>
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js](https://nodejs.org) (for Tailwind CSS compilation)
+- [Node.js](https://nodejs.org), used to compile Tailwind as part of the build
+- The `IT.WebServices` repo checked out next to this one, with its API running (default `http://localhost:8001/api`)
 
 ### Run
 
 ```bash
-cd IT.WebHost.App
-dotnet run
+# Public site: http://localhost:5002 (https://localhost:5003)
+dotnet run --project App/App
+
+# Admin console: http://localhost:5000 (https://localhost:5001)
+dotnet run --project Admin
 ```
+
+Each project's `Properties/launchSettings.json` also defines profiles that set the development JWT keys the apps use to validate the auth cookie. Use one of those profiles (or set the same variables yourself) if login fails.
 
 ### Build
 
@@ -123,27 +90,51 @@ dotnet run
 dotnet build
 ```
 
-### Tailwind (first time or after layout changes)
+The build runs `npm install` if `node_modules` is missing, then `npm run build:css`, so a normal build also regenerates the CSS.
+
+### Configuration
+
+Settings live under `AppSettings` in each project's `appsettings.json`:
+
+| Key            | Default                     | Used by      | Purpose                                                                 |
+| -------------- | --------------------------- | ------------ | ----------------------------------------------------------------------- |
+| `API_BASE_URL` | `http://localhost:8001/api` | App, Admin   | Base URL of the IT.WebServices API (also used to build asset image URLs) |
+| `APP_BASE_URL` | `http://localhost:5003`     | App          | Public URL of this site; used for payment success/cancel redirects       |
+
+---
+
+## CSS
+
+Tailwind v4 scans the `.razor`, `.html` and `.cs` files (see the `@source` lines in `styles/app-input.css`) and writes `wwwroot/css/app.css`. That file is committed and regenerated on every build, so it will show up as modified after you add or change utility classes. Commit it along with the change that caused it.
+
+For faster iteration, run the watcher from inside the project folder:
 
 ```bash
-cd IT.WebHost.App
-npm install -g tailwindcss   # or: npx tailwindcss ...
-npx tailwindcss -i wwwroot/css/app-input.css -o wwwroot/css/app.css
+cd App/App        # or: cd Admin
+npm run watch:css
 ```
+
+### Dynamic class names
+
+Tailwind only generates classes it can find as literal strings in your source. A class that a component library assembles at runtime never gets generated. If a NeoUI parameter that is supposed to change styling has no visible effect, this is a likely cause. Size or style the element yourself with a literal class or a scoped `.razor.css` file.
+
+### Scoped CSS
+
+A component can have a sibling `Component.razor.css` file (for example `MerchCard.razor.css`). Its rules are scoped to that component. Use `::deep` to reach elements rendered by child components.
 
 ---
 
 ## Adding Components
 
-1. Create a `.razor` file in `IT.WebHost.Components/`
-2. Use the namespace `IT.WebHost.Components` (set via `RootNamespace` in the csproj)
-3. The component is immediately available in `IT.WebHost.App` — no additional imports needed (the namespace is in `_Imports.razor` for both projects)
+**Shared between App and Admin:** add a `.razor` file under `Components/`. No extra imports are needed in either app.
+
+**Used by one app only:** add it under that project's `Components/Common/` folder (`App/App/Components/Common/` or `Admin/Components/Common/`).
 
 Example:
 
 ```razor
-<!-- IT.WebHost.Components/StatusBadge.razor -->
-<BbBadge Variant="@Variant">@Text</BbBadge>
+<!-- Components/Overlay/StatusBadge.razor -->
+<Badge Variant="@Variant">@Text</Badge>
 
 @code {
     [Parameter] public string Text { get; set; } = "";

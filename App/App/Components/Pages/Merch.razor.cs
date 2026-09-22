@@ -12,7 +12,7 @@ namespace WebApp.Components.Pages
         public string? PageSizeStr { get; set; }
         private int pageSize
         {
-            get => int.Parse(PageSizeStr ?? "25");
+            get => int.Parse(PageSizeStr ?? "10");
         }
         [SupplyParameterFromQuery(Name = "offset")]
         public string? PageOffsetStr { get; set; }
@@ -25,6 +25,7 @@ namespace WebApp.Components.Pages
         public string? Query { get; set; }
 
         private bool isLoading { get; set; } = true;
+        private string? errorMessage { get; set; }
         private uint totalItems { get; set; } = 0;
         private List<GenericMerchRecord> merch { get; set; } = new List<GenericMerchRecord>();
 
@@ -36,24 +37,36 @@ namespace WebApp.Components.Pages
         private async Task LoadMerch()
         {
             isLoading = true;
-            var req = new SearchMerchRequest()
+            errorMessage = null;
+            var req = BuildRequest();
+            var res = await merchClient.Search(req);
+            if (res is not null)
+            {
+                merch = res.Records.ToList();
+                totalItems = res.PageTotalItems;
+            }
+            else
+            {
+                merch = [];
+                totalItems = 0;
+                errorMessage = "We couldn't load merch right now. Please try again.";
+            }
+            isLoading = false;
+            StateHasChanged();
+        }
+
+        private SearchMerchRequest BuildRequest()
+        {
+            var req = new SearchMerchRequest
             {
                 PageOffset = (uint)pageOffset,
                 PageSize = (uint)pageSize,
             };
-
             if (!string.IsNullOrEmpty(Query))
             {
                 req.Query = Query;
             }
-
-            var res = await merchClient.SearchMerch(req);
-            if (res is not null && res.Any())
-            {
-                merch = res.ToList();
-            }
-            isLoading = false;
-            StateHasChanged();
+            return req;
         }
     }
 }

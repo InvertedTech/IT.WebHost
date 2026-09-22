@@ -13,7 +13,7 @@
                Placeholder="Search content..."
                Class="max-w-md"
                @bind-Value="_searchInput" />
-        <Button Type="ButtonType.Submit">
+        <Button Type="ButtonType.Submit" Disabled="@(!RendererInfo.IsInteractive)">
             <LucideIcon Name="search" Class="h-4 w-4 mr-2" />
             Search
         </Button>

@@ -1,6 +1,8 @@
+using Core.Extensions;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Authentication;
 using Microsoft.AspNetCore.Components;
+using ProtoValidate;
 
 namespace WebApp.Components.Pages
 {
@@ -8,6 +10,7 @@ namespace WebApp.Components.Pages
     {
         [Inject] public UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
         [Inject] public NavigationManager NavigationManager { get; set; } = null!;
+        [Inject] private IValidator Validator { get; set; } = null!;
 
         private string? newPassword { get; set; } = string.Empty;
         private string? confirmNewPassword { get; set; } = string.Empty;
@@ -18,6 +21,7 @@ namespace WebApp.Components.Pages
         private bool isCheckingToken { get; set; } = true;
         private bool isTokenValid { get; set; } = false;
         private string? errorMessage { get; set; } = null;
+        private IReadOnlyList<string> newPasswordErrors = [];
 
         protected override async Task OnInitializedAsync()
         {
@@ -41,9 +45,16 @@ namespace WebApp.Components.Pages
             isCheckingToken = false;
         }
 
+        private void ClearValidation()
+        {
+            newPasswordErrors = [];
+            errorMessage = null;
+        }
+
         private async Task OnResetPasswordAsync()
         {
             errorMessage = null;
+            newPasswordErrors = [];
 
             if (string.IsNullOrEmpty(newPassword) || newPassword != confirmNewPassword)
             {
@@ -52,13 +63,22 @@ namespace WebApp.Components.Pages
                 return;
             }
 
-            isLoading = true;
             var req = new CompleteForgotPasswordRequest
             {
                 Token = Token,
                 NewPassword = newPassword,
             };
 
+            var validation = Validator.Validate(req, failFast: false);
+            newPasswordErrors = validation.Violations.ForField("NewPassword").Errors;
+
+            if (!validation.IsSuccess)
+            {
+                StateHasChanged();
+                return;
+            }
+
+            isLoading = true;
             var res = await UserClient.CompleteForgotPasswordAsync(req);
             isLoading = false;
 

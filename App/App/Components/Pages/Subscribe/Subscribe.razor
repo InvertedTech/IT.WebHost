@@ -48,11 +48,10 @@
                                 <SelectValue Placeholder="Select Payment Processor" />
                             </SelectTrigger>
                             <SelectContent>
-                                @*TODO: Programatically Build These Values Based On Settings.Public.Subscription.{Provider}.IsEnabled*@
-                                <SelectItem Value="@("Stripe")" Text="Stripe">Stripe</SelectItem>
-                                @*                     <SelectItem Value="@("Fortis")" Text="Fortis">Fortis</SelectItem>
-                    <SelectItem Value="@("Paypal")" Text="Paypal">Paypal</SelectItem>
-                    <SelectItem Value="@("Crypto")" Text="Crypto">Crypto</SelectItem> *@
+                                @foreach (var provider in providers)
+                                {
+                                    <SelectItem Value="@provider.Value" Text="@provider.Text">@provider.Text</SelectItem>
+                                }
                             </SelectContent>
                         </Select>
                         <Input Type="InputType.Text"
@@ -70,40 +69,7 @@
         else
         {
             <div class="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>
-                            <LucideIcon Name="circle-dollar-sign" class="mr-2 inline-block h-4 w-4" />
-                            Subscriptions
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent Class="space-y-4">
-                        @foreach (var sub in ActiveSubscriptions)
-                        {
-                            <Separator />
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                <div class="space-y-0.5">
-                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Amount</p>
-                                    <p class="break-all font-mono text-sm">@((sub.SubscriptionRecord.AmountCents / 100.0).ToString("$###,###,##0.00"))</p>
-                                </div>
-                                <div class="space-y-0.5">
-                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</p>
-                                    <p class="text-sm">Active</p>
-                                </div>
-                                <div class="space-y-0.5">
-                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground"></p>
-                                    <p class="text-sm">
-                                        <Button @onclick="async () => await CancelSubscription(sub)" Class="--alert-danger">Cancel</Button>
-                                    </p>
-                                </div>
-                                <div class="space-y-0.5">
-                                    <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Subscribed Since</p>
-                                    <p class="text-sm">@(sub.SubscriptionRecord.CreatedOnUTC?.ToDateTime().ToLocalTime().ToString("yyyy-MM-dd") ?? "—")</p>
-                                </div>
-                            </div>
-                        }
-                    </CardContent>
-                </Card>
+                <SubscriptionCard Subscriptions="mySubscriptions" OnCancel="CancelSubscription" />
             </div>
         }
     </Authorized>

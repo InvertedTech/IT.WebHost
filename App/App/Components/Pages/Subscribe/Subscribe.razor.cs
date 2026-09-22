@@ -7,6 +7,7 @@ using IT.WebServices.Fragments.Authorization;
 using IT.WebServices.Fragments.Authorization.Payment;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
+using NeoUI.Blazor;
 
 namespace WebApp.Components.Pages.Subscribe
 {
@@ -18,7 +19,9 @@ namespace WebApp.Components.Pages.Subscribe
         [Inject] private PaymentInterface.PaymentInterfaceClient RawPaymentClient { get; set; } = null!;
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
         [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+        [Inject] private IToastService ToastService { get; set; } = null!;
 
+        private List<SelectItem<string>> providers { get; set; } = new List<SelectItem<string>>();
         private List<SubscriptionTier> tiers { get; set; } = [];
         private GenericSubscriptionFullRecord[] mySubscriptions { get; set; } = [];
         private SubscriptionTier? selectedTier;
@@ -32,7 +35,14 @@ namespace WebApp.Components.Pages.Subscribe
         protected override async Task OnInitializedAsync()
         {
             tiers = SiteSettings.Settings?.Subscription?.Tiers.ToList() ?? new();
+            providers = GetProviders();
+            selectedProvider = providers.FirstOrDefault()?.Value ?? string.Empty;
 
+            await LoadSubscriptions();
+        }
+
+        private async Task LoadSubscriptions()
+        {
             var res = await RawPaymentClient.GetOwnSubscriptionRecordsAsync(new(), UserHelper.GetGrpcCallOptions());
             mySubscriptions = [.. res.Generic];
         }
@@ -59,7 +69,6 @@ namespace WebApp.Components.Pages.Subscribe
                 CancelUrl = $"{_settings.Value.APP_BASE_URL}/subscribe/cancel"
             };
 
-            // TODO: Figure Out why this says the total amount due is null on service
             var res = await PaymentClient.NewSubscription(
                 req
             );
@@ -73,9 +82,59 @@ namespace WebApp.Components.Pages.Subscribe
             // TODO: Display Error Messages
         }
 
-        public async Task CancelSubscription(GenericSubscriptionFullRecord record)
+        public async Task CancelSubscription((GenericSubscriptionFullRecord Subscription, string Reason) args)
         {
+            var subscriptionId = args.Subscription.SubscriptionRecord?.InternalSubscriptionID;
+            if (string.IsNullOrEmpty(subscriptionId))
+            {
+                return;
+            }
 
+            var reason = string.IsNullOrWhiteSpace(args.Reason) ? "User requested cancellation" : args.Reason;
+
+            var res = await PaymentClient.CancelSubscription(new CancelOwnSubscriptionRequest
+            {
+                InternalSubscriptionID = subscriptionId,
+                Reason = reason,
+            });
+
+            if (res is not null && string.IsNullOrEmpty(res.Error))
+            {
+                ToastService.Success("Subscription canceled.");
+                await LoadSubscriptions();
+            }
+            else
+            {
+                ToastService.Error(!string.IsNullOrEmpty(res?.Error) ? res.Error : "Failed to cancel subscription.");
+            }
+        }
+
+        private List<SelectItem<string>> GetProviders()
+        {
+            var providerList = new List<SelectItem<string>>();
+            var subscriptionSettings = SiteSettings?.Settings?.Subscription;
+
+            if (subscriptionSettings?.Stripe?.Enabled == true)
+            {
+                providerList.Add(new SelectItem<string> { Value = "Stripe", Text = "Stripe" });
+            }
+
+            if (subscriptionSettings?.Paypal?.Enabled == true)
+            {
+                providerList.Add(new SelectItem<string> { Value = "PayPal", Text = "PayPal" });
+            }
+
+            if (subscriptionSettings?.Fortis?.Enabled == true)
+            {
+                providerList.Add(new SelectItem<string> { Value = "Fortis", Text = "Fortis" });
+            }
+
+            if (subscriptionSettings?.Crypto?.Enabled == true)
+            {
+                providerList.Add(new SelectItem<string> { Value = "Crypto", Text = "Crypto" });
+            }
+
+            return providerList;
         }
     }
 }

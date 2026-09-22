@@ -21,12 +21,15 @@
     }
     <CardHeader>
         <CardTitle>@Merch.Title</CardTitle>
-        <CardDescription>@Merch.Description</CardDescription>
+        <CardDescription class="merch-desc">@((MarkupString)Merch.Description)</CardDescription>
     </CardHeader>
     <CardFooter Class="flex justify-between items-center">
         <Button OnClick="@(() => Nav.NavigateTo(Merch.Url))">View</Button>
      </CardFooter>
     </Card>
+
+    
+
 @code {
     [Parameter] public GenericMerchRecord Merch  { get; set; }
     [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;

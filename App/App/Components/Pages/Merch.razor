@@ -1,10 +1,22 @@
 ﻿@page "/merch"
 
-<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-    @foreach (var item in merch)
+<div class="mx-auto">
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <MerchCard Merch="item" />
+        <Alert Variant="AlertVariant.Destructive" Class="mb-6">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>@errorMessage</AlertDescription>
+        </Alert>
     }
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        @foreach (var item in merch)
+        {
+            <MerchCard Merch="item" />
+        }
+    </div>
+    <Paginator baseUrl="/merch"
+               pageSize="@((uint)pageSize)"
+               pageOffset="@((uint)pageOffset)"
+               pageTotalItems="@totalItems"
+               query="@Query" />
 </div>
-
-@*TODO: Add Paginator*@

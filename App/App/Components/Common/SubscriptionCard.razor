@@ -1,0 +1,198 @@
+@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Fragments.Authorization.Payment
+
+<Card>
+    <CardHeader>
+        <CardTitle>
+            <LucideIcon Name="circle-dollar-sign" class="mr-2 inline-block h-4 w-4" />
+            Subscriptions
+            @if (_subs.Count > 0)
+            {
+                <Badge Variant="BadgeVariant.Secondary" Class="ml-2">@_subs.Count</Badge>
+            }
+        </CardTitle>
+    </CardHeader>
+    <CardContent Class="space-y-4">
+        @if (_subs.Count == 0)
+        {
+            <Empty>
+                <EmptyTitle>No subscriptions</EmptyTitle>
+                <EmptyDescription>You don't have a subscription yet.</EmptyDescription>
+            </Empty>
+            <div class="flex justify-center">
+                <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="@(() => Nav.NavigateTo("/subscribe"))">
+                    View plans
+                </Button>
+            </div>
+        }
+        else
+        {
+            @for (var i = 0; i < _subs.Count; i++)
+            {
+                var sub = _subs[i];
+                var record = sub.SubscriptionRecord;
+                if (record is null) continue;
+
+                var status = record.Status;
+                var total = record.TotalCents > 0 ? record.TotalCents : record.AmountCents;
+
+                @if (i > 0)
+                {
+                    <Separator />
+                }
+
+                <div class="space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-2xl font-bold leading-none">
+                            @FormatDollars(total)<span class="text-sm font-normal text-muted-foreground">/mo</span>
+                        </p>
+                        <Badge Variant="@StatusVariant(status)">@StatusLabel(status)</Badge>
+                    </div>
+
+                    @if (status == SubscriptionStatus.SubscriptionActive && OnCancel.HasDelegate)
+                    {
+                        <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" Type="ButtonType.Button" OnClick="@(() => OpenCancelDialog(sub))">
+                            <LucideIcon Name="circle-x" class="h-4 w-4 mr-1.5" />
+                            Cancel subscription
+                        </Button>
+                    }
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="space-y-0.5">
+                            <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Subscribed Since</p>
+                            <p class="text-sm">@FormatDate(record.CreatedOnUTC)</p>
+                        </div>
+                        <div class="space-y-0.5">
+                            @if (status == SubscriptionStatus.SubscriptionStopped)
+                            {
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Access Ends</p>
+                                <p class="text-sm">@FormatDate(sub.PaidThruUTC)</p>
+                            }
+                            else
+                            {
+                                <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Renews On</p>
+                                <p class="text-sm">@(status == SubscriptionStatus.SubscriptionActive ? FormatDate(sub.RenewsOnUTC) : "—")</p>
+                            }
+                        </div>
+                        <div class="space-y-0.5">
+                            <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Last Payment</p>
+                            <p class="text-sm">@FormatDate(sub.LastPaidUTC)</p>
+                        </div>
+                        <div class="space-y-0.5">
+                            <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Payment Method</p>
+                            <p class="text-sm">@PaymentMethod(record)</p>
+                        </div>
+                    </div>
+
+                    @if (record.TaxCents > 0)
+                    {
+                        <p class="text-xs text-muted-foreground">
+                            Includes @FormatDollars(record.TaxCents) tax.
+                        </p>
+                    }
+                </div>
+            }
+        }
+    </CardContent>
+</Card>
+
+<Dialog @bind-Open="_cancelDialogOpen">
+    <DialogContent>
+        <DialogHeader>
+            <DialogTitle>Cancel subscription</DialogTitle>
+            <DialogDescription>
+                We're sorry to see you go. Let us know why you're canceling — it helps us improve.
+            </DialogDescription>
+        </DialogHeader>
+
+        <Field>
+            <FieldLabel For="cancel-reason">Reason (optional)</FieldLabel>
+            <FieldContent>
+                <Textarea Id="cancel-reason" Placeholder="Tell us why you're canceling…" @bind-Value="_cancelReason" />
+            </FieldContent>
+        </Field>
+
+        <DialogFooter>
+            <Button Variant="ButtonVariant.Outline" Type="ButtonType.Button" OnClick="CloseCancelDialog">Keep subscription</Button>
+            <Button Variant="ButtonVariant.Destructive" Type="ButtonType.Button" OnClick="ConfirmCancel">Cancel subscription</Button>
+        </DialogFooter>
+    </DialogContent>
+</Dialog>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+
+    [Parameter] public IEnumerable<GenericSubscriptionFullRecord>? Subscriptions { get; set; }
+
+    /// <summary>Raised when the cancel dialog is confirmed, with the subscription to cancel and the
+    /// viewer-entered reason (maps to CancelOwnSubscriptionRequest.Reason). When nothing is bound,
+    /// the Cancel subscription button is hidden.</summary>
+    [Parameter] public EventCallback<(GenericSubscriptionFullRecord Subscription, string Reason)> OnCancel { get; set; }
+
+    private List<GenericSubscriptionFullRecord> _subs = [];
+    private bool _cancelDialogOpen;
+    private GenericSubscriptionFullRecord? _cancelTarget;
+    private string _cancelReason = string.Empty;
+
+    private void OpenCancelDialog(GenericSubscriptionFullRecord sub)
+    {
+        _cancelTarget = sub;
+        _cancelReason = string.Empty;
+        _cancelDialogOpen = true;
+    }
+
+    private void CloseCancelDialog()
+    {
+        _cancelDialogOpen = false;
+        _cancelTarget = null;
+    }
+
+    private async Task ConfirmCancel()
+    {
+        if (_cancelTarget is null) return;
+
+        _cancelDialogOpen = false;
+        await OnCancel.InvokeAsync((_cancelTarget, _cancelReason));
+        _cancelTarget = null;
+    }
+
+    protected override void OnParametersSet()
+    {
+        _subs = (Subscriptions ?? []).Where(s => s.SubscriptionRecord is not null).ToList();
+    }
+
+    private static string FormatDollars(uint cents) => $"${cents / 100m:N2}";
+
+    private static string FormatDate(Timestamp? ts)
+        => ts is null || ts.Seconds == 0 ? "—" : ts.ToDateTime().ToLocalTime().ToString("MMM d, yyyy");
+
+    private static string PaymentMethod(GenericSubscriptionRecord record)
+    {
+        if (string.IsNullOrEmpty(record.CardLast4))
+        {
+            return string.IsNullOrEmpty(record.ProcessorName) ? "—" : record.ProcessorName;
+        }
+
+        var exp = record.CardExpMonth > 0 && record.CardExpYear > 0
+            ? $" · exp {record.CardExpMonth:00}/{record.CardExpYear % 100:00}"
+            : "";
+        return $"Card ending {record.CardLast4}{exp}";
+    }
+
+    private static string StatusLabel(SubscriptionStatus status) => status switch
+    {
+        SubscriptionStatus.SubscriptionActive => "Active",
+        SubscriptionStatus.SubscriptionPending => "Pending",
+        SubscriptionStatus.SubscriptionPaused => "Paused",
+        SubscriptionStatus.SubscriptionStopped => "Canceled",
+        _ => "Unknown"
+    };
+
+    private static BadgeVariant StatusVariant(SubscriptionStatus status) => status switch
+    {
+        SubscriptionStatus.SubscriptionActive => BadgeVariant.Success,
+        SubscriptionStatus.SubscriptionPending => BadgeVariant.Warning,
+        SubscriptionStatus.SubscriptionPaused => BadgeVariant.Warning,
+        _ => BadgeVariant.Muted
+    };
+}

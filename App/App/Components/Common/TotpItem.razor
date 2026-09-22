@@ -1,0 +1,33 @@
+@using Google.Protobuf.WellKnownTypes
+@using IT.WebServices.Fragments.Authentication
+
+<Item Variant="ItemVariant.Outline" Class="mb-3 last:mb-0">
+    <ItemContent Class="flex w-full items-center justify-between gap-4">
+        <div class="flex min-w-0 items-center gap-3">
+            <LucideIcon Name="smartphone" class="h-5 w-5 shrink-0 text-muted-foreground" />
+            <div class="min-w-0 space-y-1">
+                <ItemTitle Class="truncate">@(string.IsNullOrWhiteSpace(TOTPDevice?.DeviceName) ? "Unnamed device" : TOTPDevice.DeviceName)</ItemTitle>
+                <ItemDescription>Added @FormatDate(TOTPDevice?.CreatedOnUTC)</ItemDescription>
+            </div>
+        </div>
+        @if (OnClick.HasDelegate)
+        {
+            <ItemActions>
+                <Button Variant="ButtonVariant.Destructive" Size="ButtonSize.Small" Type="ButtonType.Button" OnClick="OnClick">
+                    <LucideIcon Name="trash-2" class="h-4 w-4 mr-1.5" />
+                    Remove
+                </Button>
+            </ItemActions>
+        }
+    </ItemContent>
+</Item>
+
+@code {
+    [Parameter, EditorRequired] public TOTPDeviceLimited TOTPDevice { get; set; } = null!;
+
+    /// <summary>Raised when Remove is clicked. When nothing is bound, the button is hidden and the item is display-only.</summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private static string FormatDate(Timestamp? ts)
+        => ts is null || ts.Seconds == 0 ? "—" : ts.ToDateTime().ToLocalTime().ToString("MMM d, yyyy");
+}

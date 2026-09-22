@@ -1,0 +1,83 @@
+@using IT.WebServices.Authentication
+@using IT.WebServices.Clients.CMS
+@using Microsoft.Extensions.Options
+@inject ONUserHelper UserHelper
+
+@if (_relatedContent.Count > 0)
+{
+    <div class="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+        @foreach (var content in _relatedContent)
+        {
+            <a @key="content.ContentID"
+               href="@(HasAccess(content) ? $"/content/{content.URL.TrimStart('/')}" : "/subscribe")"
+               class="group block w-64 shrink-0 snap-start">
+                <Card Class="w-full overflow-hidden gap-0 py-0 transition-shadow group-hover:shadow-md">
+                    @if (string.IsNullOrEmpty(content.FeaturedImageAssetID) || _imageErrors.Contains(content.ContentID))
+                    {
+                        <Skeleton Class="h-36 w-full rounded-none" />
+                    }
+                    else
+                    {
+                        <img src="@GetImageUrl(content)"
+                             alt="@content.Title"
+                             loading="lazy"
+                             class="h-36 w-full object-cover"
+                             @onerror="() => _imageErrors.Add(content.ContentID)" />
+                    }
+                    <div class="flex flex-col gap-1 p-3">
+                        <p class="line-clamp-2 text-sm font-medium leading-snug">@content.Title</p>
+                        <div class="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                            <span>@content.PublishOnUTC?.ToDateTime().ToLocalTime().ToString("MMM d, yyyy")</span>
+                            @if (content.SubscriptionLevel > 0)
+                            {
+                                <span class="flex items-center gap-1 font-medium text-amber-600">
+                                    <LucideIcon Name="lock" Class="h-3 w-3" />
+                                    Members
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </Card>
+            </a>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? ContentId { get; set; }
+    [Inject] private ContentClient ContentClient { get; set; } = null!;
+    [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+
+    private List<ContentListRecord> _relatedContent = new();
+    private readonly HashSet<string> _imageErrors = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetRelatedContentAsync();
+    }
+
+    private async Task GetRelatedContentAsync()
+    {
+        // TODO: Decide whether or not to silently fail if no response
+        if (string.IsNullOrEmpty(ContentId)) return;
+
+        var req = new GetRelatedContentRequest
+        {
+            ContentID = ContentId,
+            PageOffset = 0,
+            PageSize = 5
+        };
+
+        var relatedContent = await ContentClient.GetRelatedContent(req);
+        if (relatedContent?.Records is not null)
+        {
+            _relatedContent = relatedContent.Records.ToList();
+        }
+    }
+
+    private string GetImageUrl(ContentListRecord content)
+        => $"{_settings.Value.API_BASE_URL}/cms/asset/{content.FeaturedImageAssetID}/data";
+
+    private bool HasAccess(ContentListRecord content)
+        => content.SubscriptionLevel == 0 || (UserHelper.MyUser?.SubscriptionLevel ?? 0) >= content.SubscriptionLevel;
+}
