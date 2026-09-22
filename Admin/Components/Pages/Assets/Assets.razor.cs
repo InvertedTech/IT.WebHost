@@ -101,5 +101,12 @@ namespace Admin.Components.Pages.Assets
             await LoadAssets();
             StateHasChanged();
         }
+
+        private async Task HandleAudioAssetCreated(AudioAssetRecord asset)
+        {
+            _isCreateDialogOpen = false;
+            await LoadAssets();
+            StateHasChanged();
+        }
     }
 }

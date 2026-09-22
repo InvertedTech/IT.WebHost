@@ -11,13 +11,20 @@
     <div class="settings-card-body">
         <div class="settings-section-label">Comment Restrictions</div>
 
-        <div class="settings-row-2col">
-            <Field Label="Minimum Subscription (Days)">
-                <Input Value="@Public.MinimumAllowed.ToString()" Placeholder="30" Disabled="@(!IsEditing)" />
-            </Field>
-            <Field Label="Max Consecutive Comments">
-                <Input Value="@Public.MaximumAllowed.ToString()" Placeholder="5" Disabled="@(!IsEditing)" />
-            </Field>
+        <div class="settings-toggle-row">
+            <div class="settings-toggle-text">
+                <span class="settings-toggle-label">Require Subscription to View Comments</span>
+                <span class="settings-toggle-description">Non-subscribers can't see the comment section at all</span>
+            </div>
+            <Switch @bind-Checked="Public.MinimumAllowed" Disabled="@(!IsEditing)" />
+        </div>
+
+        <div class="settings-toggle-row">
+            <div class="settings-toggle-text">
+                <span class="settings-toggle-label">Require Subscription to Post Comments</span>
+                <span class="settings-toggle-description">Non-subscribers can view comments but can't post their own</span>
+            </div>
+            <Switch @bind-Checked="Public.MaximumAllowed" Disabled="@(!IsEditing)" />
         </div>
 
         <Separator Class="settings-separator" />
@@ -27,7 +34,7 @@
                 <span class="settings-toggle-label">Allow Other Tiers</span>
                 <span class="settings-toggle-description">Permit users to see hidden "legacy" subscription options</span>
             </div>
-            <Switch Checked="@Public.AllowOther" Disabled="@(!IsEditing)" />
+            <Switch @bind-Checked="Public.AllowOther" Disabled="@(!IsEditing)" />
         </div>
 
         <div class="settings-info-box">

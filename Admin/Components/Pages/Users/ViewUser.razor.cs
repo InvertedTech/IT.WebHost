@@ -30,8 +30,7 @@ namespace Admin.Components.Pages.Users
         {
             IsLoading = true;
             IsEditing = false;
-            User = null;
-            // TODO: This page requires member_manager,admin,owner roles (ROLE_IS_MEMBER_MANAGER_OR_HIGHER) for all the UserClient calls; wrap corresponding UI sections in AuthorizeView
+            User = null;    
             await LoadUser();
             EditProfile = User is not null ? ProfileData.FromRecord(User) : null;
             IsLoading = false;
@@ -51,7 +50,6 @@ namespace Admin.Components.Pages.Users
             User = res?.Record;
         }
 
-        // TODO: Figure Out Why This Isn't Working
         private async Task GetUserSubs()
         {
             var res = await PaymentClient.GetOtherSubscriptionRecordsAsync(

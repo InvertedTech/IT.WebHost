@@ -1,11 +1,11 @@
-﻿@using IT.WebServices.Clients.CMS
+@using IT.WebServices.Clients.CMS
 @using IT.WebServices.Fragments.Content
 @using NeoUI.Blazor
 
 <Dialog Open="IsDialogOpen" OpenChanged="OnDialogOpenChanged">
     <DialogContent Class="max-w-3xl">
         <DialogHeader>
-            <DialogTitle>Assets</DialogTitle>
+            <DialogTitle>Audio</DialogTitle>
         </DialogHeader>
 
         <Tabs DefaultValue="gallery">
@@ -14,21 +14,19 @@
                 <TabsTrigger Value="upload">Upload</TabsTrigger>
             </TabsList>
             <TabsContent Value="gallery">
-                <div class="grid grid-cols-5 gap-3 py-2">
+                <div class="flex flex-col gap-2 py-2">
+                    @if (AssetRecords.Count == 0)
+                    {
+                        <p class="text-sm italic text-muted-foreground">No audio assets found.</p>
+                    }
                     @foreach (var asset in AssetRecords)
                     {
-                        switch (asset.AssetType)
-                        {
-                            case AssetType.AssetImage:
-                                <FeaturedImage AssetId="@asset.AssetID"
-                                               Alt="@asset.Title"
-                                               Size="FeaturedImageSize.Small"
-                                               IsSelected="@IsAssetSelected(asset.AssetID)"
-                                               OnClick="ToggleSelection" />
-                                break;
-                            case AssetType.AssetNone:
-                                break;
-                        }
+                        <AudioAssetTile AssetId="@asset.AssetID"
+                                        Title="@asset.Title"
+                                        Caption="@asset.Caption"
+                                        LengthSeconds="@asset.LengthSeconds"
+                                        IsSelected="@IsAssetSelected(asset.AssetID)"
+                                        OnClick="ToggleSelection" />
                     }
                 </div>
 
@@ -56,7 +54,7 @@
                 </DialogFooter>
             </TabsContent>
             <TabsContent Value="upload">
-                <ImageAssetForm OnCreated="HandleAssetCreated" />
+                <AudioAssetForm OnCreated="HandleAssetCreated" />
                 <DialogFooter>
                     <Button Variant="ButtonVariant.Outline" OnClick="@(() => OnDialogOpenChanged(false))">Close</Button>
                 </DialogFooter>
@@ -71,7 +69,7 @@
     [Parameter] public bool IsDialogOpen { get; set; }
     [Parameter] public EventCallback<bool> IsDialogOpenChanged { get; set; }
 
-    [Parameter] public bool MultiSelect { get; set; } = true; 
+    [Parameter] public bool MultiSelect { get; set; } = false;
 
     [Parameter] public IEnumerable<string>? InitialSelectedIds { get; set; }
 
@@ -97,13 +95,14 @@
         var assetsResponse = await AssetClient.SearchAsset(new SearchAssetRequest()
         {
             PageOffset = (uint)PageOffset,
-            PageSize = (uint)PageSize
+            PageSize = (uint)PageSize,
+            AssetType = AssetType.AssetAudio,
         });
-        AssetRecords = assetsResponse.Records.ToList();
+        AssetRecords = assetsResponse?.Records.ToList() ?? new List<AssetListRecord>();
         StateHasChanged();
     }
 
-    private async Task HandleAssetCreated(ImageAssetRecord asset)
+    private async Task HandleAssetCreated(AudioAssetRecord asset)
     {
         if (MultiSelect)
         {

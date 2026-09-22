@@ -3,7 +3,7 @@
 <Field>
     <FieldLabel>@(Title ?? "Subscription Level") </FieldLabel>
     <FieldContent>
-        <Select TValue="uint" @bind-Value="SelectedSubscriptionLevel" Disabled="@Disabled">
+        <Select TValue="uint" Value="SelectedSubscriptionLevel" ValueChanged="OnLevelChanged" Disabled="@Disabled">
             <SelectTrigger>
                 <SelectValue Placeholder="Select a subscription level" />
             </SelectTrigger>
@@ -26,4 +26,10 @@
     [Parameter] public string? Title { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+
+    private async Task OnLevelChanged(uint value)
+    {
+        SelectedSubscriptionLevel = value;
+        await SelectedSubscriptionLevelChanged.InvokeAsync(value);
+    }
 }

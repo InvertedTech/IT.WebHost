@@ -1,0 +1,50 @@
+@using NeoUI.Icons.Lucide
+
+<div class="@WrapperClass" @onclick="HandleClick">
+    <LucideIcon Name="music" class="h-6 w-6 text-muted-foreground shrink-0" />
+    <div class="flex flex-col min-w-0 flex-1">
+        <span class="text-sm font-medium truncate">@(string.IsNullOrEmpty(Title) ? "Untitled" : Title)</span>
+        @if (!string.IsNullOrEmpty(Caption))
+        {
+            <span class="text-xs text-muted-foreground truncate">@Caption</span>
+        }
+    </div>
+    @if (LengthSeconds > 0)
+    {
+        <span class="text-xs text-muted-foreground shrink-0">@FormatDuration(LengthSeconds)</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? AssetId { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public uint LengthSeconds { get; set; }
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback<string?> OnClick { get; set; }
+
+    private string WrapperClass
+    {
+        get
+        {
+            var cls = "flex items-center gap-3 rounded-lg border p-3 transition-colors";
+            cls += OnClick.HasDelegate ? " cursor-pointer hover:bg-accent" : "";
+            cls += IsSelected ? " ring-2 ring-primary" : "";
+            return cls;
+        }
+    }
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+            await OnClick.InvokeAsync(AssetId);
+    }
+
+    private static string FormatDuration(uint seconds)
+    {
+        var span = TimeSpan.FromSeconds(seconds);
+        return span.Hours > 0
+            ? span.ToString(@"h\:mm\:ss")
+            : span.ToString(@"m\:ss");
+    }
+}

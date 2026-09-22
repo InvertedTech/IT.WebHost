@@ -10,6 +10,12 @@
     <base href="/" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["css/app.css"]" />
+    <!-- Bundled output of every *.razor.css scoped stylesheet in this project
+         (e.g. Layout/MainLayout.razor.css, Components/Pages/Settings/Subscription/PaymentSettings.razor.css).
+         Without this <link>, sibling .razor.css files are still compiled into
+         obj/.../scopedcss/bundle/Admin.styles.css by the build, but nothing
+         ever loads that file in the browser, so their rules silently never apply. -->
+    <link rel="stylesheet" href="@Assets["Admin.styles.css"]" />
     <link rel="stylesheet" href="@Assets["_content/NeoUI.Blazor/components.css"]" />
 
     <!-- Base color themes — in production, include only the one you use -->

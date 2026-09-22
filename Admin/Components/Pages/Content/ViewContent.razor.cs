@@ -4,7 +4,6 @@ using IT.WebHost.Core.Config;
 using IT.WebServices.Authentication;
 using IT.WebServices.Clients.CMS;
 using IT.WebServices.Fragments;
-using IT.WebServices.Fragments.Comment;
 using IT.WebServices.Fragments.Content;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
@@ -20,13 +19,13 @@ namespace Admin.Components.Pages.Content
 
         [Inject] private ONUserHelper UserHelper { get; set; } = null!;
         [Inject] private ContentClient ContentClient { get; set; } = null!;
-        [Inject] private CommentInterface.CommentInterfaceClient CommentClient { get; set; } = null!;
         [Inject] private IToastService ToastService { get; set; } = null!;
         [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
 
         private ContentRecord? Content { get; set; }
         private ContentPrivateData? PrivateData { get; set; }
         private ContentEditData? EditContent { get; set; }
+
         private bool IsLoading { get; set; } = true;
         private bool IsEditing { get; set; }
 
@@ -127,8 +126,17 @@ namespace Admin.Components.Pages.Content
                 ContentID = Content.Public.ContentID
             };
 
-            // TODO: Handle Res
             var res = await ContentClient.UnpublishContent(req);
+
+            if (res?.Error is { Reason: not APIErrorReason.ErrorReasonNoError } err)
+            {
+                var message = !string.IsNullOrEmpty(err.Message)
+                    ? err.Message
+                    : err.Reason.ToString();
+
+                ToastService.Error(message);
+                return;
+            }
 
             ToastService.Success("Content unpublished successfully.");
             await LoadContent();
@@ -144,7 +152,17 @@ namespace Admin.Components.Pages.Content
             };
 
             var res = await ContentClient.DeleteContent(req);
-            // TODO: Handle Res
+
+            if (res?.Error is { Reason: not APIErrorReason.ErrorReasonNoError } err)
+            {
+                var message = !string.IsNullOrEmpty(err.Message)
+                    ? err.Message
+                    : err.Reason.ToString();
+
+                ToastService.Error(message);
+                return;
+            }
+
             ToastService.Success("Content deleted successfully.");
             await LoadContent();
             EditContent = Content is not null ? ContentEditData.FromRecord(Content) : null;
@@ -159,7 +177,17 @@ namespace Admin.Components.Pages.Content
             };
 
             var res = await ContentClient.UnDeleteContent(req);
-            // TODO: Client Call
+
+            if (res?.Error is { Reason: not APIErrorReason.ErrorReasonNoError } err)
+            {
+                var message = !string.IsNullOrEmpty(err.Message)
+                    ? err.Message
+                    : err.Reason.ToString();
+
+                ToastService.Error(message);
+                return;
+            }
+
             ToastService.Success("Content restored successfully.");
             await LoadContent();
             EditContent = Content is not null ? ContentEditData.FromRecord(Content) : null;

@@ -25,7 +25,6 @@
 @code {
     [Parameter, EditorRequired] public TOTPDeviceLimited TOTPDevice { get; set; } = null!;
 
-    /// <summary>Raised when Remove is clicked. When nothing is bound, the button is hidden and the item is display-only.</summary>
     [Parameter] public EventCallback OnClick { get; set; }
 
     private static string FormatDate(Timestamp? ts)

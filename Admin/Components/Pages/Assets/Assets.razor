@@ -2,6 +2,7 @@
 @using IT.WebServices.Fragments.Content
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
+@using Admin.Components.Common.Selects.AudioPicker
 
 <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT_OR_SERVICE)">
     <Authorized>
@@ -57,6 +58,14 @@
                             <FeaturedImage AssetId="@asset.AssetID" Size="FeaturedImageSize.Small" />
                         </div>
                         break;
+                    case AssetType.AssetAudio:
+                        <div class="col-span-2">
+                            <AudioAssetTile AssetId="@asset.AssetID"
+                                            Title="@asset.Title"
+                                            Caption="@asset.Caption"
+                                            LengthSeconds="@asset.LengthSeconds" />
+                        </div>
+                        break;
                 }
             }
         </div>
@@ -71,9 +80,20 @@
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>New Asset</DialogTitle>
-                    <DialogDescription>Upload an image to create a new asset.</DialogDescription>
+                    <DialogDescription>Upload an image or audio file to create a new asset.</DialogDescription>
                 </DialogHeader>
-                <ImageAssetForm OnCreated="HandleAssetCreated" />
+                <Tabs DefaultValue="image">
+                    <TabsList>
+                        <TabsTrigger Value="image">Image</TabsTrigger>
+                        <TabsTrigger Value="audio">Audio</TabsTrigger>
+                    </TabsList>
+                    <TabsContent Value="image">
+                        <ImageAssetForm OnCreated="HandleAssetCreated" />
+                    </TabsContent>
+                    <TabsContent Value="audio">
+                        <AudioAssetForm OnCreated="HandleAudioAssetCreated" />
+                    </TabsContent>
+                </Tabs>
             </DialogContent>
         </Dialog>
     </Authorized>

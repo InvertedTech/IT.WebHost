@@ -50,8 +50,11 @@
                             </div>
                             <div class="flex gap-2 pb-1">
                                 <ResetPasswordDialog userId="@User.Public.UserID" />
-                                @*TODO: Add Role Authorization For Grant Roles*@
-                                <GrantRolesDialog userId="@User.Public.UserID" selected="@User.Private.Roles.ToList()" selectedChanged="RefreshUserRoles" />
+                                <AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)" Context="rolesAuth">
+                                    <Authorized>
+                                        <GrantRolesDialog userId="@User.Public.UserID" selected="@User.Private.Roles.ToList()" selectedChanged="RefreshUserRoles" />
+                                    </Authorized>
+                                </AuthorizeView>
                                 <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="StartEdit" Disabled="IsEditing">
                                     <LucideIcon Name="pencil" class="h-4 w-4 mr-1.5" />
                                     Edit

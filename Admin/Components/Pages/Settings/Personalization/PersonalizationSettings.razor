@@ -1,6 +1,7 @@
 ﻿@page "/settings/personalization"
 @using Microsoft.AspNetCore.Components.Authorization
 @using IT.WebServices.Authentication
+@using Admin.Components.Common.Selects.ImagePicker
 
 <AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER">
     <Authorized>
@@ -37,7 +38,14 @@
                             <Switch @bind-Checked="_personalizationPublicSettings.DefaultToDarkMode" Disabled="!IsEditing" />
                         </FieldContent>
                     </Field>
-                    @*TODO: Add Images*@
+                    <ImagePickerField Label="Profile Image"
+                                      HelperText="Default profile image shown for users who haven't set their own."
+                                      @bind-SelectedAssetId="_personalizationPublicSettings.ProfileImageAssetId"
+                                      Disabled="!IsEditing" />
+                    <ImagePickerField Label="Header Image"
+                                      HelperText="Icon shown in the navbar on IT.WebHost.App."
+                                      @bind-SelectedAssetId="_personalizationPublicSettings.HeaderImageAssetId"
+                                      Disabled="!IsEditing" />
                 </CardContent>
             </Card>
         </div>

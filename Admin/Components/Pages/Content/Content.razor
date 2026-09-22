@@ -6,7 +6,13 @@
 
 <AuthorizeView Roles="@(RoleAbilities.ROLE_CAN_CREATE_CONTENT)">
     <Authorized>
-        <h3>Content</h3>
+        <div class="flex items-center justify-between">
+            <h3>Content</h3>
+            <Button Variant="ButtonVariant.Default" Size="ButtonSize.Small" @onclick="@(() => Nav.NavigateTo("/content/create"))">
+                <LucideIcon Name="plus" class="mr-1.5 h-4 w-4" />
+                Create Content
+            </Button>
+        </div>
 
         <div class="flex flex-wrap items-end gap-3 rounded-lg border p-4">
             <Field Class="w-40">

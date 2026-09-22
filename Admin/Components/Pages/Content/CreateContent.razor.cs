@@ -103,8 +103,8 @@ namespace Admin.Components.Pages.Content
                 case ContentType.ContentAudio:
                     req.Public.Audio = new()
                     {
-                        //AudioAssetID = audioAssetId
-                        HtmlBody = htmlBody
+                        HtmlBody = htmlBody,
+                        AudioAssetID = audioAssetId ?? "",
                     };
                     req.Private.Audio = new();
                     break;
@@ -112,8 +112,11 @@ namespace Admin.Components.Pages.Content
                     req.Public.Picture = new()
                     {
                         HtmlBody = htmlBody,
-                        //ImageAssetIDs = new()
                     };
+                    if (imageAssetIds is not null && imageAssetIds.Any())
+                    {
+                        req.Public.Picture.ImageAssetIDs.AddRange(imageAssetIds);
+                    }
                     req.Private.Picture = new();
                     break;
                 case ContentType.ContentVideo:
@@ -147,6 +150,8 @@ namespace Admin.Components.Pages.Content
         private IReadOnlyList<string> htmlBodyErrors = [];
         private IReadOnlyList<string> rumbleVideoIdErrors = [];
         private IReadOnlyList<string> youtubeVideoIdErrors = [];
+        private IReadOnlyList<string> audioAssetIdErrors = [];
+        private IReadOnlyList<string> imageAssetIdsErrors = [];
 
         private ValidationResult? lastValidation;
         private string? overallError;
@@ -184,6 +189,8 @@ namespace Admin.Components.Pages.Content
             htmlBodyErrors = validation.Violations.ForField("HtmlBody").Errors;
             rumbleVideoIdErrors = validation.Violations.ForField("RumbleVideoId").Errors;
             youtubeVideoIdErrors = validation.Violations.ForField("YoutubeVideoId").Errors;
+            audioAssetIdErrors = validation.Violations.ForField("AudioAssetID").Errors;
+            imageAssetIdsErrors = validation.Violations.ForField("ImageAssetIDs").Errors;
         }
 
         private void ClearAllErrors()
@@ -199,6 +206,8 @@ namespace Admin.Components.Pages.Content
             htmlBodyErrors = [];
             rumbleVideoIdErrors = [];
             youtubeVideoIdErrors = [];
+            audioAssetIdErrors = [];
+            imageAssetIdsErrors = [];
             overallError = null;
             lastValidation = null;
         }
@@ -214,6 +223,8 @@ namespace Admin.Components.Pages.Content
         private void ClearHtmlBodyErrors() => htmlBodyErrors = [];
         private void ClearRumbleErrors() => rumbleVideoIdErrors = [];
         private void ClearYoutubeErrors() => youtubeVideoIdErrors = [];
+        private void ClearAudioAssetIdErrors() => audioAssetIdErrors = [];
+        private void ClearImageAssetIdsErrors() => imageAssetIdsErrors = [];
 
         private IReadOnlyList<string> GetAllValidationErrors()
         {
@@ -229,6 +240,8 @@ namespace Admin.Components.Pages.Content
             list.AddRange(htmlBodyErrors);
             list.AddRange(rumbleVideoIdErrors);
             list.AddRange(youtubeVideoIdErrors);
+            list.AddRange(audioAssetIdErrors);
+            list.AddRange(imageAssetIdsErrors);
             return list;
         }
 

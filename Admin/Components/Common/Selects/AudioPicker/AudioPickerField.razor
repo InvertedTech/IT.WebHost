@@ -1,0 +1,103 @@
+@using IT.WebServices.Clients.CMS
+@using IT.WebServices.Fragments.Content
+@using Microsoft.Extensions.Options
+@using NeoUI.Blazor
+@using NeoUI.Icons.Lucide
+
+<Field>
+    <FieldLabel>@Label</FieldLabel>
+    <FieldContent>
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+                <div class="flex h-9 flex-1 items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors overflow-hidden @(Disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-accent")"
+                     @onclick="() => { if (!Disabled) { _open = true; } }">
+                    <LucideIcon Name="music" class="h-4 w-4 text-muted-foreground shrink-0" />
+                    @if (!string.IsNullOrEmpty(SelectedAssetId))
+                    {
+                        <span class="truncate text-foreground">@(_selectedTitle ?? "Audio selected")</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted-foreground">Select audio...</span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(SelectedAssetId))
+                {
+                    <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="Clear" Disabled="@Disabled">
+                        <LucideIcon Name="x" class="h-4 w-4" />
+                    </Button>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(SelectedAssetId))
+            {
+                <audio controls class="h-8 w-full" src="@GetAssetUrl(SelectedAssetId)">
+                    Your browser does not support the audio element.
+                </audio>
+            }
+        </div>
+    </FieldContent>
+    @if (!string.IsNullOrEmpty(HelperText))
+    {
+        <FieldDescription>@HelperText</FieldDescription>
+    }
+    <FieldError Errors="Errors" />
+
+    <AudioGalleryDialog @bind-IsDialogOpen="_open"
+                        MultiSelect="false"
+                        InitialSelectedIds="@GetInitialSelectedIds()"
+                        OnAssetsSelected="HandleAssetsSelected" />
+</Field>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Audio";
+    [Parameter] public string? HelperText { get; set; }
+
+    [Parameter] public string SelectedAssetId { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SelectedAssetIdChanged { get; set; }
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = [];
+
+    [Inject] private AssetClient AssetClient { get; set; } = null!;
+    [Inject] private IOptions<AppSettings> _settings { get; set; } = null!;
+
+    private bool _open = false;
+    private string? _selectedTitle;
+    private string? _loadedAssetId;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SelectedAssetId != _loadedAssetId)
+        {
+            _loadedAssetId = SelectedAssetId;
+            _selectedTitle = null;
+
+            if (!string.IsNullOrEmpty(SelectedAssetId))
+            {
+                var res = await AssetClient.Get(new GetAssetRequest { AssetID = SelectedAssetId });
+                _selectedTitle = res?.Audio?.Data?.Title;
+            }
+        }
+    }
+
+    private string GetAssetUrl(string assetId)
+        => $"{_settings.Value.API_BASE_URL}/cms/asset/{assetId}/data";
+
+    private IEnumerable<string> GetInitialSelectedIds()
+        => string.IsNullOrEmpty(SelectedAssetId) ? Enumerable.Empty<string>() : new[] { SelectedAssetId };
+
+    private async Task HandleAssetsSelected(List<string> selectedIds)
+    {
+        var newId = selectedIds.FirstOrDefault() ?? string.Empty;
+        SelectedAssetId = newId;
+        await SelectedAssetIdChanged.InvokeAsync(newId);
+    }
+
+    private async Task Clear()
+    {
+        SelectedAssetId = string.Empty;
+        await SelectedAssetIdChanged.InvokeAsync(string.Empty);
+    }
+}

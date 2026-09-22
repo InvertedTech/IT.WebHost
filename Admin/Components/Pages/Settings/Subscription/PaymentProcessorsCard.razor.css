@@ -1,0 +1,55 @@
+.processor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.processor-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.processor-row:last-child {
+    border-bottom: none;
+}
+
+.processor-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    flex-shrink: 0;
+    color: #fff;
+}
+
+.processor-icon--stripe { background: #5469d4; }
+.processor-icon--paypal { background: #002f86; }
+.processor-icon--fortis { background: #6b7280; }
+.processor-icon--crypto { background: #f7931a; }
+
+.processor-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.processor-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.processor-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+}
+
+.processor-status--active { color: #22c55e; }
+.processor-status--disabled { color: var(--muted-foreground); }

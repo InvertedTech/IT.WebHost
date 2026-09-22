@@ -1,0 +1,156 @@
+.settings-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    overflow: hidden;
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background: var(--muted);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.settings-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.settings-card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.subscription-tiers-section {
+    margin-bottom: 1.5rem;
+}
+
+.tiers-header {
+    flex: 1;
+}
+
+.tiers-header-action {
+    margin-left: auto;
+}
+
+.tier-page {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+.tier-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    min-height: 160px;
+    box-sizing: border-box;
+}
+
+.tier-card--featured {
+    border-color: var(--primary);
+}
+
+.tier-card-body {
+    padding: 1rem 1.25rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.tier-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.tier-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.tier-card-actions {
+    display: flex;
+    gap: 0.15rem;
+    margin: -0.4rem -0.4rem 0 0;
+}
+
+.tier-level-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    background: var(--muted);
+    border-radius: calc(var(--radius) * 0.5);
+    padding: 2px 7px;
+    width: fit-content;
+}
+
+.tier-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.tier-price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1.1;
+}
+
+.tier-price-period {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--muted-foreground);
+}
+
+.tier-subscribers-label {
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+}
+
+.tier-subscribers-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.tier-price-input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tier-price-prefix {
+    color: var(--muted-foreground);
+    font-weight: 600;
+}

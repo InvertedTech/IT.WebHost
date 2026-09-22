@@ -1,0 +1,68 @@
+@using IT.WebServices.Fragments.Authorization.Payment
+
+<Item Variant="ItemVariant.Outline">
+    <ItemContent>
+        <ItemTitle>@Title</ItemTitle>
+        <ItemDescription>
+            @Description
+        </ItemDescription>
+        @if (Progress is not null)
+        {
+            <div class="jobs-item-progress">
+                <Progress Value="@ProgressPercent" Max="100" />
+                <span class="jobs-item-status">
+                    @(string.IsNullOrWhiteSpace(Progress.StatusMessage) ? $"{ProgressPercent:0}%" : Progress.StatusMessage)
+                </span>
+            </div>
+        }
+    </ItemContent>
+    <ItemActions>
+        @if (Progress is null)
+        {
+            <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="HandleStart">
+                Start
+            </Button>
+        }
+        else
+        {
+            <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" OnClick="HandleCancel" Disabled="CancelRequested">
+                @(CancelRequested ? "Canceling…" : "Cancel")
+            </Button>
+        }
+    </ItemActions>
+</Item>
+
+<style>
+    .jobs-item-progress {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-top: 0.5rem;
+    }
+
+    .jobs-item-progress ::deep [role="progressbar"] {
+        flex: 1;
+    }
+
+    .jobs-item-status {
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public PaymentBulkAction Action { get; set; }
+
+    [Parameter] public PaymentBulkActionProgress? Progress { get; set; }
+    [Parameter] public bool CancelRequested { get; set; }
+    [Parameter] public EventCallback<PaymentBulkAction> OnStart { get; set; }
+    [Parameter] public EventCallback<PaymentBulkAction> OnCancel { get; set; }
+
+    private double ProgressPercent => Progress is null ? 0 : (Progress.Progress > 1 ? Progress.Progress : Progress.Progress * 100);
+
+    private Task HandleStart() => OnStart.InvokeAsync(Action);
+    private Task HandleCancel() => OnCancel.InvokeAsync(Action);
+}

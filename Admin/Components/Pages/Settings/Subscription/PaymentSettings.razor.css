@@ -1,0 +1,108 @@
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.settings-section-gap {
+    margin-top: 1.5rem;
+}
+
+::deep .settings-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    overflow: hidden;
+}
+
+::deep .settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+::deep .settings-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background: var(--muted);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+::deep .settings-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
+}
+
+::deep .settings-card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+::deep .settings-section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+::deep .settings-separator {
+    margin: 0.25rem 0;
+}
+
+::deep .settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+::deep .settings-toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+::deep .settings-toggle-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+::deep .settings-toggle-description {
+    font-size: 0.78rem;
+    color: var(--muted-foreground);
+}
+
+::deep .settings-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--muted);
+}
+
+::deep .settings-info-icon {
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+::deep .settings-info-text {
+    font-size: 0.78rem;
+    color: var(--muted-foreground);
+    margin: 0;
+    line-height: 1.5;
+}

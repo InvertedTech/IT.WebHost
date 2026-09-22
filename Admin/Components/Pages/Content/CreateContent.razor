@@ -2,6 +2,7 @@
 @using Admin.Components.Common.FormWizard
 @using Admin.Components.Common.Selects
 @using Admin.Components.Common.Selects.ImagePicker
+@using Admin.Components.Common.Selects.AudioPicker
 @using IT.WebServices.Fragments.Content
 @using IT.WebServices.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -38,8 +39,8 @@
                             <SelectContent>
                                 <SelectItem Value="ContentType.ContentWritten">Article</SelectItem>
                                 <SelectItem Value="ContentType.ContentVideo">Video</SelectItem>
-                                @*                         <SelectItem Value="ContentType.ContentPicture">Images</SelectItem>
-                        <SelectItem Value="ContentType.ContentAudio">Audio</SelectItem>  *@
+                                <SelectItem Value="ContentType.ContentPicture">Images</SelectItem>
+                                <SelectItem Value="ContentType.ContentAudio">Audio</SelectItem>
                             </SelectContent>
                         </Select>
                         <FieldDescription>Select the type of content you want to create.</FieldDescription>
@@ -105,24 +106,36 @@
                         </FieldContent>
                     </Field>
                 }
-                @*         else if (contentType == ContentType.ContentPicture)
-        {
-            <Field>
-                <FieldLabel>Body</FieldLabel>
-                <FieldContent>
-                    <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" />
-                </FieldContent>
-            </Field>
-        }
-        else if (contentType == ContentType.ContentAudio)
-        {
-            <Field>
-                <FieldLabel>Body</FieldLabel>
-                <FieldContent>
-                    <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" />
-                </FieldContent>
-            </Field>
-        } *@
+                else if (contentType == ContentType.ContentPicture)
+                {
+                    <ImagePickerField Label="Gallery Images"
+                                      MultiSelect="true"
+                                      @bind-SelectedAssetIds="imageAssetIds"
+                                      @bind-SelectedAssetIds:after="ClearImageAssetIdsErrors"
+                                      Errors="imageAssetIdsErrors" />
+                    <Field>
+                        <FieldLabel>Body</FieldLabel>
+                        <FieldContent>
+                            <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" @bind-Value:after="ClearHtmlBodyErrors" />
+                            <FieldError Errors="htmlBodyErrors" />
+                        </FieldContent>
+                    </Field>
+                }
+                else if (contentType == ContentType.ContentAudio)
+                {
+                    <AudioPickerField Label="Audio"
+                                      HelperText="Select an existing audio asset or upload a new one."
+                                      @bind-SelectedAssetId="audioAssetId"
+                                      @bind-SelectedAssetId:after="ClearAudioAssetIdErrors"
+                                      Errors="audioAssetIdErrors" />
+                    <Field>
+                        <FieldLabel>Body</FieldLabel>
+                        <FieldContent>
+                            <RichTextEditor Placeholder="Start typing here..." @bind-Value="htmlBody" @bind-Value:after="ClearHtmlBodyErrors" />
+                            <FieldError Errors="htmlBodyErrors" />
+                        </FieldContent>
+                    </Field>
+                }
             </WizardStep>
             <WizardStep Label="Finish">
                 <div class="space-y-3">
@@ -188,6 +201,14 @@
                                 <div><span class="text-muted-foreground">isLiveStream:</span> @isLiveStream</div>
                                 <div><span class="text-muted-foreground">isLive:</span> @isLive</div>
                             }
+                            @if (contentType == ContentType.ContentAudio)
+                            {
+                                <div><span class="text-muted-foreground">audioAssetId:</span> @(audioAssetId ?? "(empty)")</div>
+                            }
+                            @if (contentType == ContentType.ContentPicture)
+                            {
+                                <div><span class="text-muted-foreground">imageAssetIds:</span> @(imageAssetIds is { Count: > 0 } ? string.Join(", ", imageAssetIds) : "(none)")</div>
+                            }
                             <div><span class="text-muted-foreground">htmlBody:</span> @((htmlBody?.Length ?? 0)) chars</div>
                         </div>
                     </div>
@@ -214,4 +235,6 @@
     private string? youtubeVideoId { get; set; }
     private bool isLive { get; set; } = false;
     private bool isLiveStream { get; set; } = false;
+    private string? audioAssetId { get; set; }
+    private List<string> imageAssetIds { get; set; } = [];
 }

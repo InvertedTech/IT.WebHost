@@ -1,0 +1,97 @@
+@using IT.WebServices.Clients.CMS
+@using IT.WebServices.Fragments.Content
+@inject AssetClient AssetClient
+@inject IToastService ToastService
+
+<div class="flex flex-col gap-4">
+    <Field>
+        <FieldLabel For="audio-title">Title</FieldLabel>
+        <FieldContent>
+            <Input Id="audio-title" Type="InputType.Text" Placeholder="Enter your title" @bind-Value="_title" />
+            <FieldDescription>Choose a unique title for your content.</FieldDescription>
+        </FieldContent>
+    </Field>
+    <Field>
+        <FieldLabel For="audio-caption">Caption</FieldLabel>
+        <FieldContent>
+            <Input Id="audio-caption" Type="InputType.Text" Placeholder="Enter your caption" @bind-Value="_caption" />
+            <FieldDescription>Choose a unique caption for your content.</FieldDescription>
+        </FieldContent>
+    </Field>
+    <Field>
+        <FieldLabel For="audio-file">Audio</FieldLabel>
+        <FieldContent>
+            <FileUpload Id="audio-file" Accept="audio/*" MaxFileCount="1" OnFilesChanged="OnFilesChanged" Disabled="_isSubmitting" />
+        </FieldContent>
+    </Field>
+
+    <div class="flex justify-end">
+        <Button Size="ButtonSize.Small" Disabled="@(_selectedFile is null || _isSubmitting)" @onclick="Submit">
+            @(_isSubmitting ? "Creating..." : "Create Asset")
+        </Button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<AudioAssetRecord> OnCreated { get; set; }
+
+    private string _title = string.Empty;
+    private string _caption = string.Empty;
+    private IBrowserFile? _selectedFile;
+    private bool _isSubmitting;
+
+    private Task OnFilesChanged(IReadOnlyList<IBrowserFile> fileList)
+    {
+        _selectedFile = fileList.Count > 0 ? fileList[0] : null;
+        return Task.CompletedTask;
+    }
+
+    private async Task Submit()
+    {
+        if (_selectedFile is null || _isSubmitting)
+            return;
+
+        _isSubmitting = true;
+
+        try
+        {
+            await using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
+            var data = await Google.Protobuf.ByteString.FromStreamAsync(stream);
+
+            var req = new CreateAssetRequest
+            {
+                Audio = new AudioAssetData
+                {
+                    Public = new AudioAssetPublicData
+                    {
+                        Title = _title,
+                        Caption = _caption,
+                        MimeType = _selectedFile.ContentType,
+                        Data = data,
+                    },
+                    Private = new AudioAssetPrivateData(),
+                }
+            };
+
+            var record = await AssetClient.CreateAudio(req);
+
+            if (record is null)
+            {
+                ToastService.Error("Failed to create asset.");
+                return;
+            }
+
+            ToastService.Success("Asset created successfully.");
+
+            _title = string.Empty;
+            _caption = string.Empty;
+            _selectedFile = null;
+
+            await OnCreated.InvokeAsync(record);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

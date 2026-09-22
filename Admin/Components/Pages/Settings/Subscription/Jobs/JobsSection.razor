@@ -1,0 +1,179 @@
+@using IT.WebServices.Authentication
+@using IT.WebServices.Fragments.Authorization.Payment
+@implements IDisposable
+
+<div class="settings-card">
+    <div class="settings-card-header">
+        <div class="settings-card-icon">
+            @* TODO: Replace Icon *@
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+            </svg>
+        </div>
+        <h3 class="settings-card-title">Jobs</h3>
+    </div>
+    <div class="settings-card-body">
+        <ItemGroup>
+            <JobsItem Action="PaymentBulkAction.LookForNewPaymentsOneDay"
+                      Title="Look For New Payments (1 Day)"
+                      Description="Scans the last 24 hours of processor activity for payments not yet recorded."
+                      Progress="GetProgress(PaymentBulkAction.LookForNewPaymentsOneDay)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.LookForNewPaymentsOneDay)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+            <JobsItem Action="PaymentBulkAction.LookForNewPaymentsOneWeek"
+                      Title="Look For New Payments (1 Week)"
+                      Description="Scans the last 7 days of processor activity for payments not yet recorded."
+                      Progress="GetProgress(PaymentBulkAction.LookForNewPaymentsOneWeek)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.LookForNewPaymentsOneWeek)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+            <JobsItem Action="PaymentBulkAction.LookForNewPaymentsOneMonth"
+                      Title="Look For New Payments (1 Month)"
+                      Description="Scans the last 30 days of processor activity for payments not yet recorded."
+                      Progress="GetProgress(PaymentBulkAction.LookForNewPaymentsOneMonth)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.LookForNewPaymentsOneMonth)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+            <JobsItem Action="PaymentBulkAction.ReconcileAll"
+                      Title="Reconcile All Subscriptions"
+                      Description="Reconciles every subscription record against the payment processor."
+                      Progress="GetProgress(PaymentBulkAction.ReconcileAll)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.ReconcileAll)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+            <JobsItem Action="PaymentBulkAction.ReconcileStripeTaxRates"
+                      Title="Reconcile Stripe Tax Rates"
+                      Description="Syncs tax rate configuration with Stripe."
+                      Progress="GetProgress(PaymentBulkAction.ReconcileStripeTaxRates)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.ReconcileStripeTaxRates)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+            <JobsItem Action="PaymentBulkAction.LookForMissingSubscriptions"
+                      Title="Look For Missing Subscriptions"
+                      Description="Scans the payment processor for subscriptions missing from our records."
+                      Progress="GetProgress(PaymentBulkAction.LookForMissingSubscriptions)"
+                      CancelRequested="IsCancelRequested(PaymentBulkAction.LookForMissingSubscriptions)"
+                      OnStart="StartJob" OnCancel="CancelJob" />
+        </ItemGroup>
+    </div>
+</div>
+
+@code {
+    [Inject] private AdminPaymentInterface.AdminPaymentInterfaceClient AdminPaymentClient { get; set; } = null!;
+    [Inject] private ONUserHelper UserHelper { get; set; } = null!;
+    [Inject] private IToastService ToastService { get; set; } = null!;
+
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1.5);
+
+    private readonly Dictionary<PaymentBulkAction, PaymentBulkActionProgress> _running = new();
+    private readonly HashSet<PaymentBulkAction> _cancelRequested = new();
+    private CancellationTokenSource? _pollCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await AdminPaymentClient.BulkActionStatusAsync(new BulkActionStatusRequest(), UserHelper.GetGrpcCallOptions());
+        ApplyRunningActions(res.RunningActions);
+
+        if (_running.Count > 0)
+        {
+            StartPolling();
+        }
+    }
+
+    private PaymentBulkActionProgress? GetProgress(PaymentBulkAction action) =>
+        _running.TryGetValue(action, out var progress) ? progress : null;
+
+    private bool IsCancelRequested(PaymentBulkAction action) => _cancelRequested.Contains(action);
+
+    private async Task StartJob(PaymentBulkAction action)
+    {
+        if (_running.ContainsKey(action))
+            return;
+
+        try
+        {
+            var res = await AdminPaymentClient.BulkActionStartAsync(new BulkActionStartRequest
+            {
+                Action = action
+            }, UserHelper.GetGrpcCallOptions());
+
+            ApplyRunningActions(res.RunningActions);
+            StartPolling();
+        }
+        catch (Exception)
+        {
+            ToastService.Error("Failed to start job.");
+        }
+    }
+
+    private async Task CancelJob(PaymentBulkAction action)
+    {
+        if (!_running.ContainsKey(action) || _cancelRequested.Contains(action))
+            return;
+
+        _cancelRequested.Add(action);
+
+        try
+        {
+            await AdminPaymentClient.BulkActionCancelAsync(new BulkActionCancelRequest
+            {
+                Action = action
+            }, UserHelper.GetGrpcCallOptions());
+        }
+        catch (Exception)
+        {
+            _cancelRequested.Remove(action);
+            ToastService.Error("Failed to cancel job.");
+        }
+    }
+
+    private void StartPolling()
+    {
+        _pollCts?.Cancel();
+        _pollCts?.Dispose();
+        _pollCts = new CancellationTokenSource();
+
+        _ = PollStatus(_pollCts.Token);
+    }
+
+    private async Task PollStatus(CancellationToken token)
+    {
+        using var timer = new PeriodicTimer(PollInterval);
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                var res = await AdminPaymentClient.BulkActionStatusAsync(new BulkActionStatusRequest(), UserHelper.GetGrpcCallOptions(token));
+
+                var hasRunning = false;
+
+                await InvokeAsync(() =>
+                {
+                    ApplyRunningActions(res.RunningActions);
+                    hasRunning = _running.Count > 0;
+                    StateHasChanged();
+                });
+
+                if (!hasRunning)
+                    break;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void ApplyRunningActions(IEnumerable<PaymentBulkActionProgress> runningActions)
+    {
+        _running.Clear();
+        foreach (var progress in runningActions)
+        {
+            _running[progress.Action] = progress;
+        }
+
+        _cancelRequested.RemoveWhere(action => !_running.ContainsKey(action));
+    }
+
+    public void Dispose()
+    {
+        _pollCts?.Cancel();
+        _pollCts?.Dispose();
+    }
+}

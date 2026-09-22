@@ -21,10 +21,7 @@
                         @(Public.Stripe.Enabled ? "ACTIVE" : "DISABLED")
                     </span>
                 </div>
-                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" Class="processor-settings-btn"
-                        OnClick="OnStripeSettings">
-                </Button>
-                <Switch Checked="@Public.Stripe.Enabled" Disabled="@(!IsEditing)" />
+                <Switch @bind-Checked="Public.Stripe.Enabled" @bind-Checked:after="NotifyChange" Disabled="@(!IsEditing)" />
             </div>
 
             <div class="processor-row">
@@ -37,10 +34,7 @@
                         @(Public.Paypal.Enabled ? "ACTIVE" : "DISABLED")
                     </span>
                 </div>
-                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" Class="processor-settings-btn"
-                        OnClick="OnPaypalSettings">
-                </Button>
-                <Switch Checked="@Public.Paypal.Enabled" Disabled="@(!IsEditing)" />
+                <Switch @bind-Checked="Public.Paypal.Enabled" @bind-Checked:after="NotifyChange" Disabled="@(!IsEditing)" />
             </div>
 
             <div class="processor-row">
@@ -53,10 +47,7 @@
                         @(Public.Fortis.Enabled ? "ACTIVE" : "DISABLED")
                     </span>
                 </div>
-                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" Class="processor-settings-btn"
-                        OnClick="OnFortisSettings">
-                </Button>
-                <Switch Checked="@Public.Fortis.Enabled" Disabled="@(!IsEditing)" />
+                <Switch @bind-Checked="Public.Fortis.Enabled" @bind-Checked:after="NotifyChange" Disabled="@(!IsEditing)" />
             </div>
 
             <div class="processor-row">
@@ -69,83 +60,25 @@
                         @(Public.Crypto.Enabled ? "ACTIVE" : "DISABLED")
                     </span>
                 </div>
-                <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" Class="processor-settings-btn"
-                        OnClick="OnCryptoSettings">
-                </Button>
-                <Switch Checked="@Public.Crypto.Enabled" Disabled="@(!IsEditing)" />
+                <Switch @bind-Checked="Public.Crypto.Enabled" @bind-Checked:after="NotifyChange" Disabled="@(!IsEditing)" />
             </div>
 
         </div>
     </div>
 </div>
 
-<style>
-    .processor-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .processor-row {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        padding: 0.85rem 0;
-        border-bottom: 1px solid var(--border);
-    }
-
-        .processor-row:last-child {
-            border-bottom: none;
-        }
-
-    .processor-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius);
-        flex-shrink: 0;
-        color: #fff;
-    }
-
-    .processor-icon--stripe { background: #5469d4; }
-    .processor-icon--paypal { background: #002f86; }
-    .processor-icon--fortis { background: #6b7280; }
-    .processor-icon--crypto { background: #f7931a; }
-
-    .processor-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.15rem;
-        flex: 1;
-    }
-
-    .processor-name {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--foreground);
-    }
-
-    .processor-status {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-    }
-
-    .processor-status--active { color: #22c55e; }
-    .processor-status--disabled { color: var(--muted-foreground); }
-
-    .processor-settings-btn {
-        color: var(--muted-foreground);
-    }
-</style>
 
 @code {
     [Parameter, EditorRequired] public SubscriptionPublicRecord Public { get; set; } = null!;
     [Parameter] public bool IsEditing { get; set; }
-    [Parameter] public EventCallback OnStripeSettings { get; set; }
-    [Parameter] public EventCallback OnPaypalSettings { get; set; }
-    [Parameter] public EventCallback OnFortisSettings { get; set; }
-    [Parameter] public EventCallback OnCryptoSettings { get; set; }
+
+    [Parameter] public EventCallback OnChange { get; set; }
+
+    private async Task NotifyChange()
+    {
+        if (OnChange.HasDelegate)
+        {
+            await OnChange.InvokeAsync();
+        }
+    }
 }

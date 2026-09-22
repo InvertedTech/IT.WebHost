@@ -10,7 +10,7 @@
         @if (IsEditing)
         {
             <div class="tiers-header-action">
-                <Button Variant="ButtonVariant.Default" OnClick="OnCreateTier">
+                <Button Variant="ButtonVariant.Default" OnClick="OpenCreateSheet">
                     + Create New Tier
                 </Button>
             </div>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="settings-card-body">
-    <Carousel ShowNavigation="true" Loop="false" EnableDrag="true">
+    <Carousel @key="Public.Tiers.Count" ShowNavigation="true" Loop="false" EnableDrag="true">
         @foreach (var page in GetTierPages())
         {
             <CarouselItem>
@@ -32,7 +32,20 @@
 
                         <div class="tier-card @featuredClass">
                             <div class="tier-card-body">
-                                <div class="tier-level-badge">LEVEL @(index + 1)</div>
+                                <div class="tier-card-top">
+                                    <div class="tier-level-badge">LEVEL @(index + 1)</div>
+                                    @if (IsEditing)
+                                    {
+                                        <div class="tier-card-actions">
+                                            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="@(() => OpenEditSheet(index))">
+                                                <LucideIcon Name="pencil" class="h-3.5 w-3.5" />
+                                            </Button>
+                                            <Button Variant="ButtonVariant.Ghost" Size="ButtonSize.Icon" OnClick="@(() => RequestDelete(index))">
+                                                <LucideIcon Name="trash-2" class="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                    }
+                                </div>
                                 <div class="tier-name">@displayName</div>
                                 <div class="tier-price">
                                     $@((tier.AmountCents / 100m).ToString("0.00"))
@@ -52,109 +65,169 @@
     </div>
 </div>
 
-<style>
-    .subscription-tiers-section {
-        margin-bottom: 1.5rem;
-    }
+<Sheet @bind-Open="_isSheetOpen">
+    <SheetContent Class="flex flex-col gap-6">
+        <SheetHeader>
+            <SheetTitle>@(_editingIndex.HasValue ? "Edit Subscription Tier" : "Create Subscription Tier")</SheetTitle>
+        </SheetHeader>
+        <div class="space-y-4">
+            <Field>
+                <FieldLabel For="tier-name">Name</FieldLabel>
+                <FieldContent>
+                    <Input Id="tier-name" Type="InputType.Text" Placeholder="e.g. Gold" @bind-Value="_editName" AriaInvalid="@(_nameError is not null)" @bind-Value:after="ClearErrors" />
+                    <FieldError Errors="@(_nameError is null ? [] : new[] { _nameError })" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="tier-description">Description</FieldLabel>
+                <FieldContent>
+                    <Textarea Id="tier-description" Placeholder="What subscribers at this tier get…" @bind-Value="_editDescription" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="tier-price">Monthly Price</FieldLabel>
+                <FieldContent>
+                    <div class="tier-price-input">
+                        <span class="tier-price-prefix">$</span>
+                        <Input Id="tier-price" Type="InputType.Text" Placeholder="9.99" @bind-Value="_editPriceDollars" AriaInvalid="@(_priceError is not null)" @bind-Value:after="ClearErrors" />
+                    </div>
+                    <FieldError Errors="@(_priceError is null ? [] : new[] { _priceError })" />
+                </FieldContent>
+            </Field>
+            <Field>
+                <FieldLabel For="tier-color">Color</FieldLabel>
+                <FieldContent>
+                    <ColorPicker Id="tier-color" @bind-Color="_editColor" Format="ColorFormat.Hex" Size="ColorPickerSize.Compact" ShowAlpha="false" />
+                </FieldContent>
+            </Field>
+        </div>
+        <SheetFooter Class="gap-2 sm:justify-end">
+            <Button Variant="ButtonVariant.Outline" OnClick="CloseSheet">Cancel</Button>
+            <Button OnClick="SaveTier">@(_editingIndex.HasValue ? "Save Changes" : "Create Tier")</Button>
+        </SheetFooter>
+    </SheetContent>
+</Sheet>
 
-    .tiers-header {
-        flex: 1;
-    }
+<ConfirmDialog @ref="_deleteConfirmDialog"
+               Title="Delete this tier?"
+               Description="This can't be undone once you save your changes."
+               ConfirmText="Delete"
+               OnConfirm="ConfirmDelete" />
 
-    .tiers-header-action {
-        margin-left: auto;
-    }
-
-    .tier-page {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        width: 100%;
-    }
-
-    .tier-card {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: var(--card);
-        min-height: 160px;
-        box-sizing: border-box;
-    }
-
-    .tier-card--featured {
-        border-color: var(--primary);
-    }
-
-    .tier-card-body {
-        padding: 1rem 1.25rem 0.75rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-    }
-
-    .tier-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.65rem 1.25rem;
-        border-top: 1px solid var(--border);
-    }
-
-    .tier-level-badge {
-        display: inline-block;
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted-foreground);
-        background: var(--muted);
-        border-radius: calc(var(--radius) * 0.5);
-        padding: 2px 7px;
-        width: fit-content;
-    }
-
-    .tier-name {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--foreground);
-    }
-
-    .tier-price {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: var(--foreground);
-        line-height: 1.1;
-    }
-
-    .tier-price-period {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: var(--muted-foreground);
-    }
-
-    .tier-subscribers-label {
-        font-size: 0.8rem;
-        color: var(--muted-foreground);
-    }
-
-    .tier-subscribers-count {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--foreground);
-    }
-</style>
 
 @code {
     [Parameter, EditorRequired] public SubscriptionPublicRecord Public { get; set; } = null!;
     [Parameter] public bool IsEditing { get; set; }
-    [Parameter] public EventCallback OnCreateTier { get; set; }
+    [Parameter] public EventCallback<SubscriptionTier> OnCreateTier { get; set; }
+    [Parameter] public EventCallback<(int Index, SubscriptionTier Tier)> OnEditTier { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteTier { get; set; }
+
+    private bool _isSheetOpen;
+    private int? _editingIndex;
+    private string _editName = "";
+    private string _editDescription = "";
+    private string _editPriceDollars = "";
+    private string _editColor = "#4f46e5";
+    private string? _nameError;
+    private string? _priceError;
+
+    private ConfirmDialog _deleteConfirmDialog = null!;
+    private int? _pendingDeleteIndex;
 
     private IEnumerable<List<(SubscriptionTier tier, int index)>> GetTierPages()
     {
         var tiers = Public.Tiers.Select((t, i) => (t, i)).ToList();
         for (int i = 0; i < tiers.Count; i += 3)
             yield return tiers.Skip(i).Take(3).ToList();
+    }
+
+    private void OpenCreateSheet()
+    {
+        _editingIndex = null;
+        _editName = "";
+        _editDescription = "";
+        _editPriceDollars = "";
+        _editColor = "#4f46e5";
+        _nameError = null;
+        _priceError = null;
+        _isSheetOpen = true;
+    }
+
+    private void OpenEditSheet(int index)
+    {
+        if (index < 0 || index >= Public.Tiers.Count)
+            return;
+
+        var tier = Public.Tiers[index];
+
+        _editingIndex = index;
+        _editName = tier.Name;
+        _editDescription = tier.Description;
+        _editPriceDollars = (tier.AmountCents / 100m).ToString("0.00");
+        _editColor = string.IsNullOrWhiteSpace(tier.Color) ? "#4f46e5" : tier.Color;
+        _nameError = null;
+        _priceError = null;
+        _isSheetOpen = true;
+    }
+
+    private void CloseSheet() => _isSheetOpen = false;
+
+    private void RequestDelete(int index)
+    {
+        _pendingDeleteIndex = index;
+        _deleteConfirmDialog.Open();
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (_pendingDeleteIndex is int index && OnDeleteTier.HasDelegate)
+        {
+            await OnDeleteTier.InvokeAsync(index);
+        }
+
+        _pendingDeleteIndex = null;
+    }
+
+    private void ClearErrors()
+    {
+        _nameError = null;
+        _priceError = null;
+    }
+
+    private async Task SaveTier()
+    {
+        _nameError = string.IsNullOrWhiteSpace(_editName) ? "Name is required." : null;
+
+        decimal dollars = 0;
+        _priceError = !decimal.TryParse(_editPriceDollars, out dollars) || dollars < 0.50m
+            ? "Enter a price of at least $0.50 (Stripe's minimum)."
+            : null;
+
+        if (_nameError is not null || _priceError is not null)
+        {
+            return;
+        }
+
+        var tier = new SubscriptionTier
+            {
+                Name = _editName.Trim(),
+                Description = _editDescription?.Trim() ?? "",
+                Color = _editColor.Trim(),
+                AmountCents = (uint)Math.Round(dollars * 100m),
+            };
+
+        if (_editingIndex is int index)
+        {
+            if (OnEditTier.HasDelegate)
+            {
+                await OnEditTier.InvokeAsync((index, tier));
+            }
+        }
+        else if (OnCreateTier.HasDelegate)
+        {
+            await OnCreateTier.InvokeAsync(tier);
+        }
+
+        CloseSheet();
     }
 }

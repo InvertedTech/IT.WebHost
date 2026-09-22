@@ -124,9 +124,6 @@
 
     [Parameter] public IEnumerable<GenericSubscriptionFullRecord>? Subscriptions { get; set; }
 
-    /// <summary>Raised when the cancel dialog is confirmed, with the subscription to cancel and the
-    /// viewer-entered reason (maps to CancelOwnSubscriptionRequest.Reason). When nothing is bound,
-    /// the Cancel subscription button is hidden.</summary>
     [Parameter] public EventCallback<(GenericSubscriptionFullRecord Subscription, string Reason)> OnCancel { get; set; }
 
     private List<GenericSubscriptionFullRecord> _subs = [];

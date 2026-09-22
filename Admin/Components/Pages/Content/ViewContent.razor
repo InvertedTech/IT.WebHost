@@ -2,6 +2,7 @@
 @using Admin.Components.Common
 @using Admin.Components.Common.Selects
 @using Admin.Components.Common.Selects.ImagePicker
+@using Admin.Components.Common.Selects.AudioPicker
 @using Admin.Models
 @using IT.WebHost.Shared.Comments
 @using IT.WebServices.Fragments.Content
@@ -240,12 +241,7 @@
                         }
                         else if (content.ContentType == ContentType.ContentAudio)
                         {
-                            <Field>
-                                <FieldLabel For="audio-asset-id">Audio Asset ID</FieldLabel>
-                                <FieldContent>
-                                    <Input Id="audio-asset-id" Type="InputType.Text" @bind-Value="content.AudioAssetId" Disabled="!IsEditing" />
-                                </FieldContent>
-                            </Field>
+                            <AudioPickerField Label="Audio" @bind-SelectedAssetId="content.AudioAssetId" Disabled="!IsEditing" />
                             @if (IsEditing)
                             {
                                 <Field>

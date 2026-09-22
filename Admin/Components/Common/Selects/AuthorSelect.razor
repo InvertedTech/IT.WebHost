@@ -1,4 +1,5 @@
 ﻿@using IT.WebServices.Authentication
+@using IT.WebServices.Clients.Users
 @using IT.WebServices.Fragments.Authentication
 
 <Field>
@@ -21,6 +22,7 @@
 
 @code {
     [Inject] UserInterface.UserInterfaceClient UserClient { get; set; } = null!;
+    [Inject] AdminUserClient adminUserClient { get; set; } = null!;
     [Inject] ONUserHelper UserHelper { get; set; } = null!;
 
     [Parameter] public string SelectedAuthorId { get; set; } = string.Empty;
@@ -33,23 +35,24 @@
     private List<AuthorOption> _users = [];
     private bool _isLoading = true;
 
-    // TODO: Set Current User As Author By Default
     protected override async Task OnInitializedAsync()
     {
+        await LoadAuthors();
+        await SetCurrentUserAuthor();
+    }
+
+    private async Task LoadAuthors()
+    {
         _isLoading = true;
-        var req = new SearchUsersAdminRequest
-        {
-            PageSize = 500,
-            PageOffset = 0,
-            IncludeDeleted = false,
-        };
-        var roles = RoleAbilities.ROLE_CAN_CREATE_CONTENT.Split(',');
-        req.Roles.AddRange(roles);
-        // TODO: Make an Actual UserClient with The Authors As A Lazy
-        var res = await UserClient.SearchUsersAdminAsync(req, UserHelper.GetGrpcCallOptions());
-        _users = res.Records.Select(u => new AuthorOption(u.UserID, u.DisplayName)).ToList();
+        var records = await adminUserClient.Authors;
+        _users = records.Select(u => new AuthorOption(u.UserID, u.DisplayName)).ToList();
         _isLoading = false;
         StateHasChanged();
+    }
+
+    private async Task SetCurrentUserAuthor()
+    {
+        await OnAuthorSelected(UserHelper.MyUserId.ToString());
     }
 
     private async Task OnAuthorSelected(string userId)

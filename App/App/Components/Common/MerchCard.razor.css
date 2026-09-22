@@ -1,7 +1,6 @@
-/* CSS for MerchCard component */
 .merch-desc {
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* cap at 3 lines */
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

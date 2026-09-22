@@ -28,9 +28,9 @@ Last reviewed: 2026-09-22.
 | `/comments` | Comment moderation queue | — | **Missing** — only comment *settings* exist (`/settings/comments`); no page to review/moderate individual comments |
 | `/events` | Events management | — | **Missing** — no route, no components. `RoleAbilities.ROLE_EVENT_MANAGER` / `ROLE_EVENT_TICKET_MANAGER` exist and are referenced by `MainLayout`'s admin-role policy, but nothing in the UI uses them |
 | `/settings` (index) | Settings landing page | — | **Missing** — no `/settings` route; the settings nav goes straight to sub-pages |
-| `/settings/cms` | CMS settings | `CMSSettings.razor` | **Partial — no role gating** (see Security gaps below) |
-| `/settings/merch` | Merch settings | `MerchSettings.razor` | **Partial — no role gating**; provider-credentials UI still stubbed (see below) |
-| `/settings/subscriptions` | Subscription/payment settings | `PaymentSettings.razor` (`/settings/subscription`) | **Broken — no role gating, and nothing on the page persists except the two Merch calls elsewhere** (see below) |
+| `/settings/cms` | CMS settings | `CMSSettings.razor` | OK — role-gated |
+| `/settings/merch` | Merch settings | `MerchSettings.razor` | **Partial** — role-gated; provider-credentials UI still stubbed (see below) |
+| `/settings/subscriptions` | Subscription/payment settings | `PaymentSettings.razor` (`/settings/subscription`) | **Broken** — role-gated, but nothing on the page persists except the two Merch calls elsewhere (see below) |
 | `/settings/personalization` | Personalization settings | `PersonalizationSettings.razor` | **Partial** — image upload fields not implemented (`@*TODO: Add Images*@`) |
 | `/settings/notifications` | Notification settings | `NotificationSettings.razor` | OK |
 | `/settings/comments` | Comment settings | `CommentsSettings.razor` | OK |
@@ -39,35 +39,36 @@ Last reviewed: 2026-09-22.
 | `/settings/events` | Event settings | — | **Missing** — tied to the missing Events feature |
 | `/unauthorized` | Unauthorized page | Inline `NotAuthorized` block in `MainLayout` | **Different shape, functionally OK** — same content is shown in place rather than as a redirect |
 
-## Security gaps (highest priority)
+## Security gaps — fixed (2026-09-22)
 
-These aren't UI polish — they're pages reachable by any user who passes the
+These weren't UI polish — they were pages reachable by any user who passes the
 broad `RequireAnyAdminRole` policy (which includes lower roles like Content
 Writer, Comment Moderator, Bot Verification, Event Manager, etc.), even though
-the **sidebar link** to each is correctly hidden behind `ROLE_IS_ADMIN_OR_OWNER`.
+the **sidebar link** to each was correctly hidden behind `ROLE_IS_ADMIN_OR_OWNER`.
 Hiding the nav link doesn't protect the route — only an `<AuthorizeView Roles="…">`
-around the page content does, and these three pages don't have one:
+around the page content does. All four are now fixed:
 
-1. **`/settings/cms`** (`CMSSettings.razor`) — no `<AuthorizeView>` at all. Any
-   authenticated admin-area user can create/edit channels and categories.
-2. **`/settings/merch`** (`MerchSettings.razor`) — no `<AuthorizeView>` at all.
-   The edit form includes each Shopify store's **Admin API token** in a
-   password-type field — reachable (read and, once `HandleSave`/`PersistStores`
-   works, write) by any low-privilege admin-area user.
-3. **`/settings/subscription`** (`PaymentSettings.razor`) — has a literal
-   `@*TODO: Add Role Gating*@` comment and no `<AuthorizeView>`. The page and
-   `ProcessorCredentialsCard` expose Stripe/PayPal/Fortis client secrets and API
-   keys to the same broad audience.
+1. ~~**`/settings/cms`** (`CMSSettings.razor`) — no `<AuthorizeView>` at all.~~
+   Now wrapped in `<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">`.
+2. ~~**`/settings/merch`** (`MerchSettings.razor`) — no `<AuthorizeView>` at all,
+   exposing each Shopify store's Admin API token.~~ Now wrapped in
+   `<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">`.
+3. ~~**`/settings/subscription`** (`PaymentSettings.razor`) — literal
+   `@*TODO: Add Role Gating*@` comment, exposing processor secrets.~~ Now
+   wrapped in `<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">`.
+4. ~~**`GrantRolesDialog`** on `/users/{id}` (`ViewUser.razor:53`) — any user
+   who could reach `ViewUser` (`ROLE_IS_MEMBER_MANAGER_OR_HIGHER`) could open
+   it and grant any role, including Owner/Admin.~~ The button and dialog are
+   now wrapped in a nested `<AuthorizeView Roles="@(RoleAbilities.ROLE_IS_ADMIN_OR_OWNER)">`
+   inside `ViewUser.razor`. Note: the server-side `ModifyOtherUserRoles` RPC
+   was already independently enforcing `IsAdminOrHigher` plus a
+   `CanChangeRolesOfOtherUser` rank check, so this was a UI-only gap, not an
+   actual privilege-escalation hole — a lower-privileged caller's request
+   would have been rejected server-side regardless.
 
-Compare with `NotificationSettings.razor`, `PersonalizationSettings.razor`, and
-`CommentsSettings.razor`, which all correctly wrap their content in
+All four now match `NotificationSettings.razor`, `PersonalizationSettings.razor`,
+and `CommentsSettings.razor`, which already wrapped their content in
 `<AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER">` (or stricter).
-
-4. **`GrantRolesDialog`** on `/users/{id}` (`ViewUser.razor:53`) has a literal
-   `@*TODO: Add Role Authorization For Grant Roles*@` comment right above it.
-   Any user who can reach `ViewUser` (`ROLE_IS_MEMBER_MANAGER_OR_HIGHER`) can
-   open it and grant **any** role to **any** user, including Owner/Admin —
-   there's no check that the granter already holds the roles they're handing out.
 
 ## Stubbed / non-functional items
 
@@ -93,15 +94,31 @@ Compare with `NotificationSettings.razor`, `PersonalizationSettings.razor`, and
 
 **Content admin**
 
-5. `ViewContent.razor.cs`: `HandleUnpublish`, `HandleDelete`, and `HandleUnDelete`
+5. **Editing content reports success but doesn't persist** (reported 2026-09-22 —
+   Save shows "Content updated successfully" and closes the editor, but the
+   changes are gone on reload). Root cause traced in code:
+   `ContentClient.ModifyContent` (`IT.WebServices/Clients/CMS/ContentClient.cs:88-100`)
+   catches any exception from the gRPC call (a ProtoValidate rejection, an
+   expired session, a network blip, etc.) and returns a bare `new
+   ModifyContentResponse()` — `Error` stays `null`, not set to a failure reason.
+   `SaveContent`'s success check in `ViewContent.razor.cs` is
+   `if (modifyRes?.Error is { Reason: not APIErrorReason.ErrorReasonNoError } err)`,
+   which only matches a *present* non-success `Error`; a `null` `Error` doesn't
+   match that pattern at all, so execution falls through to the success branch
+   — the toast fires, `IsEditing` is cleared, and `LoadContent()` reloads the
+   **unchanged** record from the server, silently discarding the edit. Fix
+   needs two parts: `ContentClient.ModifyContent`'s catch block should return a
+   response with a real error set (not a bare `new()`), and/or `SaveContent`'s
+   check should treat a `null` `Error` as failure, not success.
+6. `ViewContent.razor.cs`: `HandleUnpublish`, `HandleDelete`, and `HandleUnDelete`
    all show a success toast unconditionally — none of them check `res?.Error`
    before declaring success, unlike `SaveContent` and `HandlePublish` on the
-   same file, which do.
-6. `CreateContent.razor:41` — Picture and Audio content types are commented
+   same file, which do. Same underlying pattern as #5 — worth fixing together.
+7. `CreateContent.razor:41` — Picture and Audio content types are commented
    out of the type dropdown; `CreateContent.razor:108` — the matching body
    step for Picture is also commented out. Only Written and Video content can
    be authored from Admin, even though `ContentType` has all four values.
-7. `AuthorSelect.razor` fetches up to 500 users with content-creation roles on
+8. `AuthorSelect.razor` fetches up to 500 users with content-creation roles on
    every mount (`OnInitializedAsync`, `PageSize = 500`) instead of a lazy
    search — flagged in-code as `// TODO: Make an Actual UserClient with The
    Authors As A Lazy`. It also doesn't default to the current user
@@ -110,15 +127,15 @@ Compare with `NotificationSettings.razor`, `PersonalizationSettings.razor`, and
 
 **Merch**
 
-8. `MerchSettings.razor:115-120` — a commented-out "View Integration Logs"
+9. `MerchSettings.razor:115-120` — a commented-out "View Integration Logs"
    footer link/button.
-9. `MerchSettings.razor:121` — `@*TODO: Add Provider Credentials Thing*@`. The
-   Shopify store sheet has store name/domain/token/collection IDs, but there's
-   no equivalent section for a second commerce provider, if one is planned.
+10. `MerchSettings.razor:121` — `@*TODO: Add Provider Credentials Thing*@`. The
+    Shopify store sheet has store name/domain/token/collection IDs, but there's
+    no equivalent section for a second commerce provider, if one is planned.
 
 **Personalization**
 
-10. `PersonalizationSettings.razor:40` — `@*TODO: Add Images*@`. No logo/image
+11. `PersonalizationSettings.razor:40` — `@*TODO: Add Images*@`. No logo/image
     upload fields exist on this settings page.
 
 **To verify (looks done, comment says otherwise)**
@@ -147,22 +164,26 @@ Compare with `NotificationSettings.razor`, `PersonalizationSettings.razor`, and
 - Dashboard KPIs (users, subscriptions, content) — real data, not mock.
 - Content listing/detail (for Written and Video), publish/edit flow.
 - Asset library.
-- User listing/detail, password reset, role grants (see security gap #4),
-  subscriptions, TOTP device management, enable/disable.
+- User listing/detail, password reset, role grants (now role-gated to
+  Admin/Owner), subscriptions, TOTP device management, enable/disable.
 - Careers CRUD.
 - Audit log.
 - Notification, Personalization (minus image upload), and Comment settings —
   all persist correctly and are role-gated.
-- CMS channel/category management (functionally works; see security gap #1
-  for the missing role gate).
+- CMS channel/category management — functionally works and is now role-gated.
 - Merch: Shopify store CRUD and global sync/cancel-sync with live progress
-  polling (functionally works; see security gap #2 and stub #8-9).
+  polling — functionally works and is now role-gated (see stub #9-10 for the
+  remaining provider-credentials gaps).
 
 ## Suggested priority order
 
-0. Close the three missing `<AuthorizeView>` gates (Security gaps #1-3) and add
-   a role check to `GrantRolesDialog` (#4) — these are access-control bugs, not
-   feature gaps.
+~~0. Close the three missing `<AuthorizeView>` gates and add a role check to
+   `GrantRolesDialog` — access-control bugs, not feature gaps.~~ **Done.**
+0.5. **Fix silent content-edit data loss** (stub #5): `ContentClient.ModifyContent`
+   swallowing a failed save as a null-`Error` "success", compounded by
+   `SaveContent`'s check treating that null as success too. This is actively
+   losing editors' work with no error shown — higher priority than anything
+   below.
 1. Wire up `/settings/subscription` for real: `HandleSave` persisting rules/tiers/
    processor state, `OnCreateTier`, and the four `OnProcessorSettings` handlers.
    Right now an admin can spend time configuring this page and lose every change.

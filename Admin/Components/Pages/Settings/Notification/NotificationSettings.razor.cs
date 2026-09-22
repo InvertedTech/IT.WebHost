@@ -1,3 +1,4 @@
+using IT.WebServices.Authentication;
 using IT.WebServices.Clients.Settings;
 using IT.WebServices.Fragments;
 using IT.WebServices.Fragments.Settings;
@@ -10,6 +11,7 @@ namespace Admin.Components.Pages.Settings.Notification
     {
         [Inject] SettingsClient SettingsClient { get; set; } = null!;
         [Inject] IToastService ToastService { get; set; } = null!;
+        [Inject] ONUserHelper UserHelper { get; set; } = null!;
 
         private NotificationOwnerRecord _notificationOwnerSettings { get; set; } = new()
         {
@@ -25,6 +27,11 @@ namespace Admin.Components.Pages.Settings.Notification
 
         private async Task LoadSettings()
         {
+            if (UserHelper.MyUser?.RoleAbilities.IsOwner != true)
+            {
+                return;
+            }
+
             var res = await SettingsClient.OwnerData;
 
             if (res != null)
