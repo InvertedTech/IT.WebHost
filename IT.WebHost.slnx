@@ -1,8 +1,8 @@
 <Solution>
   <Folder Name="/IT.WebServices/">
-    <Project Path="../IT.WebServices/Authentication/Shared/IT.WebServices.Authentication.Shared.csproj" />
-    <Project Path="../IT.WebServices/Clients/IT.WebServices.Clients.csproj" />
-    <Project Path="../IT.WebServices/Fragments/IT.WebServices.Fragments.csproj" />
+    <Project Path="../IT.WebServices-MCP/Authentication/Shared/IT.WebServices.Authentication.Shared.csproj" />
+    <Project Path="../IT.WebServices-MCP/Clients/IT.WebServices.Clients.csproj" />
+    <Project Path="../IT.WebServices-MCP/Fragments/IT.WebServices.Fragments.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Components/Components.csproj" />

@@ -1,0 +1,23 @@
+﻿<div class="flex items-start justify-between gap-6 border-b py-4 last:border-b-0 first:pt-0 last:pb-0">
+    <div class="space-y-1">
+        <div class="text-sm font-medium leading-none">@Label</div>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="text-sm text-muted-foreground">@Description</p>
+        }
+        @if (!string.IsNullOrEmpty(Note))
+        {
+            <Badge Variant="BadgeVariant.Secondary" Class="mt-1">@Note</Badge>
+        }
+    </div>
+    <Switch Checked="Checked" CheckedChanged="CheckedChanged" Disabled="Disabled" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Note { get; set; }
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+}

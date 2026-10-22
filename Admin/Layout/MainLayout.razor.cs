@@ -78,6 +78,7 @@ namespace Admin.Layout
             new() { Text = "Personalization", Href = "/settings/personalization", Icon = "palette", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
             new() { Text = "Subscription",    Href = "/settings/subscription",    Icon = "credit-card", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
             new() { Text = "Comments",        Href = "/settings/comments",        Icon = "message-circle", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
+            new() { Text = "MCP",             Href = "/settings/mcp",             Icon = "bot", RequiredRole = RoleAbilities.ROLE_IS_ADMIN_OR_OWNER },
             new() { Text = "Notifications",   Href = "/settings/notifications",   Icon = "bell", RequiredRole = RoleAbilities.ROLE_OWNER },
         };
 

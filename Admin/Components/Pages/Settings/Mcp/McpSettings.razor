@@ -1,0 +1,314 @@
+﻿@page "/settings/mcp"
+@using IT.WebServices.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView Roles="@RoleAbilities.ROLE_IS_ADMIN_OR_OWNER">
+    <Authorized>
+        <div class="space-y-6">
+            <SectionHeader Title="MCP" />
+
+            @if (isLoading)
+            {
+                <AppLoader />
+            }
+            else
+            {
+                <Card Class="max-w-3xl">
+                    <CardHeader Class="flex flex-row items-start justify-between">
+                        <div class="space-y-1.5">
+                            <CardTitle>Server</CardTitle>
+                            <CardDescription>Lets AI agents use the site through the MCP endpoint at /mcp. Everything is off until you turn it on.</CardDescription>
+                        </div>
+                        @if (!_private.Enabled)
+                        {
+                            <Badge Variant="BadgeVariant.Secondary">Off</Badge>
+                        }
+                        else if (_private.ReadOnly)
+                        {
+                            <Badge Variant="BadgeVariant.Outline">On, read-only</Badge>
+                        }
+                        else
+                        {
+                            <Badge Class="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/20">On</Badge>
+                        }
+                    </CardHeader>
+                    <CardContent>
+                        <McpAbilityRow Label="MCP enabled"
+                                       Description="The master switch. When off, every request to /mcp is rejected."
+                                       @bind-Checked="_private.Enabled" />
+                        <McpAbilityRow Label="Read-only mode"
+                                       Description="All write abilities behave as off, without losing their own settings."
+                                       Disabled="@(!_private.Enabled)"
+                                       @bind-Checked="_private.ReadOnly" />
+                    </CardContent>
+                </Card>
+
+                @if (!_private.Enabled)
+                {
+                    <Alert Class="max-w-3xl">
+                        <AlertTitle>MCP is off</AlertTitle>
+                        <AlertDescription>Section and ability settings below are saved but have no effect until MCP is enabled.</AlertDescription>
+                    </Alert>
+                }
+
+                <Tabs DefaultValue="cms" Class="space-y-6">
+                    <TabsList Class="@("grid w-full max-w-2xl " + (IsOwner ? "grid-cols-5" : "grid-cols-4"))">
+                        <TabsTrigger Value="cms">CMS</TabsTrigger>
+                        <TabsTrigger Value="comments">Comments</TabsTrigger>
+                        <TabsTrigger Value="pages">Pages</TabsTrigger>
+                        <TabsTrigger Value="limits">Limits</TabsTrigger>
+                        @if (IsOwner)
+                        {
+                            <TabsTrigger Value="owner">Owner</TabsTrigger>
+                        }
+                    </TabsList>
+
+                    <TabsContent Value="cms" Class="mt-6 space-y-6">
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>CMS</CardTitle>
+                                <CardDescription>Articles and other content. Agents write drafts only; publishing needs owner approval.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <McpAbilityRow Label="Enable CMS tools"
+                                               Description="Turns the whole CMS section on or off."
+                                               @bind-Checked="_private.CmsEnabled" />
+                                <McpAbilityRow Label="Read content"
+                                               Description="List, search and read content."
+                                               Disabled="@(!_private.CmsEnabled)"
+                                               @bind-Checked="_private.Cms.Read" />
+                                <McpAbilityRow Label="Create and edit drafts"
+                                               Description="Written content is always allowed once this is on. Content is never published by an agent unless publishing is also allowed."
+                                               Disabled="@(!_private.CmsEnabled)"
+                                               @bind-Checked="_private.Cms.EditDrafts" />
+                                <McpAbilityRow Label="Audio content"
+                                               Disabled="@(!_private.CmsEnabled || !_private.Cms.EditDrafts)"
+                                               @bind-Checked="_private.Cms.AllowAudio" />
+                                <McpAbilityRow Label="Picture content"
+                                               Disabled="@(!_private.CmsEnabled || !_private.Cms.EditDrafts)"
+                                               @bind-Checked="_private.Cms.AllowPicture" />
+                                <McpAbilityRow Label="Video content"
+                                               Disabled="@(!_private.CmsEnabled || !_private.Cms.EditDrafts)"
+                                               @bind-Checked="_private.Cms.AllowVideo" />
+                                <McpAbilityRow Label="Publish, announce and unpublish"
+                                               Description="Needs the owner to allow agent publishing as well."
+                                               Note="Also needs owner approval"
+                                               Disabled="@(!_private.CmsEnabled)"
+                                               @bind-Checked="_private.Cms.Publish" />
+                                <McpAbilityRow Label="Delete and undelete"
+                                               Description="Needs the owner to allow agent deleting as well."
+                                               Note="Also needs owner approval"
+                                               Disabled="@(!_private.CmsEnabled)"
+                                               @bind-Checked="_private.Cms.Delete" />
+                            </CardContent>
+                        </Card>
+
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Agent-written content</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Field>
+                                    <FieldLabel For="mcp-byline">Default byline</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <Input Id="mcp-byline" Class="max-w-xs" Type="InputType.Text" Placeholder="AI draft" @bind-Value="_private.Cms.DefaultByline" />
+                                        <FieldDescription>Shown as the author of content an agent creates.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent Value="comments" Class="mt-6 space-y-6">
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Comments</CardTitle>
+                                <CardDescription>Reading and moderating comments.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <McpAbilityRow Label="Enable comment tools"
+                                               Description="Turns the whole comments section on or off."
+                                               @bind-Checked="_private.CommentsEnabled" />
+                                <McpAbilityRow Label="Read comments"
+                                               Description="Read comments and replies on content."
+                                               Disabled="@(!_private.CommentsEnabled)"
+                                               @bind-Checked="_private.Comments.Read" />
+                                <McpAbilityRow Label="Show user names"
+                                               Description="Include account user names, not just display names."
+                                               Disabled="@(!_private.CommentsEnabled)"
+                                               @bind-Checked="_private.Comments.ShowUserNames" />
+                                <McpAbilityRow Label="Moderate"
+                                               Description="Pin, delete and undelete comments."
+                                               Disabled="@(!_private.CommentsEnabled)"
+                                               @bind-Checked="_private.Comments.Moderate" />
+                                <McpAbilityRow Label="Autonomous moderation"
+                                               Description="Off: moderation is proposed and a person approves it. On: the agent acts directly."
+                                               Disabled="@(!_private.CommentsEnabled || !_private.Comments.Moderate)"
+                                               @bind-Checked="_private.Comments.AutonomousModeration" />
+                                <McpAbilityRow Label="Post comments as an agent"
+                                               Disabled="@(!_private.CommentsEnabled)"
+                                               @bind-Checked="_private.Comments.PostAsAgent" />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent Value="pages" Class="mt-6 space-y-6">
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Pages</CardTitle>
+                                <CardDescription>Building and editing site pages.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <McpAbilityRow Label="Enable page tools"
+                                               Description="Turns the whole pages section on or off."
+                                               @bind-Checked="_private.PagesEnabled" />
+                                <McpAbilityRow Label="Read pages, blocks and templates"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.Read" />
+                                <McpAbilityRow Label="Create and edit unpublished drafts"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.EditDrafts" />
+                                <McpAbilityRow Label="Render previews"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.Preview" />
+                                <McpAbilityRow Label="Use templates"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.Templates" />
+                                <McpAbilityRow Label="Edit system pages"
+                                               Description="Home, article and other pages the site depends on."
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.EditSystemPages" />
+                                <McpAbilityRow Label="Publish and unpublish"
+                                               Description="Needs the owner to allow agent publishing as well."
+                                               Note="Also needs owner approval"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.Publish" />
+                                <McpAbilityRow Label="Delete and undelete"
+                                               Description="Needs the owner to allow agent deleting as well."
+                                               Note="Also needs owner approval"
+                                               Disabled="@(!_private.PagesEnabled)"
+                                               @bind-Checked="_private.Pages.Delete" />
+                            </CardContent>
+                        </Card>
+
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Document size</CardTitle>
+                                <CardDescription>Use 0 for the built-in default.</CardDescription>
+                            </CardHeader>
+                            <CardContent Class="space-y-6">
+                                <Field>
+                                    <FieldLabel For="mcp-max-nodes">Maximum nodes per page</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-max-nodes" Class="max-w-xs" @bind-Value="MaxNodes" Min="0" Step="1" />
+                                        <FieldDescription>Default 2000.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="mcp-max-depth">Maximum nesting depth</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-max-depth" Class="max-w-xs" @bind-Value="MaxDepth" Min="0" Step="1" />
+                                        <FieldDescription>Default 12.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent Value="limits" Class="mt-6 space-y-6">
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Rate limits</CardTitle>
+                                <CardDescription>Applied per agent token. Use 0 for the built-in default.</CardDescription>
+                            </CardHeader>
+                            <CardContent Class="space-y-6">
+                                <Field>
+                                    <FieldLabel For="mcp-read-rpm">Read requests per minute</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-read-rpm" Class="max-w-xs" @bind-Value="ReadPerMinute" Min="0" Step="1" />
+                                        <FieldDescription>Default 60.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="mcp-write-rpm">Write requests per minute</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-write-rpm" Class="max-w-xs" @bind-Value="WritePerMinute" Min="0" Step="1" />
+                                        <FieldDescription>Default 10.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="mcp-write-day">Write requests per day</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-write-day" Class="max-w-xs" @bind-Value="WritePerDay" Min="0" Step="1" />
+                                        <FieldDescription>Default 200.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel For="mcp-body-kb">Maximum request size (KB)</FieldLabel>
+                                    <FieldContent Class="space-y-2">
+                                        <NumericInput TValue="int" Id="mcp-body-kb" Class="max-w-xs" @bind-Value="MaxBodyKb" Min="0" Step="1" />
+                                        <FieldDescription>Default 256.</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            </CardContent>
+                        </Card>
+
+                        <Card Class="max-w-3xl">
+                            <CardHeader>
+                                <CardTitle>Allowed origins</CardTitle>
+                                <CardDescription>Only for browser-based MCP clients. Desktop clients do not need an entry.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Field>
+                                    <FieldContent Class="space-y-3">
+                                        @if (_origins.Count == 0)
+                                        {
+                                            <p class="text-sm text-muted-foreground">No origins. Browser clients are blocked.</p>
+                                        }
+                                        @for (var i = 0; i < _origins.Count; i++)
+                                        {
+                                            var index = i;
+                                            <div class="flex items-center gap-3">
+                                                <Input Class="flex-1" Type="InputType.Text" Placeholder="https://app.example.com" @bind-Value="_origins[index]" />
+                                                <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="() => RemoveOrigin(index)">Remove</Button>
+                                            </div>
+                                        }
+                                        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" @onclick="AddOrigin">Add Origin</Button>
+                                    </FieldContent>
+                                </Field>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    @if (IsOwner)
+                    {
+                        <TabsContent Value="owner" Class="mt-6 space-y-6">
+                            <Card Class="max-w-3xl">
+                                <CardHeader>
+                                    <CardTitle>Owner approval</CardTitle>
+                                    <CardDescription>Only the owner can change these. They decide whether agents can ever change the live site.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <McpAbilityRow Label="Allow agents to publish"
+                                                   Description="Publishing only works where the section's own publish switch is also on."
+                                                   @bind-Checked="_owner.AllowAgentPublish" />
+                                    <McpAbilityRow Label="Allow agents to delete"
+                                                   Description="Deleting only works where the section's own delete switch is also on."
+                                                   @bind-Checked="_owner.AllowAgentDelete" />
+                                </CardContent>
+                                <CardFooter Class="border-t pt-6">
+                                    <Button Disabled="isSaving" @onclick="SaveOwner">Save owner settings</Button>
+                                </CardFooter>
+                            </Card>
+                        </TabsContent>
+                    }
+                </Tabs>
+
+                <div class="flex max-w-3xl items-center gap-4 border-t pt-6">
+                    <Button Disabled="isSaving" @onclick="SavePrivate">Save changes</Button>
+                    <span class="text-sm text-muted-foreground">Saves the server, section, limit and origin settings.</span>
+                </div>
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>
